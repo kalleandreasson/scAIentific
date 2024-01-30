@@ -1,7 +1,7 @@
-using System.Text.RegularExpressions;
 using datasettest.Models;
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Spreadsheet;
+using ClosedXML.Excel;
+using System.Collections.Generic;
+using datasettest.Models;
 
 namespace datasettest.Services;
 
@@ -18,81 +18,41 @@ public class Parser
         ParseDataset();
     }
 
-    private void ParseDataset()
+    public List<Report> ParseDataset()
     {
 
-        using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(folderPath, false))
+        using (var workbook = new XLWorkbook(folderPath))
         {
-            WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
-            SharedStringTablePart sharedStringTablePart = workbookPart.GetPartsOfType<SharedStringTablePart>().FirstOrDefault();
-            SharedStringTable sharedStrings = sharedStringTablePart?.SharedStringTable;
-            WorksheetPart worksheetPart = workbookPart.WorksheetParts.First();
-            SheetData sheetData = worksheetPart.Worksheet.Elements<SheetData>().First();
+            var worksheet = workbook.Worksheet(1);
+            var rows = worksheet.RangeUsed().RowsUsed(); // Skip header row
 
-            Dictionary<string, int> columnIndices = new Dictionary<string, int>
+            foreach (var row in rows)
             {
-                { "A", 0 },
-                { "B", 1 },
-                { "C", 2 },
-                { "D", 3 },
-                { "E", 4 },
-                { "F", 5 },
-            };
+                if (row.RowNumber() == 1) // Assuming the first row contains the headers
+                    continue;
 
-            foreach (Row r in sheetData.Elements<Row>())
-            {
-                if (r.RowIndex != null && r.RowIndex.Value == 1) continue;
-
-                Report report = new Report();
-                string[] cellValues = new string[columnIndices.Count];
-
-                foreach (Cell cell in r.Elements<Cell>())
+                var report = new Report
                 {
-                    // Determine the column index of this cell
-                    string columnReference = new String(cell.CellReference.Value.TakeWhile(char.IsLetter).ToArray());
-                    if (columnIndices.TryGetValue(columnReference, out int columnIndex))
-                    {
-                        // Retrieve the cell value
-                        cellValues[columnIndex] = GetCellValue(workbookPart, cell, sharedStrings);
-                    }
-                }
-
-                // Assign values to report properties
-                report.ArticleID = cellValues[columnIndices["A"]];
-                report.Authors = cellValues[columnIndices["B"]];
-                report.Title = cellValues[columnIndices["C"]];
-                report.Year = int.TryParse(cellValues[columnIndices["D"]], out int year) ? year : 0;
-                report.Abstract = cellValues[columnIndices["E"]];
-                report.FullReference = cellValues[columnIndices["F"]];
-                // ... Assign additional properties if necessary
+                     ArticleID = CleanString(row.Cell("A").GetValue<string>()),
+                    Authors = CleanString(row.Cell("B").GetValue<string>()),
+                    Title = CleanString(row.Cell("C").GetValue<string>()),
+                    Year = row.Cell("D").GetValue<int>(), // Ensure this cell is formatted as an integer or use int.TryParse
+                    Abstract = CleanString(row.Cell("E").GetValue<string>()),
+                    FullReference = CleanString(row.Cell("F").GetValue<string>()),
+                    // Add other fields if there are more columns
+                };
 
                 reports.Add(report);
             }
         }
+
+        return reports;
     }
 
-    private string GetColumnReference(string cellReference)
+   private string CleanString(string input)
     {
-        // Match the column reference (not the row number) and return it.
-        return Regex.Match(cellReference, "[A-Za-z]+").Value;
-    }
-
-    private string GetCellValue(WorkbookPart workbookPart, Cell cell, SharedStringTable sharedStrings)
-    {
-        if (cell == null || cell.CellValue == null)
-        {
-            return null;
-        }
-
-        var value = cell.CellValue.InnerText;
-        if (cell.DataType != null && cell.DataType.Value == CellValues.SharedString)
-        {
-            return sharedStrings.ChildElements[int.Parse(value)].InnerText;
-        }
-        else
-        {
-            return value;
-        }
+        // Replace newline and tab characters with a space
+        return input.Replace("\n", " ").Replace("\t", " ").Trim();
     }
 
     public List<Report> GetAllReports()
