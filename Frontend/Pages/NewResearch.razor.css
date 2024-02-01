@@ -8,14 +8,25 @@
   box-sizing: border-box;
 }
 
+label {
+  color: #FEF4EA;
+  font-size: 1.4rem;
+}
+
+button {
+  font-size: 1.4rem;
+}
+
 
 button:hover {
   background-color: #102A43;
-  color: white;
+  color: #FEF4EA;
 }
 
 .form-container {
+  max-width: 70%;
+  margin-bottom: 50px;
   border-radius: 5px;
-  background-color: #FEF4EA;
+  background-color: #547185;
   padding: 20px;
 }

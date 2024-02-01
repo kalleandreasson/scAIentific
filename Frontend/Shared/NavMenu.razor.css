@@ -7,11 +7,6 @@
     height: 3.5rem; /* Match the height of your nav items for vertical centering */
 }
 
-/* This sets the background color of the navbar toggler to match the color in the image. */
-.navbar-toggler {
-    background-color:#C4D8DA; /* Light gray background */
-    border: none;
-}
 
 /* This sets the background of the top row to a light blue color, as seen in the image. */
 .top-row {
@@ -23,23 +18,16 @@
 
 /* Update the navbar brand (logo text) to match the dark color in the design. */
 .navbar-brand {
-    font-size: 1.2rem; /* Adjust size as needed */
-    color: #102A43; /* Dark blue color */
+    font-size: 1.9rem; /* Adjust size as needed */
+    color: #FEF4EA; /* Dark blue color */
     font-weight: bold; /* Assuming the brand name is bold */
-}
-
-/* Icon styles to match the color scheme of the image. */
-.oi {
-    width: 2rem;
-    font-size: 1.3rem; /* Slightly larger icons as per the design */
-    color: #102A43; /* Dark blue color */
 }
 
 /* Style for navigation items to match the design */
 .nav-item {
     padding: 0.5rem 1rem;
     color: #102A43; /* Dark blue color */
-    font-size: 0.9rem;
+    font-size: 1.3rem;
 }
 
 /* Adjust link styles to match the design */
@@ -47,7 +35,7 @@
 
 /* Adjust link styles to match the design */
 .nav-item ::deep a {
-    color: #102A43; /* Dark blue color for nav links */
+    color: #FEF4EA; /* Dark blue color for nav links */
     text-align: center;
     text-decoration: none; /* No underline for links */
     display: block; /* Make the anchor fill the nav-item for centering */
