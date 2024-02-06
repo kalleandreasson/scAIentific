@@ -1,0 +1,63 @@
+/* NavMenu.razor.css */
+
+.nav-menu-container {
+    display: flex;
+    justify-content: center; /* Center children horizontally */
+    align-items: center; /* Center children vertically */
+    height: 3.5rem; /* Match the height of your nav items for vertical centering */
+}
+
+
+/* This sets the background of the top row to a light blue color, as seen in the image. */
+.top-row {
+    height: 3.5rem;
+    background-color: #ead3d4; /* Light blue background */
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.1);
+}
+
+
+/* Update the navbar brand (logo text) to match the dark color in the design. */
+.navbar-brand {
+    font-size: 1.9rem; /* Adjust size as needed */
+    color: #FEF4EA; /* Dark blue color */
+    font-weight: bold; /* Assuming the brand name is bold */
+}
+
+/* Style for navigation items to match the design */
+.nav-item {
+    padding: 0.5rem 1rem;
+    color: #102A43; /* Dark blue color */
+    font-size: 1.3rem;
+}
+
+/* Adjust link styles to match the design */
+/* Other styles remain unchanged */
+
+/* Adjust link styles to match the design */
+.nav-item ::deep a {
+    color: #FEF4EA; /* Dark blue color for nav links */
+    text-align: center;
+    text-decoration: none; /* No underline for links */
+    display: block; /* Make the anchor fill the nav-item for centering */
+    width: 100%; /* Full width for better click area */
+    height: 100%; /* Full height for better click area */
+    display: flex;
+    justify-content: center; /* Horizontally center the content */
+    align-items: center; /* Vertically center the content */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+/* Style for active or hovered nav link */
+.nav-item ::deep a.active,
+.nav-item ::deep a:hover {
+    background-color: #FEF4EA; /* Lighter shade of blue for hover/active */
+    color: #102A43; /* Dark blue text color for active/hover state */
+    /* Other styles remain unchanged */
+}
+
+
+/* Ensure that the navbar elements align well with the rest of the content */
+.container-fluid {
+    padding-left: 0;
+    padding-right: 0;
+}

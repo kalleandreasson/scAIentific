@@ -1,0 +1,128 @@
+
+    @import url('font/quicksand.css');
+
+body, html {
+    height: 100%;
+}
+
+body {
+    padding-top: 5rem;
+    flex-direction: column;
+    font-family: 'quicksand';
+    overflow-y: hidden;
+    background-color: #547185;
+}
+
+
+.top-bar {
+    height: 5rem;
+    background-color: #547185;
+    background-image: linear-gradient(rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0) 90%);
+    display: flex;
+    align-items: stretch;
+    color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    padding: 0 3rem;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+}
+
+.content {
+  background-color: #547185;
+}
+
+
+.main {
+  max-width: 80%;
+  min-height: 90vh; /* This will make sure that .main is at least as tall as the viewport */
+  margin: auto;
+  display: flex;
+  flex-direction: flex;
+  justify-content: center; /* This will center the cards vertically when there are fewer cards */
+  overflow-y: auto;
+  background: #FEF4EA;
+  padding: 1.5rem !important;
+}
+
+
+      .research-cards {
+        display: grid;
+        grid-template-columns: repeat(3, 2fr); /* Adjust to have 3 cards in each row */
+        grid-gap: 2rem; /* Adjust the gap between the cards as needed */
+        margin-bottom: 2rem; /* Bottom margin for the whole grid */
+      }
+
+      .card-container {
+        display: flex;
+        flex-direction: column; /* Stack card and description vertically */
+      }
+      
+      .research-cards > li {
+        margin-bottom: 2rem; /* This spaces out each card from the next */
+      }
+      
+      .research-card:hover {
+        transform: translateY(-5px); /* Example hover effect that moves the card up */
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Increase shadow for a "lifted" effect */
+      }
+      
+      .research-card {
+        border-radius: 0.5rem;
+        box-shadow: 0 5px 6px rgb(66, 90, 105);
+        background-size: cover;
+        width: 100%; /* This ensures the card stretches to the container's width */
+        height: 300px; /* Adjust height as necessary */
+        position: relative;
+        transition: transform 0.3s ease;
+      }
+      
+      
+      .research-cards > li:hover {
+        transform: scale(1.02);
+      }
+      
+      .research-info {
+        position: absolute;
+        bottom: 0; /* Position info at the bottom of the image */
+        left: 0;
+        right: 0;
+        padding: 1rem;
+        color: white;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0));
+        border-radius: 0 0 0.5rem 0.5rem; /* Rounded corners at the bottom */
+      }
+      
+      .research-info .title {
+        color: white;
+        font-size: 1.4rem;
+        display: block;
+        margin: 0.2rem 0 0.4rem 0;
+        font-family: 'Bahnschrift', Arial, Helvetica, sans-serif;
+        text-transform: uppercase;
+    }
+    .research-description {
+      box-shadow: 0 5px 6px rgb(66, 90, 105);
+      padding: 7%;
+      margin-top: 10px;
+    }
+
+    #blazor-error-ui{
+      background: lightyellow;
+      bottom: 0;
+      box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+      display: none;
+      left: 0;
+      padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+      position: fixed;
+      width: 100%;
+      z-index: 1000;}
+     #blazor-error-ui .dismiss {
+      cursor: pointer;
+      position: absolute;
+      right: 0.75rem;
+      top: 0.5rem;}
+
+
