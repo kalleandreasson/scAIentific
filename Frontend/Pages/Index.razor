@@ -1,40 +1,10 @@
 ﻿@page "/"
+@using Frontend.Shared
+
 <PageTitle>Home</PageTitle>
+<h1>Find research front</h1>
 
-<div class="main">
-  <div class="research-cards">
-    @if (Researchs != null)
-    {
-      @foreach (var research in Researchs)
-      {
-        <div class="card-container">
-          <div class="research-card" style="background-image: url('@research.ImageUrl')">
-            <div class="research-info">
-              <span class="title">@research.Name</span>
-            </div>
-          </div>
-          <div class="research-description">
-            @research.Description
-          </div>
-        </div>
-      }
-    }
-  </div>
-</div>
-
-
-
+<FindResearchFrontBtn  />
 @code {
-    List<Research> Researchs = new();
 
-    protected override void OnInitialized()
-    {
-   Researchs.AddRange(new List<Research>
-{
-    new Research { Name = "Economic Dynamics", Description = "Exploring the multifaceted aspects of economic theory, market structures, and financial mechanisms. This research delves into the evolution of global economies, examining the role of innovation, policy-making, and socioeconomic factors in shaping the bacon of economic progress.", ImageUrl="img/researchCard-1.png"},
-    new Research { Name = "Computational Sciences", Description = "An in-depth analysis of algorithmic complexity and computational systems. The research addresses the challenges of machine learning, data processing, and software development, providing spicy insights into the digital framework that constitutes the backbone of modern computing.", ImageUrl="img/researchCard-2.png"},
-    new Research { Name = "Sports Science", Description = "A comprehensive study of athletic performance, physical health, and sports psychology. This research offers a fresh perspective on sports activities, akin to a nutritious salad, by blending empirical analysis with practical applications in the field of sports.", ImageUrl="img/researchCard-3.png"}           
-});
-
-    }
 }

@@ -8,6 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
+// builder.Services.AddHttpClient<OpenAIService>();
+// builder.Services.Configure<OpenAIServiceOptions>(builder.Configuration.GetSection("OpenAI"));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
