@@ -13,6 +13,23 @@ body {
     background-color: #FFE000;
 }
 
+h1 {
+  margin: 50px;
+  text-decoration-color: none;
+}
+
+textarea {
+  width: 100%;
+  margin-bottom:20px;
+  height: 150px;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  font-size: 16px;
+  resize: none;
+}
 
 .top-bar {
     height: 5rem;

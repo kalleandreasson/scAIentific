@@ -6,10 +6,11 @@
 
 <div>
  <p role="status">@textToOutput</p>
+
+
+@* <input type="text" @oninput="OnInputEvent"> *@
+<textarea type="text" @oninput="OnInputEvent"></textarea>
 </div>
-
-
-<input type="text" @oninput="OnInputEvent">
 
 <div>
     <button @onclick="OutputText">Find Research Front</button>
