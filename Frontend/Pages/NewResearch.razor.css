@@ -1,4 +1,4 @@
-::deep .form-input {
+/* ::deep .form-input {
   width: 100%;
   padding: 12px 20px;
   margin: 8px 0;
@@ -15,6 +15,8 @@ label {
 
 button {
   font-size: 1.4rem;
+  background-color: #fff;
+
 }
 
 
@@ -29,4 +31,4 @@ button:hover {
   border-radius: 5px;
   background-color: #547185;
   padding: 20px;
-}
+} */

@@ -11,7 +11,7 @@
 /* This sets the background of the top row to a light blue color, as seen in the image. */
 .top-row {
     height: 3.5rem;
-    background-color: #ead3d4; /* Light blue background */
+    background-color: #FFFFFF; /* Light blue background */
     box-shadow: 0 2px 4px 0 rgba(0,0,0,0.1);
 }
 
@@ -19,7 +19,7 @@
 /* Update the navbar brand (logo text) to match the dark color in the design. */
 .navbar-brand {
     font-size: 1.9rem; /* Adjust size as needed */
-    color: #FEF4EA; /* Dark blue color */
+    color: #FFFFFF; /* Dark blue color */
     font-weight: bold; /* Assuming the brand name is bold */
 }
 
@@ -35,7 +35,7 @@
 
 /* Adjust link styles to match the design */
 .nav-item ::deep a {
-    color: #FEF4EA; /* Dark blue color for nav links */
+    color: #FFFFFF; /* Dark blue color for nav links */
     text-align: center;
     text-decoration: none; /* No underline for links */
     display: block; /* Make the anchor fill the nav-item for centering */
@@ -48,10 +48,15 @@
 }
 
 /* Style for active or hovered nav link */
-.nav-item ::deep a.active,
+.nav-item ::deep a.active
+{
+    background-color: #FFFF; /* Lighter shade of blue for hover/active */
+    color: #333333; /* Dark blue text color for active/hover state */
+    /* Other styles remain unchanged */
+}
 .nav-item ::deep a:hover {
-    background-color: #FEF4EA; /* Lighter shade of blue for hover/active */
-    color: #102A43; /* Dark blue text color for active/hover state */
+    background-color: #FFE000 ; /* Lighter shade of blue for hover/active */
+    color: #333333; /* Dark blue text color for active/hover state */
     /* Other styles remain unchanged */
 }
 

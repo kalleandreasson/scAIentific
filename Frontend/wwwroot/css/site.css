@@ -1,5 +1,5 @@
 
-    @import url('font/quicksand.css');
+@import url('font/quicksand.css');
 
 body, html {
     height: 100%;
@@ -10,13 +10,13 @@ body {
     flex-direction: column;
     font-family: 'quicksand';
     overflow-y: hidden;
-    background-color: #547185;
+    background-color: #FFE000;
 }
 
 
 .top-bar {
     height: 5rem;
-    background-color: #547185;
+    background-color: #333333;
     background-image: linear-gradient(rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0) 90%);
     display: flex;
     align-items: stretch;
@@ -31,7 +31,51 @@ body {
 }
 
 .content {
-  background-color: #547185;
+  background-color: #FFFFFF;
+  min-height: 90vh; 
+  margin: auto;
+  display: flex;
+  justify-content: center;
+}
+
+input {
+  width: 100%;
+
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input[type=text] {
+  border: 2px solid #262626;
+  border-radius: 4px;
+}
+textarea {
+  width: 100%;
+  height: 150px;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  font-size: 16px;
+  resize: none;
+}
+
+button {
+  background-color: #FFE000;
+  font-weight: 500;
+  padding: 4px 15px;
+  box-shadow: 0 0 0 1px #00000020;
+  border-radius: 50px;
+}
+
+button:hover {
+  background-color: #262626;
+  color: #FEF4EA;
 }
 
 
@@ -46,68 +90,6 @@ body {
   background: #FEF4EA;
   padding: 1.5rem !important;
 }
-
-
-      .research-cards {
-        display: grid;
-        grid-template-columns: repeat(3, 2fr); /* Adjust to have 3 cards in each row */
-        grid-gap: 2rem; /* Adjust the gap between the cards as needed */
-        margin-bottom: 2rem; /* Bottom margin for the whole grid */
-      }
-
-      .card-container {
-        display: flex;
-        flex-direction: column; /* Stack card and description vertically */
-      }
-      
-      .research-cards > li {
-        margin-bottom: 2rem; /* This spaces out each card from the next */
-      }
-      
-      .research-card:hover {
-        transform: translateY(-5px); /* Example hover effect that moves the card up */
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Increase shadow for a "lifted" effect */
-      }
-      
-      .research-card {
-        border-radius: 0.5rem;
-        box-shadow: 0 5px 6px rgb(66, 90, 105);
-        background-size: cover;
-        width: 100%; /* This ensures the card stretches to the container's width */
-        height: 300px; /* Adjust height as necessary */
-        position: relative;
-        transition: transform 0.3s ease;
-      }
-      
-      
-      .research-cards > li:hover {
-        transform: scale(1.02);
-      }
-      
-      .research-info {
-        position: absolute;
-        bottom: 0; /* Position info at the bottom of the image */
-        left: 0;
-        right: 0;
-        padding: 1rem;
-        color: white;
-        background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0));
-        border-radius: 0 0 0.5rem 0.5rem; /* Rounded corners at the bottom */
-      }
-      
-      .research-info .title {
-        color: white;
-        font-size: 1.4rem;
-        display: block;
-        margin: 0.2rem 0 0.4rem 0;
-        font-family: 'Bahnschrift', Arial, Helvetica, sans-serif;
-        text-transform: uppercase;
-    }
-    .research-description {
-      box-shadow: 0 5px 6px rgb(66, 90, 105);
-      padding: 7%;
-      margin-top: 10px;
-    }
 
     #blazor-error-ui{
       background: lightyellow;

@@ -4,15 +4,15 @@
 @using Newtonsoft.Json
 
 
-<input type="text" @oninput="OnInputEvent">
 <div>
-
-
+ <p role="status">@textToOutput</p>
 </div>
 
+
+<input type="text" @oninput="OnInputEvent">
+
 <div>
-    <button class="btn btn-primary" @onclick="OutputText">Find Research Front</button>
-    <p role="status">@textToOutput</p>
+    <button @onclick="OutputText">Find Research Front</button>
 </div>
 
 
@@ -50,7 +50,8 @@
             var response = await httpClient.PostAsJsonAsync("http://localhost:5000/research-front/generate", new
             {
                 systemMessage = "string",
-                userMessage = $"Use svenska, 25 token to generate research front of the following articals abstracts{prompt} "
+                userMessage = $"{prompt} "
+                @* userMessage = $"Use svenska, 25 token to generate research front of the following articals abstracts{prompt} " *@
             });
 
             if (response.IsSuccessStatusCode)
