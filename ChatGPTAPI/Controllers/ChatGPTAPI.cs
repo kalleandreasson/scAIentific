@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using ChatGPTAPI.Models;
+
 
 namespace ChatGPTAPI.Controllers;
 
 [ApiController]
-[Route("product-description")]
+[Route("research-front")]
 public class ChatGPTAPI : ControllerBase
 {
     private readonly OpenAIService _openAIApiService;
@@ -12,25 +15,32 @@ public class ChatGPTAPI : ControllerBase
     {
         _openAIApiService = openAIApiService;
     }
+
+
     [HttpGet]
     public IActionResult Get()
     {
-        var response = new { Message = "Hello! You are talking to the API that will generate product descriptions using AI" };
+        var response = new { Message = "Hello! You are talking to the API that will generate research front using AI" };
         return Ok(response);
     }
-    // Endpoint to generate product description using chat
+
+
+    // Endpoint to generate research front using chat GPT
     [HttpPost("generate")]
     public async Task<IActionResult> FindResearchFront([FromBody] FindResearchFrontRequest request)
     {
-        var SystemMessage = "string";
-        // // Call the OpenAI service with the system message and the new user message
-        string response = await _openAIApiService.CreateChatCompletionAsync(request.SystemMessage, request.UserMessage);
+        // Ensure that the request parameters are not null
+    string systemMessage = request.SystemMessage ?? "string";
+    string userMessage = request.UserMessage ?? "Default User Message";
+      
+        // Call the OpenAI service with the system message and the user message
+    string response = await _openAIApiService.CreateChatCompletionAsync(systemMessage, userMessage);
+
+        // Parse the JSON to extract message.content
+    var parsedResponse = JsonConvert.DeserializeObject<ApiResponse>(response);
+    string messageContent = parsedResponse?.choices?[0]?.message?.content ?? "No response";
         // Parse the response and return it
-        return Ok(new { Response = response });
+         // Return only the message content
+    return Ok(messageContent);
     }
-}
-public class FindResearchFrontRequest
-{
-    public string SystemMessage { get; set; }
-    public string UserMessage { get; set; }
 }
