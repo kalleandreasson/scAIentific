@@ -6,14 +6,15 @@
 
 <div>
  <p role="status">@textToOutput</p>
-
-
-@* <input type="text" @oninput="OnInputEvent"> *@
-<textarea type="text" @oninput="OnInputEvent"></textarea>
+<textarea type="text" @bind="prompt" @oninput="OnInputEvent"></textarea>
 </div>
 
 <div>
     <button @onclick="OutputText">Find Research Front</button>
+</div>
+
+<div class="div-abstract">
+    <p>@sentAbstract</p>
 </div>
 
 
@@ -28,6 +29,7 @@
     }
 
     private string prompt = "";
+    private string sentAbstract = "";
     private void OnInputEvent(ChangeEventArgs changeEvent)
     {
 
@@ -42,34 +44,37 @@
     /// </summary>
     /// <returns></returns>
     private async Task OutputText()
-
+{
+    try
     {
-        try
+        Console.WriteLine("OutputText method called");
+
+        var response = await httpClient.PostAsJsonAsync("http://localhost:5000/research-front/generate", new
         {
-            Console.WriteLine("OutputText method called");
+            systemMessage = "string",
+            userMessage = $"Use svenska to generate research front of the following articals abstracts {prompt} "
+            // other code
+        });
 
-            var response = await httpClient.PostAsJsonAsync("http://localhost:5000/research-front/generate", new
-            {
-                systemMessage = "string",
-                userMessage = $"{prompt} "
-                @* userMessage = $"Use svenska, 25 token to generate research front of the following articals abstracts{prompt} " *@
-            });
-
-            if (response.IsSuccessStatusCode)
-            {
-                textToOutput = await response.Content.ReadAsStringAsync();
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Error content: {errorContent}");
-                textToOutput = "Error: " + response.ReasonPhrase + " - " + errorContent;
-            }
+        if (response.IsSuccessStatusCode)
+        {
+             Console.WriteLine("an answer come");
+            sentAbstract = prompt;
+            textToOutput = await response.Content.ReadAsStringAsync();
+            prompt = ""; // Clear the prompt variable
         }
-        catch (HttpRequestException ex)
+        else
         {
-            Console.WriteLine($"Error: {ex.Message}");
-            textToOutput = "Request failed: " + ex.Message;
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error content: {errorContent}");
+            textToOutput = "Error: " + response.ReasonPhrase + " - " + errorContent;
         }
     }
+    catch (HttpRequestException ex)
+    {
+        Console.WriteLine($"Error: {ex.Message}");
+        textToOutput = "Request failed: " + ex.Message;
+    }
+}
+
 }

@@ -18,13 +18,26 @@ h1 {
   text-decoration-color: none;
 }
 
+p{
+  margin: 20px;
+  font-size: 20px;
+}
+
+.div-abstract{
+  border: 1px solid #000; /* Adjust the color as needed */
+    max-height: 40%; /* Adjust the height as needed */
+    overflow-y: auto;
+    margin-top: 20px;
+    height: 150px;
+}
+
 textarea {
   width: 100%;
   margin-bottom:20px;
   height: 150px;
   padding: 12px 20px;
   box-sizing: border-box;
-  border: 2px solid #ccc;
+  border: 2px solid #000;
   border-radius: 4px;
   background-color: #f8f8f8;
   font-size: 16px;
