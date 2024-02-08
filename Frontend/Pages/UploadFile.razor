@@ -3,9 +3,12 @@
 
 <PageTitle>UploadFile</PageTitle>
 
-<h1>Testing uploading</h1>
+<div class="index-container" > 
+
+<h1>Upload an excel file</h1>
 
 <InputFile OnChange="@LoadFiles" multiple accept=".xlsx" />
+</div>
 
 @if (errors.Count > 0)
 {
