@@ -1,0 +1,140 @@
+@using Frontend.Shared
+@using System.Net.Http.Headers
+@using System.Net.Http
+@using System.Net.Http.Json
+@using Newtonsoft.Json
+@inject IConfiguration config
+
+<PageTitle>UploadFile</PageTitle>
+
+<div class="index-container">
+  <h1>Upload an excel file</h1>
+  <InputFile OnChange="@LoadFiles" multiple accept=".xlsx" />
+
+  @if (uploadedFiles.Count > 0)
+  {
+    <div class="uploaded-files-section">
+      <h2>Uploaded Files</h2>
+      <ul class="uploaded-files-list">
+        @foreach (var fileName in uploadedFiles)
+        {
+          <li class="uploaded-file-item">@fileName</li>
+        }
+      </ul>
+    </div>
+    <button @onclick="SendFileToApi">Find Research Front</button>
+  }
+</div>
+
+@code {
+
+    private HttpClient? httpClient;
+    private HttpResponseMessage? apiResponse;
+    private long maxFileSize = 1024 * 1024 * 500; // 500MB
+    private int maxAllowedFiles = 3;
+    private List<string> errors = new();
+    private List<string> uploadedFiles = new(); // List to store uploaded file names
+
+    private string textToOutput;
+    private string fileDiskName;
+    private string uploadedFileName; // This should be assigned when the file is initially uploaded
+    private string userPrompt = ""; // Bind this to an input field so the user can set it
+    private string path;
+
+    protected override void OnInitialized()
+    {
+        httpClient = new HttpClient();
+    }
+
+
+    private async Task LoadFiles(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
+    {
+    errors.Clear();
+    uploadedFiles.Clear(); // Clear previously uploaded files list
+
+    if (e.FileCount > maxAllowedFiles)
+    {
+      errors.Add($"Error: Attempting to upload {e.FileCount} files but only {maxAllowedFiles} are allowed");
+      return;
+    }
+
+    foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+    {
+      try
+      {
+        fileDiskName = Path.ChangeExtension(
+        Path.GetRandomFileName(),
+        Path.GetExtension(file.Name));
+
+        path = Path.Combine(
+        config.GetValue<string>("FileStorage")!,
+        "researchfile",
+        fileDiskName);
+
+        Directory.CreateDirectory(Path.Combine(config.GetValue<string>("FileStorage")!, "researchfile"));
+
+        await using FileStream fs = new(path, FileMode.Create);
+        await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+
+        uploadedFiles.Add(file.Name); // Store the uploaded file name
+      }
+      catch (Exception ex)
+      {
+        errors.Add($"File: {file.Name} Error: {ex.Message}");
+      }
+    }
+  }
+
+  private async Task SendFileToApi()
+  {
+    Console.WriteLine("hejsan");
+    try
+    {
+       Console.WriteLine("Excel file on disk: " + path);
+      // Define your prompt here
+      var staticPrompt = "Your prompt here";
+
+      using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+      var fileContent = new StreamContent(fileStream);
+      fileContent.Headers.ContentType = new
+      MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+      var formData = new MultipartFormDataContent
+      {
+        { new StringContent(staticPrompt), "prompt" },
+        { fileContent, "file", Path.GetFileName(path) }
+      }; 
+
+      var response = await httpClient.PostAsJsonAsync("http://localhost:5000/research-front/generateByFile", staticPrompt);
+
+        if (response.IsSuccessStatusCode)
+      {
+        textToOutput = await response.Content.ReadAsStringAsync();
+        // If you need to clear the uploaded files list and prompt after success:
+        uploadedFiles.Clear();
+      }
+      else
+      {
+        textToOutput = "Error: " + response.ReasonPhrase;
+      }
+    } 
+    catch (Exception ex)
+    {
+      textToOutput = "Request failed: " + ex.Message; 
+    }
+  }
+
+  private async Task<byte[]> GetFileData(string fileName)
+  {
+    // Combine the path to the folder and the filename
+    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "store-files", "researchfile", fileName);
+
+    if (!File.Exists(filePath))
+    {
+      throw new FileNotFoundException("The file was not found.", fileName);
+    }
+
+    return await File.ReadAllBytesAsync(filePath);
+  }
+
+}

@@ -43,4 +43,12 @@ public class ChatGPTAPI : ControllerBase
          // Return only the message content
     return Ok(messageContent);
     }
+
+    [HttpPost("generateByFile")]
+    public async Task<IActionResult> FindResearchFrontByFile([FromBody] FindResearchFrontRequest request)
+    {
+        Console.WriteLine("testing generateByFile");
+       Console.WriteLine(request);
+       return Ok("Testing");
+    }
 }
