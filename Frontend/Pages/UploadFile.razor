@@ -5,46 +5,26 @@
 <PageTitle>UploadFile</PageTitle>
 
 <div class="index-container" > 
-
-  <EditForm Model="newAbstract"> 
-        <div>
-            <label for="articleId" >Article Id:</label>
-            <InputText id="articleId" class="form-control"  @bind-Value="newAbstract.ArticleId" />
-        </div>
-        
-        <div>
-            <label for="author" >Author: </label>
-            <InputText id="author" class="form-control" />
-        </div>
-        <div>
-            <label for="title" >Title:</label>
-            <InputText id="title" class="form-control" />
-        </div>
-
-        <div>
-            <label for="year" >Year: </label>
-            <InputText id="year" class="form-control" />
-        </div>
-        <div>
-            <label for="abstract" >Abstract: </label>
-            <InputText id="abstract" class="form-control" />
-        </div>
-        <div>
-            <label for="fullReference" >Full Reference: </label>
-            <InputText id="fullReference" class="form-control" />
-        </div>
-        <div>
-            <label for="notes" >Notes: </label>
-            <InputText id="notes" class="form-control" />
-
-            <button class="" type="submit" > Add a new abstract</button>
-        </div>
-
-    </EditForm>
-
+<div>
 <h1>Upload an excel file</h1>
+</div>
+  <EditForm Model="newResearch" OnValidSubmit="SubmitForm"> 
+        <div>
+            <label for="title" >Research Title:</label>
+            <InputText id="title" class="form-control"  @bind-Value="newResearch.Title" />
+        </div>
 
-<InputFile OnChange="@LoadFiles" multiple accept=".xlsx" />
+        <div>
+            <label for="researcherFullName" >Researcher FullName: </label>
+           <InputText id="researcherFullName" class="form-control" @bind-Value="newResearch.ResearcherFullName" />
+        </div>
+        <div>
+           <label for="researchFile" >Researcher file: </label>
+            <InputFile OnChange="@LoadFiles" multiple accept=".xlsx" />
+        </div>
+
+        <button type="submit" > Add a new Research file</button>
+  </EditForm>
 </div>
 
 @if (errors.Count > 0)
@@ -64,53 +44,65 @@
   private long maxFileSize = 1024 * 1024 * 3; // 3MB
   private int maxAllowedFiles = 3; // 3MB
   private List<string> errors = new();
-      private AbstractModel newAbstract = new();
-    private IBrowserFile? file;
+  private ResearchModel newResearch = new();
+  private IBrowserFile? file;
   
-  @* private async Task LoadFiles(InputFileChangeEventArgs e) *@
+  private async Task SubmitForm()
+  {
+    try
+    {
+      Console.WriteLine("submit");
+
+      string relativePath = await CaptureFile();
+      newResearch.FileName = relativePath;
+
+        newResearch = new ResearchModel();
+        file = null;
+        StateHasChanged();
+    }
+    catch(Exception ex)
+    {
+      errors.Add($"Error: {ex.Message}");
+    }
+  }
+
   private void LoadFiles(InputFileChangeEventArgs e)
   {
 
     file = e.File;
-    @* errors.Clear();
+  }
 
-    if (e.FileCount > maxAllowedFiles)
-    {
-      errors.Add($"Error: Attempting to upload {e.FileCount} files but only {maxAllowedFiles} are allowed");
-      return;
+  private async Task<string> CaptureFile()
+  {
+    if (file is null) {
+      return "";
     }
 
-    foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+    try
     {
-      try
-      {
         string newFileName = Path.ChangeExtension(
-
         Path.GetRandomFileName(),
         Path.GetExtension(file.Name));
 
         string path = Path.Combine(
-        config.GetValue<string>("FileStorage")!,
-        "researchfile",
-        newFileName);
+          config.GetValue<string>("FileStorage")!,
+          "researchfile",
+          newFileName);
 
-        Directory.CreateDirectory(Path.Combine(config.GetValue<string>("FileStorage")!, "researchfile"));
+        string relativePath = Path.Combine("researchfile", newFileName);
+
+        Directory.CreateDirectory(Path.Combine(
+          config.GetValue<string>("FileStorage")!,
+             "researchfile"));
 
         await using FileStream fs = new(path, FileMode.Create);
         await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
-
+        return relativePath;
       }
       catch (Exception ex)
       {
         errors.Add($"File: {file.Name} Error: {ex.Message}");
+        throw;
       }
-
-
-
-    }
-
-
-
-  } *@
-
+}
 }
