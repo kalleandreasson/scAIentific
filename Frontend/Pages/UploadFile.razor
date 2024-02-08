@@ -1,9 +1,46 @@
 @page "/uploadfile"
 @inject IConfiguration config
+@using Frontend.Data
 
 <PageTitle>UploadFile</PageTitle>
 
 <div class="index-container" > 
+
+  <EditForm Model="newAbstract"> 
+        <div>
+            <label for="articleId" >Article Id:</label>
+            <InputText id="articleId" class="form-control"  @bind-Value="newAbstract.ArticleId" />
+        </div>
+        
+        <div>
+            <label for="author" >Author: </label>
+            <InputText id="author" class="form-control" />
+        </div>
+        <div>
+            <label for="title" >Title:</label>
+            <InputText id="title" class="form-control" />
+        </div>
+
+        <div>
+            <label for="year" >Year: </label>
+            <InputText id="year" class="form-control" />
+        </div>
+        <div>
+            <label for="abstract" >Abstract: </label>
+            <InputText id="abstract" class="form-control" />
+        </div>
+        <div>
+            <label for="fullReference" >Full Reference: </label>
+            <InputText id="fullReference" class="form-control" />
+        </div>
+        <div>
+            <label for="notes" >Notes: </label>
+            <InputText id="notes" class="form-control" />
+
+            <button class="" type="submit" > Add a new abstract</button>
+        </div>
+
+    </EditForm>
 
 <h1>Upload an excel file</h1>
 
@@ -27,10 +64,15 @@
   private long maxFileSize = 1024 * 1024 * 3; // 3MB
   private int maxAllowedFiles = 3; // 3MB
   private List<string> errors = new();
+      private AbstractModel newAbstract = new();
+    private IBrowserFile? file;
   
-  private async Task LoadFiles(InputFileChangeEventArgs e)
+  @* private async Task LoadFiles(InputFileChangeEventArgs e) *@
+  private void LoadFiles(InputFileChangeEventArgs e)
   {
-    errors.Clear();
+
+    file = e.File;
+    @* errors.Clear();
 
     if (e.FileCount > maxAllowedFiles)
     {
@@ -56,6 +98,7 @@
 
         await using FileStream fs = new(path, FileMode.Create);
         await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+
       }
       catch (Exception ex)
       {
@@ -68,6 +111,6 @@
 
 
 
-  }
+  } *@
 
 }

@@ -4,10 +4,13 @@
 @using Newtonsoft.Json
 
 
+
 <div>
  <p role="status">@textToOutput</p>
 <textarea type="text" @bind="prompt" @oninput="OnInputEvent"></textarea>
+@*  @bind-Value="newAbstract.ArticleId" *@
 </div>
+    
 
 <div>
     <button @onclick="OutputText">Find Research Front</button>
@@ -22,6 +25,7 @@
     private HttpResponseMessage? apiResponse;
     private string? textToOutput;
     private HttpClient? httpClient;
+
 
     protected override void OnInitialized()
     {
