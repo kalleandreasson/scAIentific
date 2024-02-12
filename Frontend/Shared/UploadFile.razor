@@ -41,10 +41,14 @@
     private string userPrompt = ""; // Bind this to an input field so the user can set it
     private string path;
 
-    protected override void OnInitialized()
+   protected override void OnInitialized()
+{
+    httpClient = new HttpClient
     {
-        httpClient = new HttpClient();
-    }
+        BaseAddress = new Uri(config["APIBaseUrl"])
+    };
+}
+
 
 
     private async Task LoadFiles(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
@@ -85,48 +89,39 @@
     }
   }
 
-  private async Task SendFileToApi()
-  {
-    Console.WriteLine("hejsan");
+ private async Task SendFileToApi()
+{
     try
     {
-       Console.WriteLine("Excel file on disk: " + path);
-      // Define your prompt here
-      var staticPrompt = "Your prompt here";
+        using var content = new MultipartFormDataContent();
 
-      using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
-      var fileContent = new StreamContent(fileStream);
-      fileContent.Headers.ContentType = new
-      MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        // Load the file into a StreamContent for sending
+        using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+        using var fileContent = new StreamContent(fileStream);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-      var formData = new MultipartFormDataContent
-      {
-        { new StringContent(staticPrompt), "prompt" },
-        { fileContent, "file", Path.GetFileName(path) }
-      }; 
+        // Add the file content and the static prompt to the MultipartFormDataContent
+        content.Add(fileContent, "file", Path.GetFileName(path)); // The key 'file' should match the parameter in your API method
+        content.Add(new StringContent(userPrompt), "prompt"); // Also add any other text fields as necessary
 
-      var response = await httpClient.PostAsJsonAsync("http://localhost:5000/research-front/generateByFile", new {
-            systemMessage = "string",
-            userMessage = "Use svenska to generate research front of the following articals abstracts "
-            // other code
-        });
+        // Send the POST request to the API
+        var response = await httpClient.PostAsync(config["APIBaseUrl"] + "/research-front/generateByFile", content);
 
         if (response.IsSuccessStatusCode)
-      {
-        textToOutput = await response.Content.ReadAsStringAsync();
-        // If you need to clear the uploaded files list and prompt after success:
-        uploadedFiles.Clear();
-      }
-      else
-      {
-        textToOutput = "Error: " + response.ReasonPhrase;
-      }
+        {
+            textToOutput = await response.Content.ReadAsStringAsync();
+            uploadedFiles.Clear(); // Clear the files after successful upload
+        }
+        else
+        {
+            textToOutput = "Error: " + response.ReasonPhrase;
+        }
     } 
     catch (Exception ex)
     {
-      textToOutput = "Request failed: " + ex.Message; 
+        textToOutput = "Request failed: " + ex.Message; 
     }
-  }
+}
 
   private async Task<byte[]> GetFileData(string fileName)
   {
