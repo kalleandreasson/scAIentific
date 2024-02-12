@@ -51,8 +51,8 @@
 
         var response = await httpClient.PostAsJsonAsync("http://localhost:5000/research-front/generate", new
         {
-            systemMessage = "string",
-            userMessage = $"Use svenska to generate research front of the following articals abstracts {prompt} "
+            systemMessage = "you will be provided with a number of abstracts, each abstract is delimited by one quotes. Your task is to review these abstracts carefully to identify the current research front in the specified field. Look for trends, key themes, and groundbreaking findings that signify major advancements or shifts in research focus. Provide a summary that highlights these elements, ensuring to note how the citation technique has been applied in each case",
+            userMessage = $"{prompt} "
             // other code
         });
 

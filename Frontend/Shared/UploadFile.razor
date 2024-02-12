@@ -1,7 +1,6 @@
 @using Frontend.Shared
 @using System.Net.Http.Headers
 @using System.Net.Http
-@using System.Net.Http.Json
 @using Newtonsoft.Json
 @inject IConfiguration config
 
@@ -27,113 +26,73 @@
 </div>
 
 @code {
-
-    private HttpClient? httpClient;
-    private HttpResponseMessage? apiResponse;
+    private List<IBrowserFile> filesToUpload = new(); // To hold files in memory
+    private HttpClient? httpClient; // To make HTTP requests
+    private List<string> uploadedFiles = new(); // To store uploaded file names
+        
     private long maxFileSize = 1024 * 1024 * 500; // 500MB
-    private int maxAllowedFiles = 3;
-    private List<string> errors = new();
-    private List<string> uploadedFiles = new(); // List to store uploaded file names
+    private int maxAllowedFiles = 1;
 
-    private string textToOutput;
-    private string fileDiskName;
-    private string uploadedFileName; // This should be assigned when the file is initially uploaded
-    private string userPrompt = ""; // Bind this to an input field so the user can set it
-    private string path;
-
-   protected override void OnInitialized()
+    protected override void OnInitialized()
 {
+    var baseAddress = config["APIBaseUrl"];
+
+    if (string.IsNullOrEmpty(baseAddress))
+    {
+        // Handle the case where the base address is not provided
+        
+        throw new InvalidOperationException("API base URL is not configured.");
+    }
+
     httpClient = new HttpClient
     {
-        BaseAddress = new Uri(config["APIBaseUrl"])
+        BaseAddress = new Uri(baseAddress)
     };
 }
 
 
-
-    private async Task LoadFiles(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
+    private async Task LoadFiles(InputFileChangeEventArgs e)
     {
-    errors.Clear();
-    uploadedFiles.Clear(); // Clear previously uploaded files list
+        uploadedFiles.Clear(); // Clear previously uploaded files list
+        filesToUpload.Clear(); // Clear previously selected files
 
-    if (e.FileCount > maxAllowedFiles)
-    {
-      errors.Add($"Error: Attempting to upload {e.FileCount} files but only {maxAllowedFiles} are allowed");
-      return;
-    }
-
-    foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
-    {
-      try
-      {
-        fileDiskName = Path.ChangeExtension(
-        Path.GetRandomFileName(),
-        Path.GetExtension(file.Name));
-
-        path = Path.Combine(
-        config.GetValue<string>("FileStorage")!,
-        "researchfile",
-        fileDiskName);
-
-        Directory.CreateDirectory(Path.Combine(config.GetValue<string>("FileStorage")!, "researchfile"));
-
-        await using FileStream fs = new(path, FileMode.Create);
-        await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
-
-        uploadedFiles.Add(file.Name); // Store the uploaded file name
-      }
-      catch (Exception ex)
-      {
-        errors.Add($"File: {file.Name} Error: {ex.Message}");
-      }
-    }
-  }
-
- private async Task SendFileToApi()
-{
-    try
-    {
-        using var content = new MultipartFormDataContent();
-
-        // Load the file into a StreamContent for sending
-        using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
-        using var fileContent = new StreamContent(fileStream);
-        fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
-        // Add the file content and the static prompt to the MultipartFormDataContent
-        content.Add(fileContent, "file", Path.GetFileName(path)); // The key 'file' should match the parameter in your API method
-        content.Add(new StringContent(userPrompt), "prompt"); // Also add any other text fields as necessary
-
-        // Send the POST request to the API
-        var response = await httpClient.PostAsync(config["APIBaseUrl"] + "/research-front/generateByFile", content);
-
-        if (response.IsSuccessStatusCode)
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
         {
-            textToOutput = await response.Content.ReadAsStringAsync();
-            uploadedFiles.Clear(); // Clear the files after successful upload
+            filesToUpload.Add(file); // Add file to list to upload
+            uploadedFiles.Add(file.Name); // Store the uploaded file name
         }
-        else
+
+        await Task.CompletedTask;
+    }
+
+    private async Task SendFileToApi()
+    {
+        try
         {
-            textToOutput = "Error: " + response.ReasonPhrase;
+            using var content = new MultipartFormDataContent();
+
+            foreach (var file in filesToUpload)
+            {
+                var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                content.Add(fileContent, "file", file.Name);
+            }
+
+            var response = await httpClient.PostAsync($"{config["APIBaseUrl"]}/research-front/generateByFile", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Optionally clear the files list on success
+                uploadedFiles.Clear();
+            }
+            else
+            {
+                // Handle error - consider displaying this to the user
+            }
         }
-    } 
-    catch (Exception ex)
-    {
-        textToOutput = "Request failed: " + ex.Message; 
+        catch (Exception ex)
+        {
+            // Handle request failure - consider displaying this to the user
+        }
     }
-}
-
-  private async Task<byte[]> GetFileData(string fileName)
-  {
-    // Combine the path to the folder and the filename
-    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "store-files", "researchfile", fileName);
-
-    if (!File.Exists(filePath))
-    {
-      throw new FileNotFoundException("The file was not found.", fileName);
-    }
-
-    return await File.ReadAllBytesAsync(filePath);
-  }
-
 }
