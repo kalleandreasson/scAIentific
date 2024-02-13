@@ -22,11 +22,6 @@ scAIentific's goal is to explore how AI can facilitate and streamline the proces
 - **Article Upload**: Users can import up to 250 scientific texts into the AI engine.
 - **Research Summary**: Generates a summary of the submitted texts/reports.
 
-## Learning Objectives
-
-- Explore new technologies such as C# for backend development and Blazor for frontend development.
-- Enhance team knowledge in both backend and frontend development using modern, efficient platforms.
-
 ## Technical Stack
 
 - **Frontend**: Blazor
