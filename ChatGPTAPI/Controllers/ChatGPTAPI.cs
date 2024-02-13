@@ -1,21 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using ChatGPTAPI.Models;
-
+using ChatGPTAPI.Services; // Ensure this using directive is correct for your project structure
 
 namespace ChatGPTAPI.Controllers;
 
 [ApiController]
 [Route("research-front")]
-public class ChatGPTAPI : ControllerBase
+public class ChatGPTAPIController : ControllerBase
 {
     private readonly OpenAIService _openAIApiService;
-    // Constructor injection of OpenAIApiService
-    public ChatGPTAPI(OpenAIService openAIApiService)
+    private readonly InAppFileSaverService _inAppFileSaver;
+
+    public ChatGPTAPIController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver)
     {
         _openAIApiService = openAIApiService;
+        _inAppFileSaver = inAppFileSaver;
     }
-
 
     [HttpGet]
     public IActionResult Get()
@@ -24,23 +25,27 @@ public class ChatGPTAPI : ControllerBase
         return Ok(response);
     }
 
-
     // Endpoint to generate research front using chat GPT
     [HttpPost("generate")]
     public async Task<IActionResult> FindResearchFront([FromBody] FindResearchFrontRequest request)
     {
-        // Ensure that the request parameters are not null
-    string systemMessage = request.SystemMessage ?? "string";
-    string userMessage = request.UserMessage ?? "Default User Message";
+        string systemMessage = request.SystemMessage ?? "string";
+        string userMessage = request.UserMessage ?? "Default User Message";
       
-        // Call the OpenAI service with the system message and the user message
-    string response = await _openAIApiService.CreateChatCompletionAsync(systemMessage, userMessage);
+        string response = await _openAIApiService.CreateChatCompletionAsync(systemMessage, userMessage);
 
-        // Parse the JSON to extract message.content
-    var parsedResponse = JsonConvert.DeserializeObject<ApiResponse>(response);
-    string messageContent = parsedResponse?.choices?[0]?.message?.content ?? "No response";
-        // Parse the response and return it
-         // Return only the message content
-    return Ok(messageContent);
+        var parsedResponse = JsonConvert.DeserializeObject<ApiResponse>(response);
+        string messageContent = parsedResponse?.choices?[0]?.message?.content ?? "No response";
+
+        return Ok(messageContent);
+    }
+
+    [HttpPost("generateByFile")]
+    public async Task<IActionResult> FindResearchFrontByFile([FromForm] IFormFile file)
+    {
+        await _inAppFileSaver.Save(file, "files");
+        Console.WriteLine("testing generateByFile");
+        Console.WriteLine(file);
+        return Ok("Testing");
     }
 }

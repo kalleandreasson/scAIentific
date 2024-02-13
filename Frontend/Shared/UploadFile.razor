@@ -1,0 +1,98 @@
+@using Frontend.Shared
+@using System.Net.Http.Headers
+@using System.Net.Http
+@using Newtonsoft.Json
+@inject IConfiguration config
+
+<PageTitle>UploadFile</PageTitle>
+
+<div class="index-container">
+  <h1>Upload an excel file here</h1>
+  <InputFile OnChange="@LoadFiles" multiple accept=".xlsx" />
+
+  @if (uploadedFiles.Count > 0)
+  {
+    <div class="uploaded-files-section">
+      <h2>Uploaded Files</h2>
+      <ul class="uploaded-files-list">
+        @foreach (var fileName in uploadedFiles)
+        {
+          <li class="uploaded-file-item">@fileName</li>
+        }
+      </ul>
+    </div>
+    <button @onclick="SendFileToApi">Find Research Front</button>
+  }
+</div>
+
+@code {
+    private List<IBrowserFile> filesToUpload = new(); // To hold files in memory
+    private HttpClient? httpClient; // To make HTTP requests
+    private List<string> uploadedFiles = new(); // To store uploaded file names
+        
+    private long maxFileSize = 1024 * 1024 * 500; // 500MB
+    private int maxAllowedFiles = 1;
+
+    protected override void OnInitialized()
+{
+    var baseAddress = config["APIBaseUrl"];
+
+    if (string.IsNullOrEmpty(baseAddress))
+    {
+        // Handle the case where the base address is not provided
+        
+        throw new InvalidOperationException("API base URL is not configured.");
+    }
+
+    httpClient = new HttpClient
+    {
+        BaseAddress = new Uri(baseAddress)
+    };
+}
+
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        uploadedFiles.Clear(); // Clear previously uploaded files list
+        filesToUpload.Clear(); // Clear previously selected files
+
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            filesToUpload.Add(file); // Add file to list to upload
+            uploadedFiles.Add(file.Name); // Store the uploaded file name
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private async Task SendFileToApi()
+    {
+        try
+        {
+            using var content = new MultipartFormDataContent();
+
+            foreach (var file in filesToUpload)
+            {
+                var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                content.Add(fileContent, "file", file.Name);
+            }
+
+            var response = await httpClient.PostAsync($"{config["APIBaseUrl"]}/research-front/generateByFile", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Optionally clear the files list on success
+                uploadedFiles.Clear();
+            }
+            else
+            {
+                // Handle error - consider displaying this to the user
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle request failure - consider displaying this to the user
+        }
+    }
+}

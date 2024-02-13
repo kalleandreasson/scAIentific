@@ -10,7 +10,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/Frontend/bin/Debug/net7.0/Frontend.dll",
+      "program": "${workspaceFolder}/Frontend/bin/Debug/net8.0/Frontend.dll",
       "args": [],
       "cwd": "${workspaceFolder}/Frontend",
       "stopAtEntry": false,
