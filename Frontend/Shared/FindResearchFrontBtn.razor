@@ -19,7 +19,6 @@
 
 
 @code {
-    private HttpResponseMessage? apiResponse;
     private string? textToOutput;
     private HttpClient? httpClient;
 
@@ -33,7 +32,8 @@
     private void OnInputEvent(ChangeEventArgs changeEvent)
     {
 
-        prompt = (string)changeEvent.Value;
+        prompt = changeEvent.Value?.ToString() ?? "";
+
 
     }
 
