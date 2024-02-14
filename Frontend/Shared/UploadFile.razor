@@ -7,31 +7,57 @@
 <PageTitle>UploadFile</PageTitle>
 
 <div class="index-container">
-  <h1>Upload an excel file here</h1>
-  <InputFile OnChange="@LoadFiles" multiple accept=".xlsx" />
+    <h1>Upload an excel file here</h1>
+    
+@if (errors.Count > 0)
+{
+<h3>Errors</h3>
+<ul class="text-danger">
+    @foreach (var error in errors)
 
-  @if (uploadedFiles.Count > 0)
-  {
-    <div class="uploaded-files-section">
-      <h2>Uploaded Files</h2>
-      <ul class="uploaded-files-list">
-        @foreach (var fileName in uploadedFiles)
-        {
-          <li class="uploaded-file-item">@fileName</li>
-        }
-      </ul>
-    </div>
-    <button @onclick="SendFileToApi">Find Research Front</button>
-  }
+    {
+        <li>@error</li>
+    }
+</ul>
+}
+
+
+    <InputFile OnChange="@LoadFiles" multiple accept=".xlsx" />
+
+    @if (uploadedFiles.Count > 0)
+
+    {
+        <div class="uploaded-files-section">
+            <h2>Uploaded Files</h2>
+            <ul class="uploaded-files-list">
+                @foreach (var fileName in uploadedFiles)
+
+                {
+                    <li class="uploaded-file-item">@fileName</li>
+                }
+            </ul>
+        </div>
+        <button @onclick="SendFileToApi">Find Research Front</button>
+    }
 </div>
 
+
 @code {
+    private List<string> errors = new();
+
     private List<IBrowserFile> filesToUpload = new(); // To hold files in memory
+
     private HttpClient? httpClient; // To make HTTP requests
+
     private List<string> uploadedFiles = new(); // To store uploaded file names
-        
+
+
+
     private long maxFileSize = 1024 * 1024 * 500; // 500MB
+
     private int maxAllowedFiles = 1;
+
+
 
     protected override void OnInitialized()
 {
@@ -41,29 +67,53 @@
     {
         // Handle the case where the base address is not provided
         
-        throw new InvalidOperationException("API base URL is not configured.");
+         errors.Add("We're experiencing some issues accessing our services. Please try again later or contact support.");
     }
 
-    httpClient = new HttpClient
+    else
     {
-        BaseAddress = new Uri(baseAddress)
-    };
+        httpClient = new HttpClient
+        {
+            BaseAddress = new Uri(baseAddress)
+        };
+    }
 }
 
 
-    private async Task LoadFiles(InputFileChangeEventArgs e)
+private async Task LoadFiles(InputFileChangeEventArgs e)
+{
+    try
     {
         uploadedFiles.Clear(); // Clear previously uploaded files list
         filesToUpload.Clear(); // Clear previously selected files
 
-        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        var selectedFiles = e.GetMultipleFiles(maxAllowedFiles);
+        if (selectedFiles.Count > maxAllowedFiles)
         {
+            errors.Add($"You can upload up to {maxAllowedFiles} files at a time.");
+            return; // Early return to avoid processing when file count exceeds limit
+        }
+
+        foreach (var file in selectedFiles)
+        {
+            if (file.Size > maxFileSize)
+            {
+                errors.Add($"{file.Name} is too large. Maximum allowed size is {maxFileSize / (1024 * 1024)} MB.");
+                continue; // Skip this file but continue processing others
+            }
+
             filesToUpload.Add(file); // Add file to list to upload
             uploadedFiles.Add(file.Name); // Store the uploaded file name
         }
-
-        await Task.CompletedTask;
     }
+    catch (Exception ex)
+    {
+        errors.Add($"An error occurred while processing your files: {ex.Message}");
+    }
+
+    await Task.CompletedTask;
+}
+
 
     private async Task SendFileToApi()
     {
@@ -87,12 +137,14 @@
             }
             else
             {
-                // Handle error - consider displaying this to the user
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                // parse the message if it's JSON or another structured format
+                errors.Add($"Failed to upload file: {errorMessage}");
             }
         }
         catch (Exception ex)
         {
-            // Handle request failure - consider displaying this to the user
+            errors.Add($"An error occurred while sending the file to the server: {ex.Message}");
         }
     }
 }

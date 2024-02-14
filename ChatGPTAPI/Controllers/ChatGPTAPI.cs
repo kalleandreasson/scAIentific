@@ -11,11 +11,13 @@ public class ChatGPTAPIController : ControllerBase
 {
     private readonly OpenAIService _openAIApiService;
     private readonly InAppFileSaverService _inAppFileSaver;
+    private readonly ILogger<ChatGPTAPIController> _logger;
 
-    public ChatGPTAPIController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver)
+    public ChatGPTAPIController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver, ILogger<ChatGPTAPIController> logger)
     {
         _openAIApiService = openAIApiService;
         _inAppFileSaver = inAppFileSaver;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -29,23 +31,58 @@ public class ChatGPTAPIController : ControllerBase
     [HttpPost("generate")]
     public async Task<IActionResult> FindResearchFront([FromBody] FindResearchFrontRequest request)
     {
-        string systemMessage = request.SystemMessage ?? "string";
-        string userMessage = request.UserMessage ?? "Default User Message";
-      
-        string response = await _openAIApiService.CreateChatCompletionAsync(systemMessage, userMessage);
+        if (request == null || string.IsNullOrEmpty(request.UserMessage))
+        {
+            return BadRequest("Invalid request data");
+        }
 
-        var parsedResponse = JsonConvert.DeserializeObject<ApiResponse>(response);
-        string messageContent = parsedResponse?.choices?[0]?.message?.content ?? "No response";
+       try
+        {
+            string systemMessage = request.SystemMessage ?? "Default System Message";
+            string userMessage = request.UserMessage;
 
-        return Ok(messageContent);
+            string response = await _openAIApiService.CreateChatCompletionAsync(systemMessage, userMessage);
+            var parsedResponse = JsonConvert.DeserializeObject<ApiResponse>(response);
+            string messageContent = parsedResponse?.choices?[0]?.message?.content ?? "No response";
+
+            if (string.IsNullOrEmpty(messageContent))
+            {
+                return NotFound("The response from AI was empty");
+            }
+
+            return Ok(messageContent);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Error parsing response from AI service.");
+            return StatusCode(500, "There was an error processing the AI response.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
 
     [HttpPost("generateByFile")]
     public async Task<IActionResult> FindResearchFrontByFile([FromForm] IFormFile file)
     {
-        await _inAppFileSaver.Save(file, "files");
-        Console.WriteLine("testing generateByFile");
-        Console.WriteLine(file);
-        return Ok("Testing");
+         if (file == null || file.Length == 0)
+        {
+            return BadRequest("No file provided or file is empty.");
+        }
+        try
+        {
+            await _inAppFileSaver.Save(file, "files");
+            Console.WriteLine("testing generateByFile");
+            Console.WriteLine(file);
+            return Ok("Testing");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving or processing the file.");
+            return StatusCode(500, "There was an error processing the file.");
+        }
+        
     }
 }

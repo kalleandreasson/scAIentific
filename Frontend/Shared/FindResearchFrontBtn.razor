@@ -13,10 +13,6 @@
     <button @onclick="OutputText">Find Research Front</button>
 </div>
 
-<div class="div-abstract">
-    <p>@sentAbstract</p>
-</div>
-
 
 @code {
     private string? textToOutput;
@@ -28,7 +24,6 @@
     }
 
     private string prompt = "";
-    private string sentAbstract = "";
     private void OnInputEvent(ChangeEventArgs changeEvent)
     {
 
@@ -58,22 +53,23 @@
 
         if (response.IsSuccessStatusCode)
         {
-             Console.WriteLine("an answer come");
-            sentAbstract = prompt;
+            Console.WriteLine("an answer come");
             textToOutput = await response.Content.ReadAsStringAsync();
             prompt = ""; // Clear the prompt variable
         }
         else
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error content: {errorContent}");
-            textToOutput = "Error: " + response.ReasonPhrase + " - " + errorContent;
+            textToOutput = $"Error occurred: {errorContent}";
         }
     }
     catch (HttpRequestException ex)
     {
-        Console.WriteLine($"Error: {ex.Message}");
-        textToOutput = "Request failed: " + ex.Message;
+        textToOutput = $"Network error: {ex.Message}. Please try again later.";
+    }
+    catch (Exception ex) // General exception catch block for unexpected errors
+    {
+        textToOutput = $"An unexpected error occurred: {ex.Message}. Please contact support.";
     }
 }
 
