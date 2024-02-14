@@ -2,15 +2,14 @@
 @import url('font/quicksand.css');
 
 body, html {
-    height: 100%;
+    overflow: auto;
 }
 
 body {
     padding-top: 5rem;
     flex-direction: column;
     font-family: 'quicksand';
-    overflow-y: hidden;
-    background-color: #FFE000;
+    background-color: #333333;
 }
 
 h1 {
@@ -20,7 +19,7 @@ h1 {
 
 p{
   margin: 20px;
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .div-abstract{
@@ -111,7 +110,6 @@ button:hover {
 
 .main {
   max-width: 80%;
-  min-height: 90vh; /* This will make sure that .main is at least as tall as the viewport */
   margin: auto;
   display: flex;
   flex-direction: flex;
