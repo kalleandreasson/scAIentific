@@ -40,6 +40,8 @@
     private List<string> uploadedFiles = new(); // To store uploaded file names
     private long maxFileSize = 1024 * 1024 * 500; // 500MB
     private int maxAllowedFiles = 1;
+     [Parameter]
+    public EventCallback OnFileUploaded { get; set; }
     protected override void OnInitialized()
     {
         var baseAddress = config["APIBaseUrl"];
@@ -84,6 +86,7 @@
                     // Only add the file to the list if models were successfully parsed
                     tempFilesToUpload.Add(file);
                     uploadedFiles.Add(file.Name);
+                   
                 }
                 else
                 {
@@ -137,6 +140,7 @@
             {
                 // Optionally clear the files list on success
                 uploadedFiles.Clear();
+                  await OnFileUploaded.InvokeAsync();
             }
             else
             {

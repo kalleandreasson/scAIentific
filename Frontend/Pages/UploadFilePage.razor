@@ -1,10 +1,24 @@
 @page "/uploadfile"
 @using Frontend.Shared
 
-<PageTitle>file</PageTitle>
-
+<PageTitle>File Upload</PageTitle>
 
 <div class="index-container">
-<UploadFile/>
-
+    @if (!fileUploaded)
+    {
+        <UploadFile OnFileUploaded="HandleFileUploaded" />
+    }
+    else
+    {
+        <AiAssistant />
+    }
 </div>
+
+@code {
+    private bool fileUploaded = false;
+
+    private void HandleFileUploaded()
+    {
+        fileUploaded = true;
+    }
+}
