@@ -1,0 +1,54 @@
+@page "/assistant"
+@using Frontend.Shared
+@using Frontend.Models
+
+<PageTitle>Assistant</PageTitle>
+<div  class="index-container">
+
+<h1>Research Assistant</h1>
+<p class="chat-text" ></p>
+
+<div class="chat-history">
+        @foreach (var message in chatHistory)
+        {
+            <div class="@(message.IsAssistant ? "assistant-message" : "user-message")">
+              @if (message.IsAssistant ) {
+                <p>Assistant: @message.Content</p>
+              }
+              else
+              {
+                 <p>User: @message.Content</p>
+              }
+            </div>
+        }
+    </div>
+
+<EditForm Model="@chat">
+<InputText @bind-Value="assistantAnswer" />
+<button type="submit" >Send </button>
+</EditForm>
+    
+</div>
+
+@code
+{
+  ChatModel chat = new();
+  private string assistantAnswer= "Q:";
+
+  private List<ChatMessage> chatHistory = new List<ChatMessage>();
+
+    protected override void OnInitialized()
+    {
+        // Simulating previous conversation
+        chatHistory.Add(new ChatMessage { Content = "Hello, how can I assist you today?", IsAssistant = true });
+        chatHistory.Add(new ChatMessage { Content = "What's the weather like today?", IsAssistant = false });
+        chatHistory.Add(new ChatMessage { Content = "Currently it's sunny with a high of 75 degrees.", IsAssistant = true });
+        // You can continue adding messages to simulate more conversation
+    }
+
+private class ChatMessage
+    {
+        public string? Content { get; set; }
+        public bool IsAssistant { get; set; }
+    }
+}
