@@ -1,3 +1,4 @@
+using Frontend.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using OfficeOpenXml; // Add this to Program.cs
@@ -10,6 +11,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<Frontend.Services.ExcelService>();
+builder.Services.AddScoped<UploadFileService>();
+
 
 
 // builder.Services.AddHttpClient<OpenAIService>();

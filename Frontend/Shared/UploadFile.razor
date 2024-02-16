@@ -1,22 +1,18 @@
 @using Frontend.Shared
-@using System.Net.Http.Headers
-@using System.Net.Http
-@using Newtonsoft.Json
-@using Models
+@using Microsoft.AspNetCore.Components.Forms
+@using Frontend.Models
+@using Frontend.Services
 @inject IConfiguration config
-@inject Services.ExcelService ExcelService
+@inject ExcelService ExcelService
+@inject UploadFileService UploadFileService
+
 <PageTitle>UploadFile</PageTitle>
 <div class="index-container">
     <h1>Upload an excel file here</h1>
-    @if (errors.Count > 0)
+    @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <h3>Errors</h3>
-        <ul class="text-danger">
-            @foreach (var error in errors)
-            {
-                <li>@error</li>
-            }
-        </ul>
+        <h3>Error</h3>
+        <p class="text-danger">@errorMessage</p>
     }
     <InputFile OnChange="@LoadFiles" multiple accept=".xlsx" />
     @if (uploadedFiles.Count > 0)
@@ -34,125 +30,53 @@
     }
 </div>
 @code {
-    private List<string> errors = new();
+    private string? errorMessage; // Variable to hold the latest error message
     private List<IBrowserFile> filesToUpload = new(); // To hold files in memory
-    private HttpClient? httpClient; // To make HTTP requests
     private List<string> uploadedFiles = new(); // To store uploaded file names
-    private long maxFileSize = 1024 * 1024 * 500; // 500MB
     private int maxAllowedFiles = 1;
-     [Parameter]
+    [Parameter]
     public EventCallback OnFileUploaded { get; set; }
-    protected override void OnInitialized()
-    {
-        var baseAddress = config["APIBaseUrl"];
-        if (string.IsNullOrEmpty(baseAddress))
-        {
-            // Handle the case where the base address is not provided
-            errors.Add("We're experiencing some issues accessing our services. Please try again later or contact support.");
-        }
-        else
-        {
-            httpClient = new HttpClient
-                {
-                    BaseAddress = new Uri(baseAddress)
-                };
-        }
-    }
+
     private async Task LoadFiles(InputFileChangeEventArgs e)
     {
         uploadedFiles.Clear(); // Clear previously uploaded files list
         filesToUpload.Clear(); // Clear previously selected files
-        errors.Clear();
-        var tempFilesToUpload = new List<IBrowserFile>();
-        try
+        errorMessage = string.Empty; // Reset the error message
+        var selectedFiles = e.GetMultipleFiles(maxAllowedFiles);
+        foreach (var file in selectedFiles)
         {
-            var selectedFiles = e.GetMultipleFiles(maxAllowedFiles);
-            if (selectedFiles.Count > maxAllowedFiles)
+            var models = await UploadFileService.ProcessExcelFile(file);
+            if (models.Any())
             {
-                errors.Add($"You can upload up to {maxAllowedFiles} files at a time.");
-                return; // Early return to avoid processing when file count exceeds limit
-            }
-            foreach (var file in selectedFiles)
-            {
-                if (file.Size > maxFileSize)
-                {
-                    errors.Add($"{file.Name} is too large. Maximum allowed size is {maxFileSize / (1024 * 1024)} MB.");
-                    continue; // Skip this file but continue processing others
-                }
-                // Process the file using the ExcelService
-                var models = await ProcessExcelFile(file);
-                if (models.Any())
-                {
-                    // Only add the file to the list if models were successfully parsed
-                    tempFilesToUpload.Add(file);
-                    uploadedFiles.Add(file.Name);
-                   
-                }
-                else
-                {
-                    // If any file is not parsable, clear the temporary list and stop processing further files
-                    tempFilesToUpload.Clear();
-                    uploadedFiles.Clear();
-                    errors.Add($"{file.Name} could not be parsed. Please ensure it is a valid Excel file.");
-                    break;
-                }
-            }
-            // If all files are parsed successfully, add them to the files to be uploaded
-            if (!errors.Any())
-            {
-                filesToUpload.AddRange(tempFilesToUpload);
-            }
-        }
-        catch (Exception ex)
-        {
-            errors.Add($"An error occurred while processing your files: {ex.Message}");
-        }
-        await Task.CompletedTask;
-    }
-    private async Task<List<ResearchModel>> ProcessExcelFile(IBrowserFile file)
-    {
-        try
-        {
-            using var stream = file.OpenReadStream(maxFileSize);
-            var models = await ExcelService.ReadExcelAsync(stream);
-            return models; // Return the list of models to the calling method
-        }
-        catch (Exception ex)
-        {
-            errors.Add($"An error occurred while reading the Excel file: {ex.Message}");
-            return new List<ResearchModel>(); // Return an empty list or handle accordingly
-        }
-    }
-    private async Task SendFileToApi()
-    {
-        try
-        {
-            using var content = new MultipartFormDataContent();
-            foreach (var file in filesToUpload)
-            {
-                var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
-                fileContent.Headers.ContentType = new
-                MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-                content.Add(fileContent, "file", file.Name);
-            }
-            var response = await httpClient.PostAsync($"{config["APIBaseUrl"]}/research-front/generateByFile", content);
-            if (response.IsSuccessStatusCode)
-            {
-
-                uploadedFiles.Clear();
-                // invoke the event when an answer from assistant has come.
-                await OnFileUploaded.InvokeAsync();
+                filesToUpload.Add(file);
+                uploadedFiles.Add(file.Name);
             }
             else
             {
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                // parse the message if it's JSON or another structured format
-                errors.Add($"Failed to upload file: {errorMessage}");
+                errorMessage = $"{file.Name} could not be parsed. Please ensure it is a valid Excel file.";
+                return; // Exit early since we only show one error at a time
             }
         }
-        catch (Exception ex)
+    }
+
+    private async Task SendFileToApi()
+    {
+        var apiBaseUrl = config["APIBaseUrl"];
+        if (string.IsNullOrEmpty(apiBaseUrl))
         {
-            errors.Add($"An error occurred while sending the file to the server: {ex.Message}");
+            errorMessage = "API base URL is not configured properly.";
+            return;
+        }
+
+        var (isSuccess, latestErrorMessage) = await UploadFileService.SendFileToApi(filesToUpload, apiBaseUrl);
+        if (isSuccess)
+        {
+            uploadedFiles.Clear();
+            await OnFileUploaded.InvokeAsync();
+        }
+        else
+        {
+            errorMessage = latestErrorMessage;
         }
     }
 }
