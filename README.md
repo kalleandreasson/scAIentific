@@ -61,7 +61,12 @@ dotnet run
 ## Usage
 
 - Navigate to the frontend application through your web browser.
-- Follow the UI prompts to upload your scientific texts and receive the analysis.
+- Follow the UI prompts to upload your scientific texts and receive the analysis.  
+
+## Project design
+![assistant-page](AppOverview/assistant-page.png)  
+![uploadFile-page](AppOverview/uploadFile-page.png)  
+![home-page](AppOverview/home-page.png)  
 
 ## License
 
