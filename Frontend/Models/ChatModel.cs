@@ -2,7 +2,7 @@ namespace Frontend.Models
 {
     public class ChatModel
     {
-        public string? UserQuery { get; set; }
-        public string? AssistantAnswer { get; set; }
+    public string? Content { get; set; }
+    public bool IsAssistant { get; set; }
     }
 }

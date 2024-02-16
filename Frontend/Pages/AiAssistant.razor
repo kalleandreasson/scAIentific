@@ -35,20 +35,14 @@
   ChatModel chat = new();
   private string assistantAnswer= "Q:";
 
-  private List<ChatMessage> chatHistory = new List<ChatMessage>();
+  private List<ChatModel> chatHistory = new List<ChatModel>();
 
     protected override void OnInitialized()
     {
-        // Simulating previous conversation
-        chatHistory.Add(new ChatMessage { Content = "Hello, how can I assist you today?", IsAssistant = true });
-        chatHistory.Add(new ChatMessage { Content = "What's the weather like today?", IsAssistant = false });
-        chatHistory.Add(new ChatMessage { Content = "Currently it's sunny with a high of 75 degrees.", IsAssistant = true });
-        // You can continue adding messages to simulate more conversation
+        chatHistory.Add(new ChatModel { Content = "Hello, how can I assist you today?", IsAssistant = true });
+        chatHistory.Add(new ChatModel { Content = "What is the main Idea of the abstracts in the file?", IsAssistant = false });
+        chatHistory.Add(new ChatModel { Content = "The abstracts provided touch on various aspects of gender, race, and networking within organizational and professional settings", IsAssistant = true });
+
     }
 
-private class ChatMessage
-    {
-        public string? Content { get; set; }
-        public bool IsAssistant { get; set; }
-    }
 }

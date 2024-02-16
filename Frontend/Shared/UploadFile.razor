@@ -119,7 +119,7 @@
         }
         catch (Exception ex)
         {
-            errors.Add($"An error occurred while reading the Excel fiIIIIle: {ex.Message}");
+            errors.Add($"An error occurred while reading the Excel file: {ex.Message}");
             return new List<ResearchModel>(); // Return an empty list or handle accordingly
         }
     }
@@ -138,9 +138,10 @@
             var response = await httpClient.PostAsync($"{config["APIBaseUrl"]}/research-front/generateByFile", content);
             if (response.IsSuccessStatusCode)
             {
-                // Optionally clear the files list on success
+
                 uploadedFiles.Clear();
-                  await OnFileUploaded.InvokeAsync();
+                // invoke the event when an answer from assistant has come.
+                await OnFileUploaded.InvokeAsync();
             }
             else
             {
