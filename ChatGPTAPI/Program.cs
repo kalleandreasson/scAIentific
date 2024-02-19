@@ -11,6 +11,7 @@ builder.Services.AddSwaggerGen();
 // Register the OpenAIService and configure it
 builder.Services.AddHttpClient<OpenAIService>();
 builder.Services.Configure<OpenAIServiceOptions>(builder.Configuration.GetSection("OpenAI"));
+builder.Services.AddHttpClient<AssistantService>();
 
 // Register the InAppFileSaver service as scoped
 builder.Services.AddScoped<InAppFileSaverService>(); // This matches the class name

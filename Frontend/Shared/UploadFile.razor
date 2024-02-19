@@ -106,7 +106,7 @@
 
         // Send the POST request to the API
         var response = await httpClient.PostAsync(config["APIBaseUrl"] + "/research-front/generateByFile", content);
-
+        
         if (response.IsSuccessStatusCode)
         {
             textToOutput = await response.Content.ReadAsStringAsync();

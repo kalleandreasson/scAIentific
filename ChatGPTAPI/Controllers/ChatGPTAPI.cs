@@ -10,12 +10,14 @@ namespace ChatGPTAPI.Controllers;
 public class ChatGPTAPIController : ControllerBase
 {
     private readonly OpenAIService _openAIApiService;
+    private readonly AssistantService _assistantService;
     private readonly InAppFileSaverService _inAppFileSaver;
 
-    public ChatGPTAPIController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver)
+    public ChatGPTAPIController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver, AssistantService assistantService)
     {
         _openAIApiService = openAIApiService;
         _inAppFileSaver = inAppFileSaver;
+        _assistantService = assistantService;
     }
 
     [HttpGet]
@@ -44,8 +46,9 @@ public class ChatGPTAPIController : ControllerBase
     public async Task<IActionResult> FindResearchFrontByFile([FromForm] IFormFile file)
     {
         await _inAppFileSaver.Save(file, "files");
-        Console.WriteLine("testing generateByFile");
         Console.WriteLine(file);
-        return Ok("Testing");
+        string response = await _assistantService.CreateAssistant(file);
+        Console.WriteLine(response);
+        return Ok("success");
     }
 }
