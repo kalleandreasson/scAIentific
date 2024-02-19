@@ -10,14 +10,14 @@ namespace ChatGPTAPI.Controllers;
 public class ChatGPTAPIController : ControllerBase
 {
     private readonly OpenAIService _openAIApiService;
+    private readonly AssistantService _assistantService;
     private readonly InAppFileSaverService _inAppFileSaver;
     private readonly ILogger<ChatGPTAPIController> _logger;
 
-    public ChatGPTAPIController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver, ILogger<ChatGPTAPIController> logger)
+    public ChatGPTAPIController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver)
     {
         _openAIApiService = openAIApiService;
         _inAppFileSaver = inAppFileSaver;
-        _logger = logger;
     }
 
     [HttpGet]
@@ -74,9 +74,10 @@ public class ChatGPTAPIController : ControllerBase
         try
         {
             await _inAppFileSaver.Save(file, "files");
-            Console.WriteLine("testing generateByFile");
-            Console.WriteLine(file);
-            return Ok("Testing");
+                Console.WriteLine(file);
+            string response = await _assistantService.CreateAssistant(file);
+        Console.WriteLine(response);
+        return Ok("success");
         }
         catch (Exception ex)
         {
