@@ -9,7 +9,6 @@ using Newtonsoft.Json;
 public class OpenAIService
 {
     private readonly HttpClient _httpClient;
-    private readonly HttpClient _httpClient;
     private readonly string _apiKey;
     private readonly ILogger<OpenAIService> _logger;
     public OpenAIService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options, ILogger<OpenAIService> logger)

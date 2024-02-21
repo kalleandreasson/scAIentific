@@ -14,10 +14,12 @@ public class ChatGPTAPIController : ControllerBase
     private readonly InAppFileSaverService _inAppFileSaver;
     private readonly ILogger<ChatGPTAPIController> _logger;
 
-    public ChatGPTAPIController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver)
+    public ChatGPTAPIController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver, ILogger<ChatGPTAPIController> logger, AssistantService assistantService)
     {
         _openAIApiService = openAIApiService;
         _inAppFileSaver = inAppFileSaver;
+        _logger = logger;
+        _assistantService = assistantService;
     }
 
     [HttpGet]
@@ -36,7 +38,7 @@ public class ChatGPTAPIController : ControllerBase
             return BadRequest("Invalid request data");
         }
 
-       try
+        try
         {
             string systemMessage = request.SystemMessage ?? "Default System Message";
             string userMessage = request.UserMessage;
@@ -67,23 +69,23 @@ public class ChatGPTAPIController : ControllerBase
     [HttpPost("generateByFile")]
     public async Task<IActionResult> FindResearchFrontByFile([FromForm] IFormFile file)
     {
-         if (file == null || file.Length == 0)
+        if (file == null || file.Length == 0)
         {
             return BadRequest("No file provided or file is empty.");
         }
         try
         {
             await _inAppFileSaver.Save(file, "files");
-                Console.WriteLine(file);
+            Console.WriteLine(file);
             string response = await _assistantService.CreateAssistant(file);
-        Console.WriteLine(response);
-        return Ok("success");
+            Console.WriteLine(response);
+            return Ok("success");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error saving or processing the file.");
             return StatusCode(500, "There was an error processing the file.");
         }
-        
+
     }
 }
