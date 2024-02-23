@@ -5,10 +5,10 @@ using Frontend.Models;
 
 namespace Frontend.Services
 {
-    public class UploadFileService (HttpClient httpClient, Services.ExcelService excelService)
+    public class UploadFileService (HttpClient httpClient, ExcelService excelService)
     {
     private readonly HttpClient httpClient = httpClient;
-    private readonly Services.ExcelService excelService = excelService;
+    private readonly ExcelService excelService = excelService;
     private long maxFileSize = 1024 * 1024 * 500; // 500MB
 
     public async Task<List<ResearchModel>> ProcessExcelFile(IBrowserFile file)

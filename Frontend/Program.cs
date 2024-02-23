@@ -1,7 +1,8 @@
 using Frontend.Services;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using OfficeOpenXml; // Add this to Program.cs
+using OfficeOpenXml;
+using Polly;
+
+ // Add this to Program.cs
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,10 +11,23 @@ ExcelPackage.LicenseContext = LicenseContext.NonCommercial;// or LicenseContext.
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddHttpClient();
-builder.Services.AddScoped<Frontend.Services.ExcelService>();
-builder.Services.AddScoped<UploadFileService>();
+builder.Services.AddHttpClient<UploadFileService>(client => 
+{
+    client.BaseAddress = new Uri("http://localhost:5000/");
+})
+.AddTransientHttpErrorPolicy(policy => policy.WaitAndRetryAsync(new[]
+{
+    TimeSpan.FromSeconds(1),
+    TimeSpan.FromSeconds(5),
+    TimeSpan.FromSeconds(10)
+}));
 
+
+
+
+
+builder.Services.AddScoped<ExcelService>();
+builder.Services.AddScoped<UploadFileService>();
 
 
 
