@@ -8,7 +8,7 @@ namespace ChatGPTAPI.Services
             this.env = env;
         }
 
-        public async Task Save(IFormFile file, string folderName)
+        public async  Task<string> Save(IFormFile file, string folderName)
         {
             var filename = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             string route = Path.Combine(env.WebRootPath, folderName);
@@ -19,11 +19,12 @@ namespace ChatGPTAPI.Services
             }
 
             string fileRoute = Path.Combine(route, filename);
-
+    
             using (var fileStream = new FileStream(fileRoute, FileMode.Create))
             {
                 await file.CopyToAsync(fileStream);
             }
+            return fileRoute;
         }
     }
 }

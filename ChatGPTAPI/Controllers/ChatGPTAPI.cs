@@ -75,10 +75,10 @@ public class ChatGPTAPIController : ControllerBase
         }
         try
         {
-            await _inAppFileSaver.Save(file, "files");
-            Console.WriteLine(file);
-            string response = await _assistantService.CreateAssistant(file);
-            Console.WriteLine(response);
+            var savedFilePath = await _inAppFileSaver.Save(file, "files");
+   
+            string response = await _assistantService.CreateAssistant(savedFilePath);
+
             return Ok("success");
         }
         catch (Exception ex)
