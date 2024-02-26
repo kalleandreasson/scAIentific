@@ -10,6 +10,7 @@ public class AssistantService
 {
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
+    private readonly OpenAIClient _assistantApi;
 
     public AssistantService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options)
     {
@@ -17,78 +18,103 @@ public class AssistantService
         var settings = options.Value ?? throw new ArgumentNullException(nameof(options));
         _apiKey = settings.ApiKey ?? throw new ArgumentNullException(nameof(settings.ApiKey));
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+        _assistantApi = new OpenAIClient(_apiKey);
     }
 
-public async Task<string> CreateAssistant(string filePath)
-{
-    Console.WriteLine(filePath);
-    var tools = new List<Tool> { Tool.Retrieval };
-
-    Console.WriteLine("inside Assistant method");
-    try
+    public async Task<string> CreateAssistant(string filePath)
     {
-        using var api = new OpenAIClient(_apiKey);
-        var assistantID = await checkAssistant();
-        if (assistantID == "false")
+        Console.WriteLine(filePath);
+        var tools = new List<Tool> { Tool.Retrieval };
+
+        Console.WriteLine("inside Assistant method");
+        try
         {
-            var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, "You are great at finding research at the forefront, use the information that is provided in the file to form a good response.", tools);
-            var assistantCreate = await api.AssistantsEndpoint.CreateAssistantAsync(request);
-            Console.WriteLine("Created Assistant :)");
-            return assistantCreate; // Assuming this returns a string that represents something meaningful (e.g., Assistant ID)
+            var assistantID = await checkAssistant();
+            if (assistantID == "false")
+            {
+                var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, "You are great at finding research at the forefront, use the information that is provided in the file to form a good response.", tools);
+                var assistantCreate = await _assistantApi.AssistantsEndpoint.CreateAssistantAsync(request);
+                Console.WriteLine($"Created Assistant: {assistantCreate}");
+                return assistantCreate;
+            }
+            else
+            {
+                Console.WriteLine("Already have an assistant :)");
+                // Check if the assistant has a file
+                var filesList = await _assistantApi.AssistantsEndpoint.ListFilesAsync(assistantID);
+                if (filesList.Items.Count == 0)
+                {
+                    Console.WriteLine($"no files ->{filesList.Items.Count}");
+                    // Upload and attach a file to the assistant.
+                    await File.WriteAllTextAsync(filePath, "Gender and Social Networks");
+                    var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
+                    var assistantFile = await assistant.UploadFileAsync(filePath);
+
+                }
+                else
+                {
+                    Console.WriteLine("The assistant has a file");
+                foreach (var file in filesList.Items)
+                {
+                    Console.WriteLine($"{file.AssistantId}'s file -> {file.Id}");
+                    Console.WriteLine($"{file.AssistantId}'s file -> {file.Object}");
+                    Console.WriteLine($"{file.AssistantId}'s file -> {file.AssistantId}");
+                    Console.WriteLine($"{file.AssistantId}'s file -> {file.CreatedAt}");
+                    Console.WriteLine($"{file.AssistantId}'s file -> {file.Client}");
+                }
+
+                }
+                return assistantID;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Already have an assistant :)");
-            return assistantID;
+            // Log the exception or handle it as needed
+            Console.WriteLine($"An error occurred while creating the assistant: {ex.Message}");
+            return "Error"; //handle the error
         }
     }
-    catch (Exception ex)
+
+
+    private async Task<string> checkAssistant()
     {
-        // Log the exception or handle it as needed
-        Console.WriteLine($"An error occurred while creating the assistant: {ex.Message}");
-        return "Error"; // Return a meaningful error message or handle it differently depending on your application's needs
+
+        var assistantsList = await _assistantApi.AssistantsEndpoint.ListAssistantsAsync();
+        if (assistantsList.Items.Count == 0)
+        {
+            Console.WriteLine("No assistants found.");
+            return "false";
+        }
+
+        Console.WriteLine($"Found {assistantsList.Items.Count} assistants:");
+        foreach (var assistant in assistantsList.Items)
+        {
+            // Log detailed information about each assistant
+            Console.WriteLine($"ID: {assistant.Id}");
+            Console.WriteLine($"Name: {assistant.Name}");
+            Console.WriteLine($"Model: {assistant.Model}");
+            Console.WriteLine($"CreatedAt: {assistant.CreatedAt}");
+            Console.WriteLine($"Number of files: {assistant.FileIds.Count}");
+
+            Console.WriteLine("-------------");
+        }
+
+        // Assuming you want to return the ID of the first assistant as before
+        return assistantsList.Items[0].Id;
     }
-}
-
-
-private async Task<string> checkAssistant()
-{
-    using var api = new OpenAIClient(_apiKey);
-    var assistantsList = await api.AssistantsEndpoint.ListAssistantsAsync();
-    if (assistantsList.Items.Count == 0)
-    {
-        Console.WriteLine("No assistants found.");
-        return "false";
-    }
-
-    Console.WriteLine($"Found {assistantsList.Items.Count} assistants:");
-    foreach (var assistant in assistantsList.Items)
-    {
-        // Log detailed information about each assistant
-        Console.WriteLine($"ID: {assistant.Id}");
-        Console.WriteLine($"Name: {assistant.Name}");
-        Console.WriteLine($"Model: {assistant.Model}");
-        Console.WriteLine($"CreatedAt: {assistant.CreatedAt}");
-
-        Console.WriteLine("-------------"); 
-    }
-
-    // Assuming you want to return the ID of the first assistant as before
-    return assistantsList.Items[0].Id;
-}
 
 
 
     //If we want to delete all assistants - not used right now
     private async void deleteAssistant()
     {
-        using var api = new OpenAIClient(_apiKey);
-        var assistantsList = await api.AssistantsEndpoint.ListAssistantsAsync();
+
+        var assistantsList = await _assistantApi.AssistantsEndpoint.ListAssistantsAsync();
 
         foreach (var assistant in assistantsList.Items)
         {
             Console.WriteLine($"{assistant} -> {assistant.CreatedAt}");
-            var isDeleted = await api.AssistantsEndpoint.DeleteAssistantAsync(assistant);
+            var isDeleted = await _assistantApi.AssistantsEndpoint.DeleteAssistantAsync(assistant);
         }
     }
 
