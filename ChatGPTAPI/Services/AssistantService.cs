@@ -65,14 +65,21 @@ public class AssistantService
                         Console.WriteLine($"{file.AssistantId}'s file -> {file.CreatedAt}");
                         Console.WriteLine($"{file.AssistantId}'s file -> {file.Client}");
                     }
+                    // create a thread
                     // var threadId = CreateThread();
                     var threadId = "thread_RPoKBh47laYWbz93FjPh2MMW";
                     // var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadId);
                     // Console.WriteLine($"Retrieve thread {thread.Id} -> {thread.CreatedAt}");
+                    // Retrieve thread thread_RPoKBh47laYWbz93FjPh2MMW -> 2024-02-29 13:22:03
+
+                    // create a message and test adding it to the thread.
                     // var request = new CreateMessageRequest("How many abstracts are there in the file");
                     // var message = await _assistantApi.ThreadsEndpoint.CreateMessageAsync(thread.Id, request);
 
                     // Console.WriteLine($"{message.Id}: {message.Role}: {message.PrintContent()}");
+                    //msg_k1q7CGEF7M51nS2T4dviTGEa: User: How many abstracts are there in the file
+
+                    // now there is a message in the thread 
                     return threadId;
                 }
             }
