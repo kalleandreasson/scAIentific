@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
+using OpenAI.Threads;
 
 public class AssistantService
 {
@@ -52,22 +53,28 @@ public class AssistantService
                     var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
                     var assistantFile = await assistant.UploadFileAsync(filePath);
                     return assistantFile;
-
                 }
                 else
                 {
                     Console.WriteLine("The assistant has a file");
-                foreach (var file in filesList.Items)
-                {
-                    Console.WriteLine($"{file.AssistantId}'s file -> {file.Id}");
-                    Console.WriteLine($"{file.AssistantId}'s file -> {file.Object}");
-                    Console.WriteLine($"{file.AssistantId}'s file -> {file.AssistantId}");
-                    Console.WriteLine($"{file.AssistantId}'s file -> {file.CreatedAt}");
-                    Console.WriteLine($"{file.AssistantId}'s file -> {file.Client}");
-                }
+                    foreach (var file in filesList.Items)
+                    {
+                        Console.WriteLine($"{file.AssistantId}'s file -> {file.Id}");
+                        Console.WriteLine($"{file.AssistantId}'s file -> {file.Object}");
+                        Console.WriteLine($"{file.AssistantId}'s file -> {file.AssistantId}");
+                        Console.WriteLine($"{file.AssistantId}'s file -> {file.CreatedAt}");
+                        Console.WriteLine($"{file.AssistantId}'s file -> {file.Client}");
+                    }
+                    // var threadId = CreateThread();
+                    var threadId = "thread_RPoKBh47laYWbz93FjPh2MMW";
+                    // var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadId);
+                    // Console.WriteLine($"Retrieve thread {thread.Id} -> {thread.CreatedAt}");
+                    // var request = new CreateMessageRequest("How many abstracts are there in the file");
+                    // var message = await _assistantApi.ThreadsEndpoint.CreateMessageAsync(thread.Id, request);
 
+                    // Console.WriteLine($"{message.Id}: {message.Role}: {message.PrintContent()}");
+                    return threadId;
                 }
-                return assistantID;
             }
         }
         catch (Exception ex)
@@ -121,4 +128,13 @@ public class AssistantService
         }
     }
 
+    private async Task<string> CreateThread()
+    {
+        Console.WriteLine("Creating a thread");
+        var thread = await _assistantApi.ThreadsEndpoint.CreateThreadAsync();
+        Console.WriteLine($"Retrieve thread {thread.Id} -> {thread.CreatedAt}");
+        return thread.Id;
+
+        // Retrieve thread thread_RPoKBh47laYWbz93FjPh2MMW -> 2024-02-29 13:22:03
+    }
 }

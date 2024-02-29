@@ -78,6 +78,8 @@ public class ChatGPTAPIController : ControllerBase
             var savedFilePath = await _inAppFileSaver.Save(file, "files");
    
             string response = await _assistantService.CreateAssistant(savedFilePath);
+            Console.WriteLine("Return in the controller");
+            Console.WriteLine(response);
 
             return Ok("success");
         }
@@ -87,5 +89,20 @@ public class ChatGPTAPIController : ControllerBase
             return StatusCode(500, "There was an error processing the file.");
         }
 
+    }
+
+    [HttpPost("assistant-chat")]
+ public async Task<IActionResult> ChatWithAssistantByText([FromBody] UserQuery request)
+    {
+        try
+        {
+            Console.Write(request.UserMessage);
+        return Ok(request.UserMessage);
+        }
+        catch (System.Exception)
+        {
+            
+            throw;
+        }
     }
 }
