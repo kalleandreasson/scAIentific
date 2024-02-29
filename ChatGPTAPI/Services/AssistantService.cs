@@ -12,6 +12,8 @@ public class AssistantService
     private readonly string _apiKey;
     private readonly OpenAIClient _assistantApi;
 
+    private string _researchArea = " Gender and Social Networks in Organizational Setting";
+
     public AssistantService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
@@ -32,7 +34,7 @@ public class AssistantService
             var assistantID = await checkAssistant();
             if (assistantID == "false")
             {
-                var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, "You are great at finding research at the forefront, use the information that is provided in the file to form a good response.", tools);
+                var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, $"You have demonstrated proficiency in analyzing abstracts of research articles to identify and find the research articles forefront in \"{_researchArea}\", Please review the information provided in the attached file. Based on your analysis, formulate a comprehensive response.", tools);
                 var assistantCreate = await _assistantApi.AssistantsEndpoint.CreateAssistantAsync(request);
                 Console.WriteLine($"Created Assistant: {assistantCreate}");
                 return assistantCreate;
@@ -49,6 +51,7 @@ public class AssistantService
                     await File.WriteAllTextAsync(filePath, "Gender and Social Networks");
                     var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
                     var assistantFile = await assistant.UploadFileAsync(filePath);
+                    return assistantFile;
 
                 }
                 else
