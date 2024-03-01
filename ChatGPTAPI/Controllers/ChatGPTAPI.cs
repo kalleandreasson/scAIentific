@@ -76,10 +76,10 @@ public class ChatGPTAPIController : ControllerBase
         try
         {
             var savedFilePath = await _inAppFileSaver.Save(file, "files");
-   
-            string response = await _assistantService.CreateAssistant(savedFilePath);
+
+            string assistantId = await _assistantService.CreateAssistant(savedFilePath);
             Console.WriteLine("Return in the controller");
-            Console.WriteLine(response);
+            Console.WriteLine(assistantId);
 
             return Ok("success");
         }
@@ -92,16 +92,18 @@ public class ChatGPTAPIController : ControllerBase
     }
 
     [HttpPost("assistant-chat")]
- public async Task<IActionResult> ChatWithAssistantByText([FromBody] UserQuery request)
+    public async Task<IActionResult> ChatWithAssistant([FromBody] UserQuery request)
     {
         try
         {
+            Console.Write("ChatWithAssistant() -> request.UserMessage\n");
             Console.Write(request.UserMessage);
-        return Ok(request.UserMessage);
+            string response = await _assistantService.CreateRun(request.UserMessage);
+            return Ok(request.UserMessage);
         }
         catch (System.Exception)
         {
-            
+
             throw;
         }
     }
