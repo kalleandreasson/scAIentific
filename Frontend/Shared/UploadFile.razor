@@ -14,7 +14,7 @@
         <h3>Error</h3>
         <p class="text-danger">@errorMessage</p>
     }
-    <InputFile OnChange="@LoadFiles" multiple accept=".xlsx" />
+    <InputFile OnChange="@LoadFiles" multiple accept=".csv" />
     @if (uploadedFiles.Count > 0)
     {
         <div class="uploaded-files-section">
@@ -43,7 +43,7 @@
         filesToUpload.Clear(); // Clear previously selected files
         errorMessage = string.Empty; // Reset the error message
         var selectedFiles = e.GetMultipleFiles(maxAllowedFiles);
-        foreach (var file in selectedFiles)
+        @* foreach (var file in selectedFiles)
         {
             var models = await UploadFileService.ProcessExcelFile(file);
             if (models.Any())
@@ -56,7 +56,9 @@
                 errorMessage = $"{file.Name} could not be parsed. Please ensure it is a valid Excel file.";
                 return; // Exit early since we only show one error at a time
             }
-        }
+        } *@
+        filesToUpload.Add(selectedFiles[0]);
+                uploadedFiles.Add(selectedFiles[0].Name);
     }
 
     private async Task SendFileToApi()
