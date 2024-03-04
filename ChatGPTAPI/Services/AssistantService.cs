@@ -6,12 +6,11 @@ using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Threads;
-using OpenAI.Files;
 
 public class AssistantService
 {
-    private readonly string _threadId = "thread_QLonnCR2grG3STSBtAgPLehl";
-    private readonly string _assistantId = "asst_ItCYzphWBmZWOrSjrKkbfn2p";
+    private readonly string _threadId = "thread_RPoKBh47laYWbz93FjPh2MMW";
+    private readonly string _assistantId = "asst_rAjmsxr5I4tTI6r5ljnjnWLs";
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
     private readonly OpenAIClient _assistantApi;
@@ -29,6 +28,8 @@ public class AssistantService
 
     public async Task<string> CreateAssistant(string filePath)
     {
+        var flag = await deleteAssistant();
+        Console.WriteLine(flag);
         Console.WriteLine(filePath);
         var tools = new List<Tool> { Tool.Retrieval };
 
@@ -58,11 +59,8 @@ public class AssistantService
                 //     var threadId = "thread_RPoKBh47laYWbz93FjPh2MMW";
                 // var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadId);
                 // Console.WriteLine($"Retrieve thread {thread.Id} -> {thread.CreatedAt}");
-
-
+                // Retrieve thread thread_RPoKBh47laYWbz93FjPh2MMW -> 2024-02-29 13:22:03
                 //     return threadId;
-                // }
-                return assistantID;
             }
         }
         catch (Exception ex)
@@ -108,16 +106,14 @@ public class AssistantService
             var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(_assistantId);
 
             // create a message and add it to the thread.
-            // IEnumerable<string> fileIds = new[] {"file-zdigOU5wQhSoUVPicayltvbG"};
-            // var request = new CreateMessageRequest($"{userQuery}", fileIds);
+            // var request = new CreateMessageRequest($"{userQuery}");
             // var newMessage = await _assistantApi.ThreadsEndpoint.CreateMessageAsync(thread.Id, request);
             // Console.WriteLine($"{newMessage.Id}: {newMessage.Role}: {newMessage.PrintContent()}");
-            // msg_de8NnQxdW0faYXWKGKOLiBHr: User: what is the file about 
+
 
             // create a run 
             // var run = await thread.CreateRunAsync(assistant);
-            // Console.WriteLine($"run created:runID[{run.Id}], status: {run.Status} | {run.CreatedAt}"); 
-            // run created:runID[run_NsA0mpFnSdHvYQv8wKYOcqAV], status: Queued | 2024-03-04 06:46:28 
+            // Console.WriteLine($"run created:runID[{run.Id}], status: {run.Status} | {run.CreatedAt}");   // [run_Xl7FtiV5lCGJgfRvCBMpsNEB] Queued | 2024-03-01 08:11:53
 
             // list runs
             // var runList = await thread.ListRunsAsync();
@@ -128,18 +124,17 @@ public class AssistantService
 
             // CHECKING THE STATUS OF THE RUN it starts as Queued and then Completed 
 
-            // var run = await thread.RetrieveRunAsync("run_DJRFmCctgmz4UZ9ymchiRrRi");
+            // var run = await thread.RetrieveRunAsync("run_NUTSFgxFa5XUJzdHkqrAuVyh");
             // var runUpdate = await run.UpdateAsync();
             // Console.WriteLine($"run retrieved:runID[{run.Id}], status: {run.Status} | {run.CreatedAt}");
             // run retrieved:runID[run_NUTSFgxFa5XUJzdHkqrAuVyh], status: Completed | 2024-03-01 10:22:35
-            // list files 
-            // await ListFiles();
+
             // When completed logg all the messages;
-            var messageList = await ListMessages(thread);
-            foreach (var message in messageList.Items)
-            {
-                Console.WriteLine($"---{message.Role}---: \n{message.PrintContent()}\n ****************************\n");
-            }
+            // var messageList = await ListMessages(thread);
+            // foreach (var message in messageList.Items)
+            // {
+            //     Console.WriteLine($"---{message.Role}---: \n{message.PrintContent()}\n ****************************\n");
+            // }
             return userQuery;
             // Should return the thread messages
         }
@@ -171,14 +166,8 @@ public class AssistantService
             Console.WriteLine($"Model: {assistant.Model}");
             Console.WriteLine($"CreatedAt: {assistant.CreatedAt}");
             Console.WriteLine($"Number of files: {assistant.FileIds.Count}");
-            foreach (var fileId in assistant.FileIds)
-            {
-                Console.WriteLine($"fileId: {fileId}");
-            }
-            foreach (var tool in assistant.Tools)
-            {
-                Console.WriteLine($"Tools:{tool.Type}");
-            }
+            Console.WriteLine($"Tools:{assistant.Tools}");
+
             Console.WriteLine("-------------");
         }
 
@@ -206,7 +195,8 @@ public class AssistantService
     {
         Console.WriteLine("Creating a thread");
         var thread = await _assistantApi.ThreadsEndpoint.CreateThreadAsync();
-        Console.WriteLine($"Created a thread {thread.Id} -> {thread.CreatedAt}");
+        Console.WriteLine($"Retrieve thread {thread.Id} -> {thread.CreatedAt}");
+        // Retrieve thread thread_RPoKBh47laYWbz93FjPh2MMW -> 2024-02-29 13:22:03
 
         return thread.Id;
 
@@ -223,25 +213,5 @@ public class AssistantService
     }
 
 
-    private async Task<string> ListFiles()
-    {
-        var fileList = await _assistantApi.FilesEndpoint.ListFilesAsync();
 
-        foreach (var file in fileList)
-        {
-            Console.WriteLine($"fileID:{file.Id} -> FileNAme:{file.FileName} | FileSize: {file.Size} bytes");
-        }
-        var fileAssList = await _assistantApi.AssistantsEndpoint.ListFilesAsync(_assistantId);
-
-        foreach (var file in fileAssList.Items)
-        {
-            Console.WriteLine($"Assis-fileID:{file.Id} -> assID:{file.AssistantId} | FileORG: {file.Organization} ");
-        }
-
-
-
-        return "file.Id";
-
-
-    }
 }
