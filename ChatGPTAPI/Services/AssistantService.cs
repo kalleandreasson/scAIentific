@@ -28,6 +28,8 @@ public class AssistantService
 
     public async Task<string> CreateAssistant(string filePath)
     {
+        var flag = await deleteAssistant();
+        Console.WriteLine(flag);
         Console.WriteLine(filePath);
         var tools = new List<Tool> { Tool.Retrieval };
 
@@ -41,45 +43,24 @@ public class AssistantService
                 var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, $"You have demonstrated proficiency in analyzing abstracts of research articles to identify and find the research articles forefront in \"{_researchArea}\", Please review the information provided in the attached file. Based on your analysis, formulate a comprehensive response.", tools);
                 var assistantCreate = await _assistantApi.AssistantsEndpoint.CreateAssistantAsync(request);
                 Console.WriteLine($"Created Assistant: {assistantCreate}");
+                var fileID = await UploadFileAsync(filePath, assistantCreate);
                 return assistantCreate;
             }
             else
             {
                 Console.WriteLine("Already have an assistant :)");
-                // Check if the assistant has a file
-                var filesList = await _assistantApi.AssistantsEndpoint.ListFilesAsync(assistantID);
-                Console.WriteLine($"files -> {filesList.Items.Count}");
-                // if (filesList.Items.Count == 0)
-                // {
-                // Console.WriteLine($"no files ->{filesList.Items.Count}");
-                    // Upload and attach a file to the assistant.
-                //     await File.WriteAllTextAsync(filePath, "Gender and Social Networks");
-                //     var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
-                //     var assistantFile = await assistant.UploadFileAsync(filePath);
-                //     return assistantFile;
-                // }
-                // else
-                // {
-                //     Console.WriteLine("The assistant has a file");
-                //     foreach (var file in filesList.Items)
-                //     {
-                //         Console.WriteLine($"{file.AssistantId}'s file -> {file.Id}");
-                //         Console.WriteLine($"{file.AssistantId}'s file -> {file.Object}");
-                //         Console.WriteLine($"{file.AssistantId}'s file -> {file.AssistantId}");
-                //         Console.WriteLine($"{file.AssistantId}'s file -> {file.CreatedAt}");
-                //         Console.WriteLine($"{file.AssistantId}'s file -> {file.Client}");
-                //         Console.WriteLine($"{file.AssistantId}'s file -> {file.Client}");
-                //     }
+                //Check if the assistant has a file
+                var fileID = await UploadFileAsync(filePath, assistantID);
+
+                return assistantID;
 
                 // create a thread
                 // var threadId = CreateThread();
                 //     var threadId = "thread_RPoKBh47laYWbz93FjPh2MMW";
-                     // var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadId);
+                // var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadId);
                 // Console.WriteLine($"Retrieve thread {thread.Id} -> {thread.CreatedAt}");
                 // Retrieve thread thread_RPoKBh47laYWbz93FjPh2MMW -> 2024-02-29 13:22:03
                 //     return threadId;
-                // }
-                return assistantID;
             }
         }
         catch (Exception ex)
@@ -88,6 +69,32 @@ public class AssistantService
             Console.WriteLine($"An error occurred while creating the assistant: {ex.Message}");
             return "Error"; //handle the error
         }
+    }
+
+    public async Task<string> UploadFileAsync(string filePath, string assistantID)
+    {
+        var filesList = await _assistantApi.AssistantsEndpoint.ListFilesAsync(assistantID);
+        if (filesList.Items.Count == 0)
+        {
+            Console.WriteLine($"no files ->{filesList.Items.Count}");
+            // Upload and attach a file to the assistant.
+            await File.WriteAllTextAsync(filePath, "Gender and Social Networks");
+            var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
+            var assistantFile = await assistant.UploadFileAsync(filePath);
+            //Would be good if we could remove either one of these two same api calls
+            var updatedFilesList = await _assistantApi.AssistantsEndpoint.ListFilesAsync(assistantID);
+            foreach (var file in updatedFilesList.Items)
+            {
+                Console.WriteLine($"{file.AssistantId}'s file -> {file.Id}");
+                Console.WriteLine($"{file.AssistantId}'s file -> {file.Object}");
+                Console.WriteLine($"{file.AssistantId}'s file -> {file.AssistantId}");
+                Console.WriteLine($"{file.AssistantId}'s file -> {file.CreatedAt}");
+                Console.WriteLine($"{file.AssistantId}'s file -> {file.Client}");
+                Console.WriteLine($"{file.AssistantId}'s file -> {file.Client}");
+            }
+            return assistantFile;
+        }
+        return filesList.Items[0];
     }
 
     public async Task<string> CreateRun(string userQuery)
@@ -171,9 +178,9 @@ public class AssistantService
 
 
     //If we want to delete all assistants - not used right now
-    private async void deleteAssistant()
+    private async Task<String> deleteAssistant()
     {
-
+        Console.WriteLine("inside delete method");
         var assistantsList = await _assistantApi.AssistantsEndpoint.ListAssistantsAsync();
 
         foreach (var assistant in assistantsList.Items)
@@ -181,6 +188,7 @@ public class AssistantService
             Console.WriteLine($"{assistant} -> {assistant.CreatedAt}");
             var isDeleted = await _assistantApi.AssistantsEndpoint.DeleteAssistantAsync(assistant);
         }
+        return "deleted";
     }
 
     private async Task<string> CreateThread()
