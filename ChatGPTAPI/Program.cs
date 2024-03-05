@@ -13,6 +13,8 @@ builder.Services.AddHttpClient<OpenAIService>();
 builder.Services.Configure<OpenAIServiceOptions>(builder.Configuration.GetSection("OpenAI"));
 builder.Services.AddHttpClient<AssistantService>();
 
+builder.Services.AddScoped<Parser>();
+
 // Register the InAppFileSaver service as scoped
 builder.Services.AddScoped<InAppFileSaverService>(); // This matches the class name
  // Add this line to register InAppFileSaver

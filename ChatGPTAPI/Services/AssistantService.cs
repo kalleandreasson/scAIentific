@@ -6,6 +6,7 @@ using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Threads;
+using ChatGPTAPI.Services;
 
 public class AssistantService
 {
@@ -13,6 +14,7 @@ public class AssistantService
     private readonly string _assistantId = "asst_rAjmsxr5I4tTI6r5ljnjnWLs";
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
+    private readonly Parser _parser;
     private readonly OpenAIClient _assistantApi;
 
     private string _researchArea = " Gender and Social Networks in Organizational Setting";
@@ -24,13 +26,11 @@ public class AssistantService
         _apiKey = settings.ApiKey ?? throw new ArgumentNullException(nameof(settings.ApiKey));
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
         _assistantApi = new OpenAIClient(_apiKey);
+        _parser = new Parser();
     }
 
     public async Task<string> CreateAssistant(string filePath)
     {
-        var flag = await deleteAssistant();
-        Console.WriteLine(flag);
-        Console.WriteLine(filePath);
         var tools = new List<Tool> { Tool.Retrieval };
 
         Console.WriteLine("inside Assistant method");
@@ -43,14 +43,16 @@ public class AssistantService
                 var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, $"You have demonstrated proficiency in analyzing abstracts of research articles to identify and find the research articles forefront in \"{_researchArea}\", Please review the information provided in the attached file. Based on your analysis, formulate a comprehensive response.", tools);
                 var assistantCreate = await _assistantApi.AssistantsEndpoint.CreateAssistantAsync(request);
                 Console.WriteLine($"Created Assistant: {assistantCreate}");
-                var fileID = await UploadFileAsync(filePath, assistantCreate);
+                _parser.ParseDataset(filePath);
+                //var fileID = await UploadFileAsync(filePath, assistantCreate);
                 return assistantCreate;
             }
             else
             {
                 Console.WriteLine("Already have an assistant :)");
                 //Check if the assistant has a file
-                var fileID = await UploadFileAsync(filePath, assistantID);
+                _parser.ParseDataset(filePath);
+                //var fileID = await UploadFileAsync(filePath, assistantID);
 
                 return assistantID;
 
