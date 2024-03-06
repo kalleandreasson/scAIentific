@@ -9,8 +9,8 @@ using OpenAI.Threads;
 
 public class AssistantService
 {
-    private readonly string _threadId = "thread_BKqDaaMZ4uGH1I7pRZbhSW1M";
-    private readonly string _assistantId = "asst_fCIjnpvuGg9MZfU0CAj9sVoD";
+    private readonly string _threadId = "thread_8JV1EMKVRlOGJlvlDlBOsq4L";
+    private readonly string _assistantId = "asst_D4yr9TcepZn6MfIsOBvZmgQi";
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
     private readonly OpenAIClient _assistantApi;
