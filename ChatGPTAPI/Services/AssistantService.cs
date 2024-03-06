@@ -47,7 +47,7 @@ public class AssistantService
             else
             {
                 Console.WriteLine("Already have an assistant :)");
-               
+
                 var fileID = await UploadFileAsync(filePath, assistantID);
 
                 // return assistantID;
@@ -56,7 +56,7 @@ public class AssistantService
                 var threadId = await CreateThread();
                 // var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadId);
                 // Console.WriteLine($"Retrieve thread {thread.Id} -> {thread.CreatedAt}");
-                    return threadId;
+                return threadId;
             }
         }
         catch (Exception ex)
@@ -65,7 +65,7 @@ public class AssistantService
             Console.WriteLine($"An error occurred while creating the assistant: {ex.Message}");
             return "Error"; //handle the error
         }
-    
+
     }
 
     public async Task<string> UploadFileAsync(string filePath, string assistantID)
@@ -94,54 +94,39 @@ public class AssistantService
         return filesList.Items[0];
     }
 
-    public async Task<string> CreateRun(string userQuery)
+    public async Task<List<MessageResponse>> ProcessUserQueryAndFetchResponses(string userQuery)
     {
         var messages = new List<MessageResponse>();
+
         try
         {
-            Console.WriteLine("\nCreateRun()");
             var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(_threadId);
             var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(_assistantId);
 
-            // create a message and add it to the thread.
             var request = new CreateMessageRequest($"{userQuery}");
             var newMessage = await _assistantApi.ThreadsEndpoint.CreateMessageAsync(thread.Id, request);
-            Console.WriteLine($"{newMessage.Id}: {newMessage.Role}: {newMessage.PrintContent()}");
 
             if (newMessage != null)
             {
-            // create a run 
-            var run = await thread.CreateRunAsync(assistant);
-            
-            string runStatus = $"{run.Status}";
-            Console.WriteLine($"run created:runID[{run.Id}], status: {run.Status} | {run.CreatedAt}");   // [run_Xl7FtiV5lCGJgfRvCBMpsNEB] Queued | 2024-03-01 08:11:53
+                var run = await thread.CreateRunAsync(assistant);
 
-            while (runStatus != "Completed")
-            {
-                await Task.Delay(1000);
-            var runUpdate = await run.UpdateAsync();
-            runStatus = $"{runUpdate.Status}";
+                while ($"{run.Status}" != "Completed")
+                {
+                    await Task.Delay(1000); // Wait for a bit before polling again
+                    run = await run.UpdateAsync();
+                }
+
+                var messageList = await ListMessages(thread);
+                messages.AddRange(messageList.Items);
             }
-            // Console.WriteLine($"run retrieved:runID[{run.Id}], status: {run.Status} | {run.CreatedAt}");
-
-             // When completed logg all the messages;
-            var messageList = await ListMessages(thread);
-            foreach (var message in messageList.Items)
-            {
-                Console.WriteLine($"---{message.Role}---: \n{message.PrintContent()}\n ****************************\n");
-            }   
-
-             messages.AddRange(messageList.Items);
-            }
-            return "no";
-            // Should return the thread messages
         }
         catch (Exception ex)
         {
-            // Log the exception or handle it as needed
-            Console.WriteLine($"An error occurred while creating the assistant: {ex.Message}");
-            return "Error"; //handle the error
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            // Consider how you want to handle errors. You might want to return an error message within your messages list or handle it differently.
         }
+
+        return messages;
     }
 
     private async Task<string> checkAssistant()

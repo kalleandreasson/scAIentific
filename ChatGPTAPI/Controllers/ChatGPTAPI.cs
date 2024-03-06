@@ -97,14 +97,15 @@ public class ChatGPTAPIController : ControllerBase
         try
         {
             Console.Write("ChatWithAssistant() -> request.UserMessage\n");
-            string messages  = await _assistantService.CreateRun(request.UserMessage);
+            var messages = await _assistantService.ProcessUserQueryAndFetchResponses(request.UserMessage);
 
-             return Ok(new { Messages = messages });
+            return Ok(new { Messages = messages });
         }
-        catch (System.Exception)
+        catch (Exception ex)
         {
-
-            throw;
+            _logger.LogError(ex, "An unexpected error occurred during chat with assistant.");
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
+
 }
