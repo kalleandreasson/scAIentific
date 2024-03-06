@@ -97,9 +97,9 @@ public class ChatGPTAPIController : ControllerBase
         try
         {
             Console.Write("ChatWithAssistant() -> request.UserMessage\n");
-            Console.Write(request.UserMessage);
-            string response = await _assistantService.CreateRun(request.UserMessage);
-            return Ok(request.UserMessage);
+            string messages  = await _assistantService.CreateRun(request.UserMessage);
+
+             return Ok(new { Messages = messages });
         }
         catch (System.Exception)
         {
