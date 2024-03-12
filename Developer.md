@@ -118,7 +118,7 @@ To refine and enhance the AI assistant's ability to analyze and discuss scientif
 
 To ensure the application's reliability and functionality, our development process will incorporate and extensive code testing, including:
 
-- **Unit Testing**: Individual units of source code are tested for correctness. This helps in identifying early bugs in the development cycle.
+- **Unit Testing**: Individual units of source code are going to be tested for correctness. This will help in identifying early bugs in the development cycle.
 - **Manual Testing**: In addition to automated tests, manual testing is going to be conducted to ensure that the user interface and user experience meet our quality standards. This will involve realistic user scenarios to test the application's end-to-end capabilities.
 - **Continuous Integration (CI)**: As soon we have access to the deployment environment.
 
