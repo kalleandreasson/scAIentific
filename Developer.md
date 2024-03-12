@@ -102,7 +102,7 @@ dotnet run
 
 ## Testing Strategy  
 
-The testing future plan
+The future testing plan: 
 
 Our comprehensive testing strategy is designed to ensure both the technical robustness of the scAIentific platform and the effectiveness of the AI-driven functionalities it offers. It is divided into two main components: User Feedback Testing and Code Testing.
 
