@@ -131,6 +131,28 @@ For future iterations, we plan to introduce:
 
 By combining user feedback with rigorous code testing, we aim to continuously improve scAIentific, making it more effective and user-friendly with each iteration. Our goal is to provide a robust platform that meets the evolving needs of researchers and students in the scientific community.
 
+## Learning the Project's Technologies
+
+### OpenAI Documentation and Prompt Engineering
+
+Understanding how to interact with the OpenAI API and effectively engineer prompts is crucial for the development of our AI assistant. The following resources offer comprehensive guidance:
+
+- **OpenAI Documentation**: This documentation provides an in-depth look at how to work with the OpenAI Assistant, including setup, API calls, and managing interactions.
+  
+  [OpenAI Documentation - How It Works](https://platform.openai.com/docs/assistants/how-it-works)
+
+- **OpenAI Prompt Engineering Guide**: A valuable resource for learning how to craft effective prompts to achieve better results from the AI. It outlines strategies and best practices in prompt engineering.
+  
+  [OpenAI Prompt Engineering Guide](https://platform.openai.com/docs/guides/prompt-engineering/six-strategies-for-getting-better-results)
+
+### Blazor and C# Tutorials
+
+For frontend and backend development, we use Blazor and C#. The following YouTube channel offers comprehensive tutorials ranging from beginner to advanced levels, covering various aspects of working with these technologies:
+
+- **Blazor and C# Tutorials by Tim Corey**: Tim Corey's channel is an excellent resource for learning Blazor and C#, providing detailed video tutorials on a wide range of topics related to .NET development.
+  
+  [IAmTimCorey on YouTube](https://www.youtube.com/@IAmTimCorey)
+
 ## Upcoming Features in the Next Iteration
 
 - **Personalized Email Summaries**: The ability to save discussions and send them directly to the user's personal email.
