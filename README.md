@@ -1,8 +1,8 @@
-# scAIentific: AI-powered Research Front Analysis
+# scAIentific: AI-powered Research Front Analyzer
 
 ## Overview
 
-scAIentific is an application designed to assist researchers and students in their researches. By utilizing advanced AI algorithms, scAIentific simplifies the process of identifying key trends, themes, and findings within 250 scientific articles. This tool aims to make the exploration of the research front more efficient and accessible, saving time and resources for its users.
+scAIentific is an application designed to assist researchers and students with their research. By utilizing an advanced AI model, scAIentific simplifies the process of identifying key trends, themes, and findings across a vast array of scientific articles. This tool aims to make the exploration of the research frontier more efficient and accessible, thereby saving time and resources for its users.
 
 ### Project Origin
 
@@ -19,8 +19,9 @@ scAIentific's goal is to explore how AI can facilitate and streamline the proces
 
 ## Features
 
-- **Article Upload**: Users can import up to 250 scientific texts into the AI engine.
-- **Research Summary**: Generates a summary of the submitted texts/reports.
+- **Article Upload**: Users can upload files up to 512 MB directly into the AI assistant.
+- **Custom AI-Assistant Creation**: Allows users to create a personalized AI assistant. This specialized assistant is proficient in a research field specified by the user.
+- **Research Discussion with the AI-Assistant**: Offers the capability to converse with the assistant and discuss the file's content, assisting in the identification of the research front.
 
 ## Technical Stack
 
@@ -31,7 +32,7 @@ scAIentific's goal is to explore how AI can facilitate and streamline the proces
 
 ### Prerequisites
 
-- .NET SDK (version specific to project requirements)
+- .NET core 7 an above.
 - An IDE such as Visual Studio or Visual Studio Code
 - Access to the provided AI model or equivalent
 
