@@ -76,8 +76,10 @@ public class ChatGPTAPIController : ControllerBase
         try
         {
             var savedFilePath = await _inAppFileSaver.Save(file, "files");
-   
-            string response = await _assistantService.CreateAssistant(savedFilePath);
+
+            string assistantId = await _assistantService.CreateAssistant(savedFilePath);
+            Console.WriteLine("Return in the controller");
+            Console.WriteLine(assistantId);
 
             return Ok("success");
         }
@@ -88,4 +90,22 @@ public class ChatGPTAPIController : ControllerBase
         }
 
     }
+
+    [HttpPost("assistant-chat")]
+    public async Task<IActionResult> ChatWithAssistant([FromBody] UserQuery request)
+    {
+        try
+        {
+            Console.Write("ChatWithAssistant() -> request.UserMessage\n");
+            var messages = await _assistantService.ProcessUserQueryAndFetchResponses(request.UserMessage);
+
+            return Ok(new { Messages = messages });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred during chat with assistant.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+    }
+
 }
