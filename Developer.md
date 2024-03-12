@@ -102,11 +102,11 @@ dotnet run
 
 ## Testing Strategy  
 
+The testing future plan
+
 Our comprehensive testing strategy is designed to ensure both the technical robustness of the scAIentific platform and the effectiveness of the AI-driven functionalities it offers. It is divided into two main components: User Feedback Testing and Code Testing.
 
 ### User Feedback Testing
-
-This is the testing future plan
 
 To refine and enhance the AI assistant's ability to analyze and discuss scientific articles, we are going to rely heavily on the user feedback. This iterative process involves:
 
