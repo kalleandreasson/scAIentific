@@ -4,7 +4,7 @@ This document provides a comprehensive guide for developers working on the scAIe
 
 ## Features
 
-- **Article Upload**: Users can upload files up to 512 MB directly into the AI assistant.
+- **File Upload**: Users can upload a word file with size up to 512 MB directly into the AI assistant.
 - **Custom AI-Assistant Creation**: Allows users to create a personalized AI assistant. This specialized assistant is proficient in a research field specified by the user.
 - **Research Discussion with the AI-Assistant**: Offers the capability to converse with the assistant and discuss the file's content, assisting in the identification of the research front.
 
