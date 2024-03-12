@@ -100,18 +100,15 @@ dotnet run
 - Navigate to the frontend application through your web browser.
 - Follow the UI prompts to upload your scientific texts and receive the analysis.
 
-## Learning New Techniques ????
-
-?
-Link to tutorials?
-
 ## Testing Strategy  
 
 Our comprehensive testing strategy is designed to ensure both the technical robustness of the scAIentific platform and the effectiveness of the AI-driven functionalities it offers. It is divided into two main components: User Feedback Testing and Code Testing.
 
 ### User Feedback Testing
 
-To refine and enhance the AI assistant's ability to analyze and discuss scientific articles, we rely heavily on user feedback. This iterative process involves:
+This is the testing future plan
+
+To refine and enhance the AI assistant's ability to analyze and discuss scientific articles, we are going to rely heavily on the user feedback. This iterative process involves:
 
 - **Pilot User Program**: The main costumer will be given an early access to the scAIentific application to use its features in real-world research scenarios.
 - **Feedback Collection**: the costumer will provide detailed feedback on his interactions with the AI assistant, especially regarding the relevance and clarity of its responses and the usability of the interface for uploading documents and creating custom AI assistants.
@@ -119,12 +116,11 @@ To refine and enhance the AI assistant's ability to analyze and discuss scientif
 
 ### Code Testing
 
-To ensure the application's reliability and functionality, our development process incorporates extensive code testing, including:
+To ensure the application's reliability and functionality, our development process will incorporate and extensive code testing, including:
 
 - **Unit Testing**: Individual units of source code are tested for correctness. This helps in identifying early bugs in the development cycle.
 - **Manual Testing**: In addition to automated tests, manual testing is going to be conducted to ensure that the user interface and user experience meet our quality standards. This will involve realistic user scenarios to test the application's end-to-end capabilities.
-- **Continuous Integration (CI)**: As soon we have access to the deployment environment  .
-
+- **Continuous Integration (CI)**: As soon we have access to the deployment environment.
 
 ### Future Testing Improvements
 
