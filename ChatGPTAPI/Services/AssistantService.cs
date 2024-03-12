@@ -129,7 +129,7 @@ public class AssistantService
         return messages;
     }
 
-    private async Task<string> checkAssistant()
+    public async Task<string> checkAssistant()
     {
 
         var assistantsList = await _assistantApi.AssistantsEndpoint.ListAssistantsAsync();
@@ -137,7 +137,7 @@ public class AssistantService
         {
             Console.WriteLine("No assistants found.");
             Console.WriteLine(assistantsList.Items.Count);
-            return "false";
+            return "No assistants found";
         }
 
         Console.WriteLine($"Found {assistantsList.Items.Count} assistants:");
@@ -164,8 +164,6 @@ public class AssistantService
         // Assuming you want to return the ID of the first assistant as before
         return assistantsList.Items[0].Id;
     }
-
-
 
     //If we want to delete all assistants - not used right now
     private async Task<String> deleteAssistant()

@@ -108,4 +108,19 @@ public class ChatGPTAPIController : ControllerBase
         }
     }
 
+    [HttpGet("assistant-check")]
+    public async Task<IActionResult> AssistantCheck()
+    {
+        try
+        {
+            var messageList = await _assistantService.checkAssistant();
+            return Ok(messageList);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred during chat with assistant.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+    }
+
 }
