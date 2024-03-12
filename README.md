@@ -66,8 +66,7 @@ dotnet run
 
 ## Project design
 ![assistant-page](AppOverview/assistant-page.png)  
-![uploadFile-page](AppOverview/uploadFile-page.png)  
-![home-page](AppOverview/home-page.png)  
+![uploadFile-page](AppOverview/uploadFile-page.png) 
 
 ## License
 
