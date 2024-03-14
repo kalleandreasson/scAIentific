@@ -199,6 +199,4 @@ public class AssistantService
         return messageList;
     }
 
-
-
 }
