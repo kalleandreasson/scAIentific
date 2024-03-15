@@ -1,48 +1,58 @@
 @page "/assistant"
 @using Frontend.Shared
 @using Frontend.Models
+@using Frontend.Services
+@inject ChatService ChatService
+@using System.Globalization
 
 <PageTitle>Assistant</PageTitle>
-<div  class="index-container">
-
-<h1>Research Assistant</h1>
-<p class="chat-text" ></p>
-
-<div class="chat-history">
+<div class="index-container">
+    <h1>Research Assistant</h1>
+    <div class="chat-history">
         @foreach (var message in chatHistory)
         {
-            <div class="@(message.IsAssistant ? "assistant-message" : "user-message")">
-              @if (message.IsAssistant ) {
-                <p>Assistant: @message.Content</p>
-              }
-              else
-              {
-                 <p>User: @message.Content</p>
-              }
-            </div>
+            var messageTime = DateTimeOffset.FromUnixTimeSeconds(message.CreatedAt).ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+            var messageType = message.Role == 3 ? "User" : "Assistant";
+            if (message.Content != null && message.Content.Any())
+            {
+                var firstContent = message.Content.First();
+                if (firstContent.Text != null)
+                {
+                    <div class="@($"message {messageType.ToLower()}")">
+                        <div class="message-info">
+                            <span class="message-type">@messageType</span>
+                            <span class="message-time">@messageTime</span>
+                        </div>
+                        <p>@firstContent.Text.Value</p>
+                    </div>
+                }
+            }
         }
     </div>
 
-<EditForm Model="@chat">
-<InputText @bind-Value="assistantAnswer" />
-<button type="submit" >Send </button>
-</EditForm>
-    
+    <EditForm Model="@chat" OnValidSubmit="HandleSubmitAsync">
+        <InputText @bind-Value="userQuery" />
+        <button type="submit">Send</button>
+    </EditForm>
 </div>
 
-@code
-{
-  ChatModel chat = new();
-  private string assistantAnswer= "Q:";
+@code {
+    private string userQuery = "";
+    private List<ChatMessage> chatHistory = new List<ChatMessage>();
+    private object chat = new {}; 
 
-  private List<ChatModel> chatHistory = new List<ChatModel>();
-
-    protected override void OnInitialized()
+    private async Task HandleSubmitAsync()
     {
-        chatHistory.Add(new ChatModel { Content = "Hello, how can I assist you today?", IsAssistant = true });
-        chatHistory.Add(new ChatModel { Content = "What is the main Idea of the abstracts in the file?", IsAssistant = false });
-        chatHistory.Add(new ChatModel { Content = "The abstracts provided touch on various aspects of gender, race, and networking within organizational and professional settings", IsAssistant = true });
-
+        var chatRequest = new ChatRequest { UserMessage = userQuery };
+        var chatResponse = await ChatService.PostUserQueryAsync(chatRequest);
+        if (chatResponse?.Messages != null)
+        {
+            chatHistory = chatResponse.Messages.OrderBy(m => m.CreatedAt).ToList();
+        }
+        else
+        {
+            chatHistory = new List<ChatMessage>();
+        }
+        userQuery = ""; 
     }
-
 }
