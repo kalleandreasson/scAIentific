@@ -9,8 +9,8 @@ using OpenAI.Threads;
 
 public class AssistantService
 {
-    private readonly string _threadId = "thread_8JV1EMKVRlOGJlvlDlBOsq4L";
-    private readonly string _assistantId = "asst_D4yr9TcepZn6MfIsOBvZmgQi";
+    private readonly string _threadId;
+    private readonly string _assistantId;
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
     private readonly OpenAIClient _assistantApi;
@@ -26,23 +26,34 @@ public class AssistantService
         _assistantApi = new OpenAIClient(_apiKey);
     }
 
-    public async Task<string> CreateAssistant(string filePath)
+    public async Task<AssistantObj> CreateAssistant(string filePath)
     {
-        // var flag = await deleteAssistant();
-        // Console.WriteLine(flag);
+        var flag = await deleteAssistant();
+        Console.WriteLine(flag);
         var tools = new List<Tool> { Tool.Retrieval };
 
         Console.WriteLine("inside Assistant method");
         try
         {
             var assistantID = await checkAssistant();
-            if (assistantID == "false")
+            if (assistantID == "No assistants found")
             {
                 var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, $"You have demonstrated proficiency in analyzing abstracts of research articles to identify and find the research articles forefront in \"{_researchArea}\", Please review the information provided in the attached file. Based on your analysis, formulate a comprehensive response.", tools);
                 var assistantCreate = await _assistantApi.AssistantsEndpoint.CreateAssistantAsync(request);
                 Console.WriteLine($"Created Assistant: {assistantCreate}");
                 var fileID = await UploadFileAsync(filePath, assistantCreate);
-                return assistantCreate;
+                var threadId = await CreateThread();
+
+                var newAssistantObj = new AssistantObj
+                {
+                    AssistantID = assistantCreate,
+                    ThreadID = threadId,
+                    Username = "singletonUser"
+                    // Initialize other fields as necessary
+                };
+
+                return newAssistantObj;
+
             }
             else
             {
@@ -56,14 +67,22 @@ public class AssistantService
                 var threadId = await CreateThread();
                 // var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadId);
                 // Console.WriteLine($"Retrieve thread {thread.Id} -> {thread.CreatedAt}");
-                return threadId;
+                 var newAssistantObj = new AssistantObj
+                {
+                    AssistantID = assistantID,
+                    ThreadID = threadId,
+                    Username = "singletonUser"
+                    // Initialize other fields as necessary
+                };
+
+                return newAssistantObj;
             }
         }
         catch (Exception ex)
         {
             // Log the exception or handle it as needed
             Console.WriteLine($"An error occurred while creating the assistant: {ex.Message}");
-            return "Error"; //handle the error
+            return null;
         }
 
     }
@@ -126,6 +145,22 @@ public class AssistantService
             // Consider how you want to handle errors. You might want to return an error message within your messages list or handle it differently.
         }
 
+        return messages;
+    }
+
+    public async Task<List<MessageResponse>> FetchMessageList(string threadID) {
+        var messages = new List<MessageResponse>();
+        try
+        {
+            var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(_threadId);
+            var messageList = await ListMessages(thread);
+            messages.AddRange(messageList.Items);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            // Consider how you want to handle errors. You might want to return an error message within your messages list or handle it differently.
+        }
         return messages;
     }
 

@@ -80,9 +80,10 @@ public class ChatGPTAPIController : ControllerBase
         {
             var savedFilePath = await _inAppFileSaver.Save(file, "files");
 
-            string assistantId = await _assistantService.CreateAssistant(savedFilePath);
+            AssistantObj assistantObj = await _assistantService.CreateAssistant(savedFilePath);
+            await _mongoDBService.SaveAssistantAsync(assistantObj);
             Console.WriteLine("Return in the controller");
-            Console.WriteLine(assistantId);
+            Console.WriteLine(assistantObj);
 
             return Ok("success");
         }
@@ -111,6 +112,27 @@ public class ChatGPTAPIController : ControllerBase
         }
     }
 
+    [HttpGet("assistant-chat")]
+    public async Task<IActionResult> ChatWithAssistant()
+    {
+        try
+        {
+            var user = await _mongoDBService.GetSingletonUser();
+            if (user == null)
+            {
+                return NotFound("Singleton user not found.");
+            }
+
+            var messages = await _assistantService.FetchMessageList(user.ThreadID);
+            return Ok(messages);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred during chat with assistant.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+    }
+
     [HttpGet("assistant-check")]
     public async Task<IActionResult> AssistantCheck()
     {
@@ -126,19 +148,20 @@ public class ChatGPTAPIController : ControllerBase
         }
     }
 
+
     [HttpGet("dbtest")]
     public async Task<IActionResult> Dbtest()
     {
         try
         {
-            var newUser = new User
+            var newUser = new AssistantObj
             {
                 AssistantID = "john_doe",
                 ThreadID = "john@example.com"
                 // Initialize other fields as necessary
             };
 
-            await _mongoDBService.CreateUserAsync(newUser);
+            await _mongoDBService.SaveAssistantAsync(newUser);
             return Ok("This user was added to the database: " + newUser);
         }
         catch (Exception ex)
