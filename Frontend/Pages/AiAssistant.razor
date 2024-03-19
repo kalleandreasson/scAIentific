@@ -10,13 +10,22 @@
     <h1>Research Assistant</h1>
     <div class="chat-history">
         @foreach (var message in chatHistory)
+
         {
-            var messageTime = DateTimeOffset.FromUnixTimeSeconds(message.CreatedAt).ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+
+            var messageTime = DateTimeOffset.FromUnixTimeSeconds(message.CreatedAt).ToLocalTime().ToString("g",
+            CultureInfo.CurrentCulture);
+
             var messageType = message.Role == 3 ? "User" : "Assistant";
+
             if (message.Content != null && message.Content.Any())
+
             {
+
                 var firstContent = message.Content.First();
+
                 if (firstContent.Text != null)
+
                 {
                     <div class="@($"message {messageType.ToLower()}")">
                         <div class="message-info">
@@ -26,25 +35,28 @@
                         <p>@firstContent.Text.Value</p>
                     </div>
                 }
+
             }
+
         }
     </div>
 
     <EditForm Model="@chat" OnValidSubmit="HandleSubmitAsync">
-        <InputText @bind-Value="userQuery" />
+        <InputText @bind="@userQuery" />
         <button type="submit">Send</button>
     </EditForm>
+
 </div>
 
 @code {
     private string userQuery = "";
     private List<ChatMessage> chatHistory = new List<ChatMessage>();
-    private object chat = new {}; 
-
+    private object chat = new { };
     private async Task HandleSubmitAsync()
     {
         var chatRequest = new ChatRequest { UserMessage = userQuery };
         var chatResponse = await ChatService.PostUserQueryAsync(chatRequest);
+
         if (chatResponse?.Messages != null)
         {
             chatHistory = chatResponse.Messages.OrderBy(m => m.CreatedAt).ToList();
@@ -53,6 +65,6 @@
         {
             chatHistory = new List<ChatMessage>();
         }
-        userQuery = ""; 
+        userQuery = "";
     }
 }
