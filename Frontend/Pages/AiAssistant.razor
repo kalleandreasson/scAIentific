@@ -52,6 +52,23 @@
     private string userQuery = "";
     private List<ChatMessage> chatHistory = new List<ChatMessage>();
     private object chat = new { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Call GetChatHistoryAsync to fetch the chat history
+        var chatResponse = await ChatService.GetChatHistoryAsync();
+        
+        // Access the Messages property from the ChatResponse object
+        if (chatResponse?.Messages != null)
+        {
+            chatHistory = chatResponse.Messages.OrderBy(m => m.CreatedAt).ToList();
+        }
+        else
+        {
+            chatHistory = new List<ChatMessage>();
+        }
+    }
+
     private async Task HandleSubmitAsync()
     {
         var chatRequest = new ChatRequest { UserMessage = userQuery };

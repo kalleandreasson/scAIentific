@@ -128,7 +128,7 @@ public class ChatGPTAPIController : ControllerBase
             }
 
             var messages = await _assistantService.FetchMessageList(user.ThreadID);
-            return Ok(messages);
+            return Ok(new { Messages = messages });
         }
         catch (Exception ex)
         {

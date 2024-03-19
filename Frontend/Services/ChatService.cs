@@ -22,6 +22,38 @@ namespace Frontend.Services
             _chatEndpoint = $"{apiBaseUrl}research-front/assistant-chat";
         }
 
+        public async Task<ChatResponse> GetChatHistoryAsync()
+        {
+            try
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync(_chatEndpoint);
+
+                response.EnsureSuccessStatusCode();
+
+                // Deserialize the JSON response to a List<ChatMessage>
+                ChatResponse chatHistory = await response.Content.ReadFromJsonAsync<ChatResponse>();
+
+                foreach (var message in chatHistory.Messages)
+                {
+                    var dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(message.CreatedAt);
+                    message.CreatedAtDateTime = dateTimeOffset.LocalDateTime;
+                }
+
+                return chatHistory;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"HTTP request exception: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+                throw;
+            }
+        }
+
+
         public async Task<ChatResponse> PostUserQueryAsync(ChatRequest chatRequest)
         {
             if (chatRequest == null)
