@@ -10,7 +10,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddHttpClient<UploadFileService>(client => 
 {
-    client.BaseAddress = new Uri("http://localhost:5000/");
+    client.BaseAddress = new Uri("http://localhost:5066/");
 })
 .AddTransientHttpErrorPolicy(policy => policy.WaitAndRetryAsync(new[]
 {
@@ -21,7 +21,7 @@ builder.Services.AddHttpClient<UploadFileService>(client =>
 
 builder.Services.AddHttpClient<ChatService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5000/"); // Adjust if the base address is different
+    client.BaseAddress = new Uri("http://localhost:5066/"); // Adjust if the base address is different
 });
 
 builder.Services.AddScoped<ExcelService>();

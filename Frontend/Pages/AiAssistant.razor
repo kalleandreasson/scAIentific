@@ -42,7 +42,7 @@
     </div>
 
     <EditForm Model="@chat" OnValidSubmit="HandleSubmitAsync">
-        <InputText @bind="@userQuery" />
+        <InputText @bind-Value="@userQuery" />
         <button type="submit">Send</button>
     </EditForm>
 

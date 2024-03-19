@@ -9,7 +9,7 @@ namespace Frontend.Services
     public class ChatService
     {
         private readonly HttpClient _httpClient;
-        private const string ChatEndpoint = "http://localhost:5000/research-front/assistant-chat";
+        private const string ChatEndpoint = "http://localhost:5066/research-front/assistant-chat";
 
         public ChatService(HttpClient httpClient)
         {

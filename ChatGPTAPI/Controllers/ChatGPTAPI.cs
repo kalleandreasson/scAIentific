@@ -100,8 +100,12 @@ public class ChatGPTAPIController : ControllerBase
     {
         try
         {
+
+             var username = "singletonUser";
+            var assistantObj = await _mongoDBService.GetUserIfExistsAsync(username);
+
             Console.Write("ChatWithAssistant() -> request.UserMessage\n");
-            var messages = await _assistantService.ProcessUserQueryAndFetchResponses(request.UserMessage);
+            var messages = await _assistantService.ProcessUserQueryAndFetchResponses(request.UserMessage, assistantObj.ThreadID, assistantObj.AssistantID);
 
             return Ok(new { Messages = messages });
         }

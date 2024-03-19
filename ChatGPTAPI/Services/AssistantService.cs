@@ -113,14 +113,14 @@ public class AssistantService
         return filesList.Items[0];
     }
 
-    public async Task<List<MessageResponse>> ProcessUserQueryAndFetchResponses(string userQuery)
+    public async Task<List<MessageResponse>> ProcessUserQueryAndFetchResponses(string userQuery, string threadID, string assistantID)
     {
         var messages = new List<MessageResponse>();
 
         try
         {
-            var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(_threadId);
-            var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(_assistantId);
+            var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadID);
+            var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
 
             var request = new CreateMessageRequest($"{userQuery}");
             var newMessage = await _assistantApi.ThreadsEndpoint.CreateMessageAsync(thread.Id, request);
@@ -152,7 +152,7 @@ public class AssistantService
         var messages = new List<MessageResponse>();
         try
         {
-            var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(_threadId);
+            var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadID);
             var messageList = await ListMessages(thread);
             messages.AddRange(messageList.Items);
         }

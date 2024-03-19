@@ -20,7 +20,7 @@
     {
         try
         {
-            var response = await Http.GetStringAsync("http://localhost:5000/research-front/assistant-check");
+            var response = await Http.GetStringAsync("http://localhost:5066/research-front/assistant-check");
             // Navigate based on the assistant check response
             // Assuming the response "asst_" prefix indicates an assistant is available
             if (response != null && response.StartsWith("asst_"))
