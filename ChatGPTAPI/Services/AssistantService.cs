@@ -197,7 +197,7 @@ public class AssistantService
         }
 
         // Assuming you want to return the ID of the first assistant as before
-        return assistantsList.Items[0].Id;
+        return assistantsList.Items[0].Id; 
     }
 
     //If we want to delete all assistants - not used right now

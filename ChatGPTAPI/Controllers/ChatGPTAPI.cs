@@ -137,15 +137,24 @@ public class ChatGPTAPIController : ControllerBase
     public async Task<IActionResult> AssistantCheck()
     {
         try
+    {   
+        var username = "singletonUser";
+        var user = await _mongoDBService.GetUserIfExistsAsync(username);
+
+        if (user == null)
         {
-            var messageList = await _assistantService.checkAssistant();
-            return Ok(messageList);
+            // No user found with the provided username
+            return NotFound($"No user found with username: {username}");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An unexpected error occurred during chat with assistant.");
-            return StatusCode(500, "An unexpected error occurred.");
-        }
+
+        // User found, return the user object
+        return Ok(user.AssistantID);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "An unexpected error occurred while trying to fetch the user.");
+        return StatusCode(500, "An unexpected error occurred.");
+    }
     }
 
 

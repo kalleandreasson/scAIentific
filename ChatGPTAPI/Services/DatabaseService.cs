@@ -36,4 +36,16 @@ public async Task<AssistantObj> GetAssistantByAssistantIDAsync(string assistantI
     return await _users.Find(filter).FirstOrDefaultAsync();
 }
 
+public async Task<AssistantObj> GetUserIfExistsAsync(string username)
+{
+    // Build the filter based on the username
+    var filter = Builders<AssistantObj>.Filter.Eq(user => user.Username, username);
+
+    // Attempt to find the user in the collection
+    var user = await _users.Find(filter).FirstOrDefaultAsync();
+
+    // This will return the user if found, or null if not found
+    return user;
+}
+
 }
