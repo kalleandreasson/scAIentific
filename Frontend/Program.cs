@@ -1,16 +1,25 @@
 using Frontend.Services;
+using Microsoft.Extensions.Configuration;
 using OfficeOpenXml;
 using Polly;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
-ExcelPackage.LicenseContext = LicenseContext.NonCommercial;// or LicenseContext.Commercial if you have a commercial license.
+// Set the EPPlus license context
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial; // Or LicenseContext.Commercial if you have a commercial license.
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+
+// Retrieve the API Base URL from configuration
+var apiBaseUrl = builder.Configuration.GetValue<string>("APIBaseUrl");
+
+// Configure HttpClient for UploadFileService with the API Base URL from configuration
 builder.Services.AddHttpClient<UploadFileService>(client => 
 {
-    client.BaseAddress = new Uri("http://localhost:5066/");
+    client.BaseAddress = new Uri(apiBaseUrl);
 })
 .AddTransientHttpErrorPolicy(policy => policy.WaitAndRetryAsync(new[]
 {
@@ -19,18 +28,15 @@ builder.Services.AddHttpClient<UploadFileService>(client =>
     TimeSpan.FromSeconds(10)
 }));
 
+// Configure HttpClient for ChatService with the API Base URL from configuration
 builder.Services.AddHttpClient<ChatService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5066/"); // Adjust if the base address is different
+    // Here we use the base address from the configuration, making it dynamic
+    client.BaseAddress = new Uri(apiBaseUrl); 
 });
 
 builder.Services.AddScoped<ExcelService>();
 builder.Services.AddScoped<UploadFileService>();
-
-
-
-// builder.Services.AddHttpClient<OpenAIService>();
-// builder.Services.Configure<OpenAIServiceOptions>(builder.Configuration.GetSection("OpenAI"));
 
 var app = builder.Build();
 
@@ -38,16 +44,11 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-
-
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.MapBlazorHub();

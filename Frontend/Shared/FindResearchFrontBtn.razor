@@ -3,6 +3,7 @@
 @using System.Net.Http.Json
 @using Newtonsoft.Json
 @inject HttpClient httpClient
+@inject IConfiguration configuration
 
 
 <div>
@@ -39,7 +40,7 @@
     {
         Console.WriteLine("OutputText method called");
 
-        var response = await httpClient.PostAsJsonAsync("http://localhost:5066/research-front/generate", new
+        var response = await httpClient.PostAsJsonAsync($"{configuration.GetValue<string>("APIBaseUrl")}research-front/generate", new
         {
             systemMessage = "you will be provided with a number of abstracts, each abstract is delimited by one quotes. Your task is to review these abstracts carefully to identify the current research front in the specified field. Look for trends, key themes, and groundbreaking findings that signify major advancements or shifts in research focus. Provide a summary that highlights these elements, ensuring to note how the citation technique has been applied in each case",
             userMessage = $"{prompt} "
