@@ -1,12 +1,120 @@
 ﻿@page "/"
 @using Frontend.Shared
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
 
 <PageTitle>Home</PageTitle>
-<div class="index-container">
-<h1>Find research front</h1>
-<FindResearchFrontBtn  />
 
+<div class="index-container index">
+    <section class="welcome-banner">
+        <div class="banner-content">
+            <h1>Welcome to scAIentific - Your AI-powered Research Assistant</h1>
+        </div>
+    </section>
+
+    <button class="index-button" @onclick="CheckAssistantStatus">Start</button>
 </div>
-@code {
 
+@code {
+    private async Task CheckAssistantStatus()
+
+
+
+    {
+
+
+
+        try
+
+
+
+        {
+
+
+
+            var response = await Http.GetStringAsync("http://localhost:5000/research-front/assistant-check");
+
+
+
+
+
+
+
+            // Navigate based on the assistant check response
+
+
+
+            // Assuming the response "asst_" prefix indicates an assistant is available
+
+
+
+            if (response != null && response.StartsWith("asst_"))
+
+
+
+            {
+
+
+
+                // Navigate to the Assistant component/page
+
+
+
+                NavigationManager.NavigateTo("/assistant");
+
+
+
+            }
+
+
+
+            else
+
+
+
+            {
+
+
+
+                // Navigate to the UploadFile page/component
+
+
+
+                NavigationManager.NavigateTo("/uploadfile");
+
+
+
+            }
+
+
+
+        }
+
+
+
+        catch (Exception ex)
+
+
+
+        {
+
+
+
+            Console.WriteLine($"Error fetching assistant status: {ex.Message}");
+
+
+
+            // In case of error, navigate to a default or error page
+
+
+
+            // NavigationManager.NavigateTo("/error"); // Uncomment or adjust based on your application's routing
+
+
+
+        }
+
+
+
+    }
 }

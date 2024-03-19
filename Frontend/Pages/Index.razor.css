@@ -1,0 +1,24 @@
+.welcome-banner {
+  padding: 20px;
+  text-align: center;
+}
+
+.banner-content h1 {
+  font-size: 24px; 
+  margin: 0;
+  padding: 10px 0;
+}
+
+.index-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  width: 50%;
+}
+
+.index {
+  display: flex; /* Using flexbox */
+  flex-direction: column; /* Stack children vertically */
+  justify-content: center; /* Center vertically */
+  align-items: center; /* Center horizontally */
+  height: 50vh; /* Full height of the viewport */
+}
