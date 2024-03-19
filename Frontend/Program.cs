@@ -2,9 +2,6 @@ using Frontend.Services;
 using OfficeOpenXml;
 using Polly;
 
- // Add this to Program.cs
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;// or LicenseContext.Commercial if you have a commercial license.
@@ -22,9 +19,10 @@ builder.Services.AddHttpClient<UploadFileService>(client =>
     TimeSpan.FromSeconds(10)
 }));
 
-
-
-
+builder.Services.AddHttpClient<ChatService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5000/"); // Adjust if the base address is different
+});
 
 builder.Services.AddScoped<ExcelService>();
 builder.Services.AddScoped<UploadFileService>();
