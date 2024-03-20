@@ -6,67 +6,57 @@
 @using System.Globalization
 
 <PageTitle>Assistant</PageTitle>
-<div class="index-container">
-    <h1>Research Assistant</h1>
-    <div class="chat-history">
-        @foreach (var message in chatHistory)
 
-        {
-
-            var messageTime = DateTimeOffset.FromUnixTimeSeconds(message.CreatedAt).ToLocalTime().ToString("g",
-            CultureInfo.CurrentCulture);
-
-            var messageType = message.Role == 3 ? "User" : "Assistant";
-
-            if (message.Content != null && message.Content.Any())
-
+@if (!isChatHistoryLoaded)
+{
+    <div><h1>Loading...</h1></div>
+}
+else
+{
+    <div class="index-container">
+        <h1>Research Assistant</h1>
+        <div class="chat-history">
+            @foreach (var message in chatHistory)
             {
-
-                var firstContent = message.Content.First();
-
-                if (firstContent.Text != null)
-
+                var messageTime = DateTimeOffset.FromUnixTimeSeconds(message.CreatedAt).ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+                var messageType = message.Role == 3 ? "User" : "Assistant";
+                if (message.Content != null && message.Content.Any())
                 {
-                    <div class="@($"message {messageType.ToLower()}")">
-                        <div class="message-info">
-                            <span class="message-type">@messageType</span>
-                            <span class="message-time">@messageTime</span>
+                    var firstContent = message.Content.First();
+                    if (firstContent.Text != null)
+                    {
+                        <div class="@($"message {messageType.ToLower()}")">
+                            <div class="message-info">
+                                <span class="message-type">@messageType</span>
+                                <span class="message-time">@messageTime</span>
+                            </div>
+                            <p>@firstContent.Text.Value</p>
                         </div>
-                        <p>@firstContent.Text.Value</p>
-                    </div>
+                    }
                 }
-
             }
-
-        }
+        </div>
+        <EditForm Model="@chat" OnValidSubmit="HandleSubmitAsync">
+            <InputText @bind-Value="@userQuery" />
+            <button type="submit">Send</button>
+        </EditForm>
     </div>
-
-    <EditForm Model="@chat" OnValidSubmit="HandleSubmitAsync">
-        <InputText @bind-Value="@userQuery" />
-        <button type="submit">Send</button>
-    </EditForm>
-
-</div>
+}
 
 @code {
     private string userQuery = "";
     private List<ChatMessage> chatHistory = new List<ChatMessage>();
+    private bool isChatHistoryLoaded = false;
     private object chat = new { };
 
     protected override async Task OnInitializedAsync()
     {
-        // Call GetChatHistoryAsync to fetch the chat history
         var chatResponse = await ChatService.GetChatHistoryAsync();
-        
-        // Access the Messages property from the ChatResponse object
         if (chatResponse?.Messages != null)
         {
             chatHistory = chatResponse.Messages.OrderBy(m => m.CreatedAt).ToList();
         }
-        else
-        {
-            chatHistory = new List<ChatMessage>();
-        }
+        isChatHistoryLoaded = true; // Indicate that the chat history has been loaded
     }
 
     private async Task HandleSubmitAsync()
@@ -76,11 +66,8 @@
 
         if (chatResponse?.Messages != null)
         {
-            chatHistory = chatResponse.Messages.OrderBy(m => m.CreatedAt).ToList();
-        }
-        else
-        {
-            chatHistory = new List<ChatMessage>();
+            chatHistory.AddRange(chatResponse.Messages);
+            chatHistory = chatHistory.OrderBy(m => m.CreatedAt).ToList();
         }
         userQuery = "";
     }
