@@ -37,7 +37,7 @@ namespace Frontend.Services
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
                 content.Add(fileContent, "file", file.Name);
             }
-            var response = await httpClient.PostAsync($"{apiBaseUrl}/research-front/generateByFile", content);
+            var response = await httpClient.PostAsync($"{apiBaseUrl}research-front/generateByFile", content);
             if (response.IsSuccessStatusCode)
             {
                 return (true, string.Empty);
