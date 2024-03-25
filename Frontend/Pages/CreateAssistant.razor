@@ -1,0 +1,34 @@
+@using Frontend.Models
+@page "/createassistant"
+<PageTitle>Create Assistant</PageTitle>
+
+<div>
+
+<p class="text-success">
+  @formResults
+</p>
+<br/>
+
+<EditForm Model="@research" OnValidSubmit="HandleValidSubmit">
+  <DataAnnotationsValidator />
+  <ValidationSummary />
+  <p>
+    <label for="researchArea">
+        Enter your research area:
+        <InputText id="researchArea" @bind-Value="research.ResearchArea"/>
+    </label>
+  </p>
+  <button type="submit">Create assistant</button>
+</EditForm>
+
+</div>
+@code{
+  private UserResearch research = new UserResearch();
+  private string formResults ="";
+
+  private void HandleValidSubmit ()
+  {
+    formResults = $"{research.ResearchArea} research was just created";
+    research = new UserResearch();
+  }
+}
