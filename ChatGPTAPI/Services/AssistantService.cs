@@ -14,29 +14,35 @@ public class AssistantService
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
     private readonly OpenAIClient _assistantApi;
+    private readonly MongoDBService _mongoDBService;
 
     private string _researchArea = " Gender and Social Networks in Organizational Setting";
 
-    public AssistantService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options)
+    public AssistantService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options, MongoDBService mongoDBService)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         var settings = options.Value ?? throw new ArgumentNullException(nameof(options));
         _apiKey = settings.ApiKey ?? throw new ArgumentNullException(nameof(settings.ApiKey));
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
         _assistantApi = new OpenAIClient(_apiKey);
+        _mongoDBService = mongoDBService;
     }
 
+    //Save fileID, assistantID, threadID to database
+    //Should only returns assistantID
     public async Task<AssistantObj> CreateAssistant(string filePath)
     {
-        var flag = await deleteAssistant();
+        var flag = await deleteAllAssistant();
         Console.WriteLine(flag);
         var tools = new List<Tool> { Tool.Retrieval };
 
         Console.WriteLine("inside Assistant method");
         try
         {
-            var assistantID = await checkAssistant();
-            if (assistantID == "No assistants found")
+            var assistantID = await checkAssistantAPI();
+            var assistantObj = await CheckAssistantDB();
+            //now checks the first entry in database instead of against the API
+            if (assistantObj.Id == null)
             {
                 var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, $"You have demonstrated proficiency in analyzing abstracts of research articles to identify and find the research articles forefront in \"{_researchArea}\", Please review the information provided in the attached file. Based on your analysis, formulate a comprehensive response.", tools);
                 var assistantCreate = await _assistantApi.AssistantsEndpoint.CreateAssistantAsync(request);
@@ -59,6 +65,7 @@ public class AssistantService
             {
                 Console.WriteLine("Already have an assistant :)");
 
+                //Save fileID to database
                 var fileID = await UploadFileAsync(filePath, assistantID);
 
                 // return assistantID;
@@ -164,7 +171,7 @@ public class AssistantService
         return messages;
     }
 
-    public async Task<string> checkAssistant()
+    public async Task<string> checkAssistantAPI()
     {
 
         var assistantsList = await _assistantApi.AssistantsEndpoint.ListAssistantsAsync();
@@ -200,8 +207,12 @@ public class AssistantService
         return assistantsList.Items[0].Id; 
     }
 
+    private async Task<AssistantObj> CheckAssistantDB() {
+        return await _mongoDBService.ListAllAndReturnFirstAsync();
+    }
+
     //If we want to delete all assistants - not used right now
-    private async Task<String> deleteAssistant()
+    private async Task<string> deleteAllAssistant()
     {
         Console.WriteLine("inside delete method");
         var assistantsList = await _assistantApi.AssistantsEndpoint.ListAssistantsAsync();
@@ -211,6 +222,15 @@ public class AssistantService
             Console.WriteLine($"{assistant} -> {assistant.CreatedAt}");
             var isDeleted = await _assistantApi.AssistantsEndpoint.DeleteAssistantAsync(assistant);
         }
+
+        var ThreadIDList = await _mongoDBService.GetAllThreadIDsAsync();
+        foreach (var threadID in ThreadIDList)
+        {
+            Console.WriteLine($"{threadID}");
+            var isDeleted = await _assistantApi.ThreadsEndpoint.DeleteThreadAsync(threadID);
+        }
+
+        _mongoDBService.DeleteAllAssistantsAsync();
         return "deleted";
     }
 
@@ -232,6 +252,11 @@ public class AssistantService
 
         var messageList = await thread.ListMessagesAsync();
         return messageList;
+    }
+
+    public async Task<string> RetrieveThread(string threadID) {
+        var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadID);
+        return thread;
     }
 
 }

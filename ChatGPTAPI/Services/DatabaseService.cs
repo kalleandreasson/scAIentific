@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 public class MongoDBService
 {
-    private readonly IMongoCollection<AssistantObj> _users;
+    private readonly IMongoCollection<AssistantObj> _assistants;
     private readonly string _dbConnectionString;
 
     public MongoDBService(IOptions<DatabaseServiceOptions> options)
@@ -13,39 +13,67 @@ public class MongoDBService
         var settings = options.Value ?? throw new ArgumentNullException(nameof(options));
         var client = new MongoClient(settings.DatabaseConnectString); // Uses the Atlas connection string
         var database = client.GetDatabase("YourDatabaseNameHere");
-        _users = database.GetCollection<AssistantObj>("AssistantsObj");
+        _assistants = database.GetCollection<AssistantObj>("AssistantsObj");
     }
 
     public async Task SaveAssistantAsync(AssistantObj assistantObject)
     {
-        await _users.InsertOneAsync(assistantObject);
+        await _assistants.InsertOneAsync(assistantObject);
     }
 
-    public async Task<AssistantObj> GetSingletonUser()
-{
-        var filter = Builders<AssistantObj>.Filter.Eq(user => user.Username, "singletonUser");
-        return await _users.Find(filter).FirstOrDefaultAsync();
-}
+    public async Task<AssistantObj> GetAssistantByAssistantIDAsync(string assistantID)
+    {
+        // Build the filter based on the AssistantID
+        var filter = Builders<AssistantObj>.Filter.Eq(assistant => assistant.AssistantID, assistantID);
 
-public async Task<AssistantObj> GetAssistantByAssistantIDAsync(string assistantID)
-{
-    // Build the filter based on the AssistantID
-    var filter = Builders<AssistantObj>.Filter.Eq(assistant => assistant.AssistantID, assistantID);
+        // Attempt to find the AssistantObj in the collection
+        return await _assistants.Find(filter).FirstOrDefaultAsync();
+    }
 
-    // Attempt to find the AssistantObj in the collection
-    return await _users.Find(filter).FirstOrDefaultAsync();
-}
+    public async Task<AssistantObj> GetUserIfExistsAsync(string username)
+    {
+        // Build the filter based on the username
+        var filter = Builders<AssistantObj>.Filter.Eq(user => user.Username, username);
 
-public async Task<AssistantObj> GetUserIfExistsAsync(string username)
-{
-    // Build the filter based on the username
-    var filter = Builders<AssistantObj>.Filter.Eq(user => user.Username, username);
+        // Attempt to find the user in the collection
+        var user = await _assistants.Find(filter).FirstOrDefaultAsync();
 
-    // Attempt to find the user in the collection
-    var user = await _users.Find(filter).FirstOrDefaultAsync();
+        // This will return the user if found, or null if not found
+        return user;
+    }
 
-    // This will return the user if found, or null if not found
-    return user;
-}
+    public async Task<AssistantObj> ListAllAndReturnFirstAsync()
+    {
+        var allAssistants = await _assistants.Find(_ => true).ToListAsync();
+
+        foreach (var assistant in allAssistants)
+        {
+            // Print out each AssistantObj (for example, to the console)
+            Console.WriteLine($"AssistantID: {assistant.AssistantID}, ThreadID: {assistant.ThreadID}, Username: {assistant.Username}");
+        }
+
+        // Return the first AssistantObj in the list, or null if the list is empty
+        return allAssistants.FirstOrDefault();
+    }
+
+    public async Task DeleteAllAssistantsAsync()
+    {
+        // Use an empty filter to match all documents
+        var filter = Builders<AssistantObj>.Filter.Empty;
+
+        // Delete all documents in the collection
+        await _assistants.DeleteManyAsync(filter);
+    }
+
+    public async Task<List<string>> GetAllThreadIDsAsync()
+    {
+        // Define a projection to extract only the ThreadID field from each document
+        var projection = Builders<AssistantObj>.Projection.Include(assistant => assistant.ThreadID).Exclude(assistant => assistant.Id);
+
+        // Find all documents but project them to only include the ThreadID field
+        var threadIDsCursor = await _assistants.Find(_ => true).Project<string>(projection).ToListAsync();
+
+        return threadIDsCursor;
+    }
 
 }

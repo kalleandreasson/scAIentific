@@ -25,52 +25,10 @@ public class ChatGPTAPIController : ControllerBase
         _mongoDBService = mongoDBService;
     }
 
-    [HttpGet]
-    public IActionResult Get()
-    {
-        var response = new { Message = "Hello! You are talking to the API that will generate research front using AI" };
-        return Ok(response);
-    }
-
-    // Endpoint to generate research front using chat GPT
-    [HttpPost("generate")]
-    public async Task<IActionResult> FindResearchFront([FromBody] FindResearchFrontRequest request)
-    {
-        if (request == null || string.IsNullOrEmpty(request.UserMessage))
-        {
-            return BadRequest("Invalid request data");
-        }
-
-        try
-        {
-            string systemMessage = request.SystemMessage ?? "Default System Message";
-            string userMessage = request.UserMessage;
-
-            string response = await _openAIApiService.CreateChatCompletionAsync(systemMessage, userMessage);
-            var parsedResponse = JsonConvert.DeserializeObject<ApiResponse>(response);
-            string messageContent = parsedResponse?.choices?[0]?.message?.content ?? "No response";
-
-            if (string.IsNullOrEmpty(messageContent))
-            {
-                return NotFound("The response from AI was empty");
-            }
-
-            return Ok(messageContent);
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogError(ex, "Error parsing response from AI service.");
-            return StatusCode(500, "There was an error processing the AI response.");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An unexpected error occurred.");
-            return StatusCode(500, "An unexpected error occurred.");
-        }
-    }
-
+    //Change to create assistant endpoint
+    //Take file and researchArea as input
     [HttpPost("generateByFile")]
-    public async Task<IActionResult> FindResearchFrontByFile([FromForm] IFormFile file)
+    public async Task<IActionResult> FindResearchFrontByFile([FromForm] IFormFile file, [FromQuery] string researchArea)
     {
         if (file == null || file.Length == 0)
         {
@@ -80,12 +38,13 @@ public class ChatGPTAPIController : ControllerBase
         {
             var savedFilePath = await _inAppFileSaver.Save(file, "files");
 
+            //Should send researchArea as parameter as well
             AssistantObj assistantObj = await _assistantService.CreateAssistant(savedFilePath);
             await _mongoDBService.SaveAssistantAsync(assistantObj);
             Console.WriteLine("Return in the controller");
             Console.WriteLine(assistantObj);
 
-            return Ok("success");
+            return Ok(assistantObj.AssistantID);
         }
         catch (Exception ex)
         {
@@ -121,7 +80,8 @@ public class ChatGPTAPIController : ControllerBase
     {
         try
         {
-            var user = await _mongoDBService.GetSingletonUser();
+            var username = "singletonUser";
+            var user = await _mongoDBService.GetUserIfExistsAsync(username);
             if (user == null)
             {
                 return NotFound("Singleton user not found.");
@@ -169,8 +129,8 @@ public class ChatGPTAPIController : ControllerBase
         {
             var newUser = new AssistantObj
             {
-                AssistantID = "john_doe",
-                ThreadID = "john@example.com"
+                AssistantID = "Db test",
+                ThreadID = "Db test"
                 // Initialize other fields as necessary
             };
 
@@ -182,6 +142,13 @@ public class ChatGPTAPIController : ControllerBase
             _logger.LogError(ex, "An unexpected error occurred during chat with assistant.");
             return StatusCode(500, "An unexpected error occurred.");
         }
+    }
+
+    [HttpGet("retrieveThread")]
+    public async Task<IActionResult> RetreiveThread() {
+        var threadID = "";
+        var retrievedThread = await _assistantService.RetrieveThread(threadID);
+        return Ok(retrievedThread);
     }
 
 }
