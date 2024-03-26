@@ -33,27 +33,31 @@ public class ChatGPTAPIController : ControllerBase
     public async Task<IActionResult> FindResearchFrontByFile([FromForm] IFormFile file, [FromQuery] string researchArea)
     {
         if (file == null || file.Length == 0)
-        {
-            return BadRequest("No file provided or file is empty.");
-        }
-        try
-        {
-            var savedFilePath = await _inAppFileSaver.Save(file, "files");
+    {
+        return BadRequest("No file provided or file is empty.");
+    }
+    try
+    {
+        var savedFilePath = await _inAppFileSaver.Save(file, "files");
+        var assistantObj = await _assistantService.CreateAssistant(savedFilePath, researchArea);
 
-            //Should send researchArea as parameter as well
-            AssistantObj assistantObj = await _assistantService.CreateAssistant(savedFilePath, researchArea);
-            await _mongoDBService.SaveAssistantAsync(assistantObj);
-            Console.WriteLine("Return in the controller");
-            Console.WriteLine(assistantObj);
-
-            return Ok(assistantObj.AssistantID);
-        }
-        catch (Exception ex)
+        if (assistantObj == null)
         {
-            _logger.LogError(ex, "Error saving or processing the file.");
-            return StatusCode(500, "There was an error processing the file.");
+            Console.WriteLine("Assistant object is null, not saving to database.");
+            return StatusCode(500, "Failed to create assistant object.");
         }
 
+        await _mongoDBService.SaveAssistantAsync(assistantObj);
+        Console.WriteLine("Return in the controller");
+        Console.WriteLine(assistantObj.AssistantID);
+
+        return Ok(assistantObj.AssistantID);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error saving or processing the file.");
+        return StatusCode(500, "There was an error processing the file.");
+    }
     }
 
     [HttpPost("assistant-chat")]

@@ -65,15 +65,16 @@ public class MongoDBService
         await _assistants.DeleteManyAsync(filter);
     }
 
-    public async Task<List<string>> GetAllThreadIDsAsync()
-    {
-        // Define a projection to extract only the ThreadID field from each document
-        var projection = Builders<AssistantObj>.Projection.Include(assistant => assistant.ThreadID).Exclude(assistant => assistant.Id);
+public async Task<List<string>> GetAllThreadIDsAsync()
+{
+    var filter = Builders<AssistantObj>.Filter.Empty;
+    var projection = Builders<AssistantObj>.Projection.Include("ThreadID");
+    var threadIDsCursor = await _assistants.Find(filter).Project<AssistantObj>(projection).ToListAsync();
 
-        // Find all documents but project them to only include the ThreadID field
-        var threadIDsCursor = await _assistants.Find(_ => true).Project<string>(projection).ToListAsync();
+    // Assuming ThreadID is a string, extract just the ThreadID from each AssistantObj
+    var threadIDs = threadIDsCursor.Select(assistant => assistant.ThreadID).ToList();
 
-        return threadIDsCursor;
-    }
+    return threadIDs;
+}
 
 }

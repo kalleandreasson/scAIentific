@@ -9,8 +9,6 @@ using OpenAI.Threads;
 
 public class AssistantService
 {
-    private readonly string _threadId;
-    private readonly string _assistantId;
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
     private readonly OpenAIClient _assistantApi;
@@ -31,8 +29,8 @@ public class AssistantService
     //Create a new service for file controller (refactoring)
     public async Task<AssistantObj> CreateAssistant(string filePath, string researchArea)
     {
-        var flag = await deleteAllAssistant();
-        Console.WriteLine(flag);
+        //var flag = await deleteAllAssistant();
+        //Console.WriteLine(flag);
         var tools = new List<Tool> { Tool.Retrieval };
 
         Console.WriteLine("inside Assistant method");
@@ -41,8 +39,9 @@ public class AssistantService
             var assistantID = await checkAssistantAPI();
             var assistantObj = await CheckAssistantDB();
             //now checks the first entry in database instead of against the API
-            if (assistantObj.Id == null)
+            if (assistantObj == null)
             {
+                Console.WriteLine("Inside if statement - will create assistant");
                 var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, $"You have demonstrated proficiency in analyzing abstracts of research articles to identify and find the research articles forefront in \"{researchArea}\", Please review the information provided in the attached file. Based on your analysis, formulate a comprehensive response.", tools);
                 var assistantCreate = await _assistantApi.AssistantsEndpoint.CreateAssistantAsync(request);
                 Console.WriteLine($"Created Assistant: {assistantCreate}");
@@ -209,7 +208,9 @@ public class AssistantService
     }
 
     private async Task<AssistantObj> CheckAssistantDB() {
-        return await _mongoDBService.ListAllAndReturnFirstAsync();
+        var flag = await _mongoDBService.ListAllAndReturnFirstAsync();
+        Console.WriteLine("Database flag: " + flag);
+        return flag;
     }
 
     //If we want to delete all assistants - not used right now
