@@ -4,22 +4,8 @@
 
 <div>
 
-<p class="text-success">
-  @formResults
-</p>
-<br/>
+<UploadFile />
 
-<EditForm Model="@research" OnValidSubmit="HandleValidSubmit">
-  <DataAnnotationsValidator />
-  <ValidationSummary />
-  <p>
-    <label for="researchArea">
-        Enter your research area:
-        <InputText id="researchArea" @bind-Value="research.ResearchArea"/>
-    </label>
-  </p>
-  <button type="submit">Create assistant</button>
-</EditForm>
 
 </div>
 @code{

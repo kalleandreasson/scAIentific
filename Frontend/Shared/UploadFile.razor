@@ -3,18 +3,34 @@
 @using Frontend.Models
 @using Frontend.Services
 @inject IConfiguration config
-@inject ExcelService ExcelService
 @inject UploadFileService UploadFileService
 
-<PageTitle>UploadFile</PageTitle>
 <div class="index-container">
-    <h1>Upload an excel file here</h1>
+    <h1>Create Assistant and Upload File</h1>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
         <h3>Error</h3>
         <p class="text-danger">@errorMessage</p>
     }
-    <InputFile OnChange="@LoadFiles" multiple accept=".docx" />
+
+    <EditForm Model="@research" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <p>
+            <label for="researchArea">
+                Enter your research area:
+                <InputText id="researchArea" @bind-Value="research.ResearchArea"/>
+            </label>
+        </p>
+        <p>
+            Upload file (.docx):
+            <InputFile OnChange="LoadFiles" accept=".docx"/>
+        </p>
+        
+        <button type="submit">Create Assistant</button>
+    </EditForm>
+
     @if (uploadedFiles.Count > 0)
     {
         <div class="uploaded-files-section">
@@ -22,63 +38,75 @@
             <ul class="uploaded-files-list">
                 @foreach (var fileName in uploadedFiles)
                 {
-                    <li class="uploaded-file-item">@fileName</li>
+                    <li>@fileName</li>
                 }
             </ul>
         </div>
-        <button @onclick="SendFileToApi">Find Research Front</button>
     }
 </div>
+
 @code {
-    private string? errorMessage; // Variable to hold the latest error message
-    private List<IBrowserFile> filesToUpload = new(); // To hold files in memory
-    private List<string> uploadedFiles = new(); // To store uploaded file names
+    private UserResearch research = new UserResearch();
+    private string formResults = "";
+
     private int maxAllowedFiles = 1;
-    [Parameter]
-    public EventCallback OnFileUploaded { get; set; }
+    private long maxFileSize = 1024 * 1024 * 512; // 512 MB
+    private string? errorMessage;
+    private List<string> uploadedFiles = new(); // To store uploaded file names for display
 
-    private async Task LoadFiles(InputFileChangeEventArgs e)
-    {
-        uploadedFiles.Clear(); // Clear previously uploaded files list
-        filesToUpload.Clear(); // Clear previously selected files
-        errorMessage = string.Empty; // Reset the error message
-        var selectedFiles = e.GetMultipleFiles(maxAllowedFiles);
-        @* foreach (var file in selectedFiles)
-        {
-            var models = await UploadFileService.ProcessExcelFile(file);
-            if (models.Any())
-            {
-                filesToUpload.Add(file);
-                uploadedFiles.Add(file.Name);
-            }
-            else
-            {
-                errorMessage = $"{file.Name} could not be parsed. Please ensure it is a valid Excel file.";
-                return; // Exit early since we only show one error at a time
-            }
-        } *@
-        filesToUpload.Add(selectedFiles[0]);
-                uploadedFiles.Add(selectedFiles[0].Name);
-    }
-
-    private async Task SendFileToApi()
+    private async Task HandleValidSubmit()
+{
+    if (filesToUpload.Any())
     {
         var apiBaseUrl = config["APIBaseUrl"];
-        if (string.IsNullOrEmpty(apiBaseUrl))
-        {
-            errorMessage = "API base URL is not configured properly.";
-            return;
-        }
+        // Explicitly declare the tuple types instead of using var
+        (bool isSuccess, string latestErrorMessage) = await UploadFileService.SendFileToApi(filesToUpload, apiBaseUrl, research.ResearchArea);
 
-        var (isSuccess, latestErrorMessage) = await UploadFileService.SendFileToApi(filesToUpload, apiBaseUrl);
         if (isSuccess)
         {
+            formResults = $"{research.ResearchArea} research was just created with the uploaded file.";
             uploadedFiles.Clear();
-            await OnFileUploaded.InvokeAsync();
+            // Trigger any success actions like navigating to another page or showing a success message
         }
         else
         {
             errorMessage = latestErrorMessage;
+        }
+    }
+    else
+    {
+        errorMessage = "Please upload a file.";
+    }
+
+    // Reset research model for new input
+    research = new UserResearch();
+}
+
+
+    private List<IBrowserFile> filesToUpload = new(); // To hold the file in memory before upload
+
+    private void LoadFiles(InputFileChangeEventArgs e)
+    {
+        errorMessage = string.Empty; // Reset the error message
+        uploadedFiles.Clear(); // Clear previously uploaded files list for display
+        filesToUpload.Clear(); // Clear previously selected files
+
+        if (e.FileCount > maxAllowedFiles)
+        {
+            errorMessage = $"Error: Attempting to upload {e.FileCount} files, but only {maxAllowedFiles} is allowed.";
+            return;
+        }
+
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            if (file.Size > maxFileSize)
+            {
+                errorMessage = $"File size exceeds the maximum limit of {maxFileSize / (1024 * 1024)} MB.";
+                return;
+            }
+
+            filesToUpload.Add(file);
+            uploadedFiles.Add(file.Name);
         }
     }
 }
