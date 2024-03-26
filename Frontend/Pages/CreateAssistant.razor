@@ -1,0 +1,20 @@
+@using Frontend.Models
+@page "/createassistant"
+<PageTitle>Create Assistant</PageTitle>
+
+<div>
+
+<UploadFile />
+
+
+</div>
+@code{
+  private UserResearch research = new UserResearch();
+  private string formResults ="";
+
+  private void HandleValidSubmit ()
+  {
+    formResults = $"{research.ResearchArea} research was just created";
+    research = new UserResearch();
+  }
+}

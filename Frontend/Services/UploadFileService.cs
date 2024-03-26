@@ -1,58 +1,54 @@
-
+using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Components.Forms;
 using Frontend.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Frontend.Services
 {
-    public class UploadFileService (HttpClient httpClient, ExcelService excelService)
+    public class UploadFileService
     {
-    private readonly HttpClient httpClient = httpClient;
-    private readonly ExcelService excelService = excelService;
-    private long maxFileSize = 1024 * 1024 * 500; // 500MB
+        private readonly HttpClient _httpClient;
+        private readonly long _maxFileSize = 1024 * 1024 * 500; // 500MB
 
-    public async Task<List<ResearchModel>> ProcessExcelFile(IBrowserFile file)
-    {
-        try
+        public UploadFileService(HttpClient httpClient)
         {
-            using var stream = file.OpenReadStream(maxFileSize);
-            var models = await excelService.ReadExcelAsync(stream);
-            return models; // Return the list of models to the calling method
+            _httpClient = httpClient;
         }
-        catch
-        {
-            // Log or handle errors as needed
-            return new List<ResearchModel>(); // Return an empty list on error
-        }
-    }
 
-    public async Task<(bool isSuccess, string errorMessage)> SendFileToApi(IEnumerable<IBrowserFile> filesToUpload, string apiBaseUrl)
-    {
-        try
+
+        public async Task<(bool isSuccess, string errorMessage)> SendFileToApi(IEnumerable<IBrowserFile> filesToUpload, string apiBaseUrl, string researchArea)
         {
-            using var content = new MultipartFormDataContent();
-            foreach (var file in filesToUpload)
+            try
             {
-                var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-                content.Add(fileContent, "file", file.Name);
+                using var content = new MultipartFormDataContent();
+                foreach (var file in filesToUpload)
+                {
+                    var fileContent = new StreamContent(file.OpenReadStream(_maxFileSize));
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+                    content.Add(fileContent, "file", file.Name);
+                }
+
+                // Append the research area as a query parameter to the URL
+                var urlWithQuery = $"{apiBaseUrl}research-front/generateByFile?researchArea={Uri.EscapeDataString(researchArea)}";
+
+                var response = await _httpClient.PostAsync(urlWithQuery, content);
+                if (response.IsSuccessStatusCode)
+                {
+                    return (true, string.Empty);
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    return (false, $"Failed to upload file: {errorMessage}");
+                }
             }
-            var response = await httpClient.PostAsync($"{apiBaseUrl}research-front/generateByFile", content);
-            if (response.IsSuccessStatusCode)
+            catch (System.Exception ex)
             {
-                return (true, string.Empty);
-            }
-            else
-            {
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                return (false, $"Failed to upload file: {errorMessage}");
+                return (false, $"An error occurred while sending the file to the server: {ex.Message}");
             }
         }
-        catch (Exception ex)
-        {
-            return (false, $"An error occurred while sending the file to the server: {ex.Message}");
-        }
+
     }
-}
-    
 }
