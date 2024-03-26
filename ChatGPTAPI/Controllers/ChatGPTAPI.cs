@@ -25,8 +25,10 @@ public class ChatGPTAPIController : ControllerBase
         _mongoDBService = mongoDBService;
     }
 
+    //Create file controller with two endpoints - delete and upload file
     //Change to create assistant endpoint
     //Take file and researchArea as input
+    //Rename method files
     [HttpPost("generateByFile")]
     public async Task<IActionResult> FindResearchFrontByFile([FromForm] IFormFile file, [FromQuery] string researchArea)
     {
@@ -39,7 +41,7 @@ public class ChatGPTAPIController : ControllerBase
             var savedFilePath = await _inAppFileSaver.Save(file, "files");
 
             //Should send researchArea as parameter as well
-            AssistantObj assistantObj = await _assistantService.CreateAssistant(savedFilePath);
+            AssistantObj assistantObj = await _assistantService.CreateAssistant(savedFilePath, researchArea);
             await _mongoDBService.SaveAssistantAsync(assistantObj);
             Console.WriteLine("Return in the controller");
             Console.WriteLine(assistantObj);
@@ -104,11 +106,12 @@ public class ChatGPTAPIController : ControllerBase
     {   
         var username = "singletonUser";
         var user = await _mongoDBService.GetUserIfExistsAsync(username);
-
+        
         if (user == null)
         {
+            Console.WriteLine();
             // No user found with the provided username
-            return NotFound($"No user found with username: {username}");
+            return Ok("no assistants found");
         }
 
         // User found, return the user object
@@ -123,7 +126,7 @@ public class ChatGPTAPIController : ControllerBase
 
 
     [HttpGet("dbtest")]
-    public async Task<IActionResult> Dbtest()
+    private async Task<IActionResult> Dbtest()
     {
         try
         {
@@ -145,7 +148,7 @@ public class ChatGPTAPIController : ControllerBase
     }
 
     [HttpGet("retrieveThread")]
-    public async Task<IActionResult> RetreiveThread() {
+    private async Task<IActionResult> RetreiveThread() {
         var threadID = "";
         var retrievedThread = await _assistantService.RetrieveThread(threadID);
         return Ok(retrievedThread);

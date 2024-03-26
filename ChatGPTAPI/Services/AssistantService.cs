@@ -16,8 +16,6 @@ public class AssistantService
     private readonly OpenAIClient _assistantApi;
     private readonly MongoDBService _mongoDBService;
 
-    private string _researchArea = " Gender and Social Networks in Organizational Setting";
-
     public AssistantService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options, MongoDBService mongoDBService)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
@@ -30,7 +28,8 @@ public class AssistantService
 
     //Save fileID, assistantID, threadID to database
     //Should only returns assistantID
-    public async Task<AssistantObj> CreateAssistant(string filePath)
+    //Create a new service for file controller (refactoring)
+    public async Task<AssistantObj> CreateAssistant(string filePath, string researchArea)
     {
         var flag = await deleteAllAssistant();
         Console.WriteLine(flag);
@@ -44,7 +43,7 @@ public class AssistantService
             //now checks the first entry in database instead of against the API
             if (assistantObj.Id == null)
             {
-                var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, $"You have demonstrated proficiency in analyzing abstracts of research articles to identify and find the research articles forefront in \"{_researchArea}\", Please review the information provided in the attached file. Based on your analysis, formulate a comprehensive response.", tools);
+                var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, $"You have demonstrated proficiency in analyzing abstracts of research articles to identify and find the research articles forefront in \"{researchArea}\", Please review the information provided in the attached file. Based on your analysis, formulate a comprehensive response.", tools);
                 var assistantCreate = await _assistantApi.AssistantsEndpoint.CreateAssistantAsync(request);
                 Console.WriteLine($"Created Assistant: {assistantCreate}");
                 var fileID = await UploadFileAsync(filePath, assistantCreate);
@@ -54,7 +53,8 @@ public class AssistantService
                 {
                     AssistantID = assistantCreate,
                     ThreadID = threadId,
-                    Username = "singletonUser"
+                    Username = "singletonUser",
+                    FileID = fileID
                     // Initialize other fields as necessary
                 };
 
@@ -78,7 +78,8 @@ public class AssistantService
                 {
                     AssistantID = assistantID,
                     ThreadID = threadId,
-                    Username = "singletonUser"
+                    Username = "singletonUser",
+                    FileID = fileID
                     // Initialize other fields as necessary
                 };
 

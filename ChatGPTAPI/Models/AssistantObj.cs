@@ -6,5 +6,6 @@ public class AssistantObj
     public string AssistantID { get; set; }
     public string ThreadID { get; set; }
     public string Username { get; set; }
+    public string FileID { get; set; }
 
 }
