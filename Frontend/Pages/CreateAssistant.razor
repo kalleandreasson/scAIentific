@@ -4,17 +4,7 @@
 
 <div>
 
-<UploadFile />
+<AssistantCreationForm />
 
 
 </div>
-@code{
-  private UserResearch research = new UserResearch();
-  private string formResults ="";
-
-  private void HandleValidSubmit ()
-  {
-    formResults = $"{research.ResearchArea} research was just created";
-    research = new UserResearch();
-  }
-}

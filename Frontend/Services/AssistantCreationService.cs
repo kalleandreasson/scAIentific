@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace Frontend.Services
 {
-    public class UploadFileService
+    public class AssistantCreationService
     {
         private readonly HttpClient _httpClient;
         private readonly long _maxFileSize = 1024 * 1024 * 500; // 500MB
 
-        public UploadFileService(HttpClient httpClient)
+        public AssistantCreationService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
 
-        public async Task<(bool isSuccess, string errorMessage)> SendFileToApi(IEnumerable<IBrowserFile> filesToUpload, string apiBaseUrl, string researchArea)
+        public async Task<(bool isSuccess, string errorMessage)> SendResearchAreaAndFileToApi(IEnumerable<IBrowserFile> filesToUpload, string apiBaseUrl, string researchArea)
         {
             try
             {

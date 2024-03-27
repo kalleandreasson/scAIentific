@@ -1,0 +1,50 @@
+@using Frontend.Shared
+@using Microsoft.AspNetCore.Components.Forms
+@using Frontend.Models
+@using Frontend.Services
+@inject IConfiguration config
+
+<div class="index-container">
+    <P class="text-success">
+        @flashMessage
+    </P>
+    
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <h3>Error</h3>
+        <p class="text-danger">@errorMessage</p>
+    }
+
+    <h2>Create Your Own Research Expert Assistant</h2>
+
+    <EditForm Model="@newResearch" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <p>
+            <label for="researchArea">
+                Enter your research area:
+                <InputText id="researchArea" @bind-Value="newResearch.ResearchArea"/>
+            </label>
+        </p>
+        <p>
+            Upload file (.docx):
+            <InputFile OnChange="LoadFiles" accept=".docx"/>
+        </p>
+        
+        <button type="submit">Create your Assistant</button>
+    </EditForm>
+
+    @if (uploadedFiles.Count > 0)
+    {
+        <div class="uploaded-files-section">
+            <h2>Uploaded Files</h2>
+            <ul class="uploaded-files-list">
+                @foreach (var fileName in uploadedFiles)
+                {
+                    <li>@fileName</li>
+                }
+            </ul>
+        </div>
+    }
+</div>
