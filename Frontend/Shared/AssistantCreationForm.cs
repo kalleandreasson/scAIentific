@@ -6,6 +6,7 @@ using Frontend.Models;
 using Frontend.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 
 namespace Frontend.Shared
 {
@@ -13,17 +14,26 @@ namespace Frontend.Shared
     {
         [Inject]
         public AssistantCreationService? AssistantCreationService {get; set;}
+        [Inject]
+        public ILogger<AssistantCreationForm>? Logger { get; set; }
         private UserResearch newResearch = new UserResearch();
         private string flashMessage = "";
 
         private int maxAllowedFiles = 1;
         private long maxFileSize = 1024 * 1024 * 512; // 512 MB
         private string? errorMessage;
-        private List<string> uploadedFiles = new(); // To store uploaded file names for display
+        private List<string> uploadedFiles = new(); 
 
         private async Task HandleValidSubmit()
         {
-            if (filesToUpload.Any())
+            flashMessage = "";
+            errorMessage = "";
+            if (!filesToUpload.Any())
+            {
+                errorMessage = "Please upload a file.";
+                return;
+            }
+            try
             {
                 var apiBaseUrl = config["APIBaseUrl"];
                 // Explicitly declare the tuple types instead of using var
@@ -31,7 +41,7 @@ namespace Frontend.Shared
 
                 if (isSuccess)
                 {
-                    flashMessage = $"Good! your Assistant that is exper in \"{newResearch.ResearchArea}\"  was successfully created!";
+                    flashMessage = $"Good! your Assistant that is expert in \"{newResearch.ResearchArea}\"  was successfully created!";
                     uploadedFiles.Clear();
                     // Trigger any success actions like navigating to another page or showing a success message
                 }
@@ -39,16 +49,18 @@ namespace Frontend.Shared
                 {
                     errorMessage = latestErrorMessage;
                 }
-            }
-            else
+           }
+            catch (Exception ex)
             {
-                errorMessage = "Please upload a file.";
+                Logger?.LogError(ex, "Failed to submit research assistant creation form.");
+                errorMessage = "Failed to create the assistant due to an unexpected error. Please try again later.";
             }
-
-            // Reset research model for new input
-            newResearch = new UserResearch();
+            finally
+            {
+                // Reset research model for new input
+                newResearch = new UserResearch();
+            }
         }
-
 
         private List<IBrowserFile> filesToUpload = new(); // To hold the file in memory before upload
 
@@ -77,11 +89,12 @@ namespace Frontend.Shared
                     uploadedFiles.Add(file.Name);
                 }
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-                
-                throw;
+                Logger?.LogError(ex, "An error occurred while processing the files.");
+                errorMessage = "An unexpected error occurred while processing the files. Please try again.";
             }
         }
+        
     }
 }

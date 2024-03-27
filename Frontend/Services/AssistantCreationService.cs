@@ -20,6 +20,17 @@ namespace Frontend.Services
 
         public async Task<(bool isSuccess, string errorMessage)> SendResearchAreaAndFileToApi(IEnumerable<IBrowserFile> filesToUpload, string apiBaseUrl, string researchArea)
         {
+            // Validate researchArea
+            if (string.IsNullOrWhiteSpace(researchArea))
+            {
+                return (false, "Research area must not be empty.");
+            }
+
+            // Validate filesToUpload
+            if (filesToUpload == null || !filesToUpload.Any())
+            {
+                return (false, "No files to upload.");
+            }
             try
             {
                 using var content = new MultipartFormDataContent();

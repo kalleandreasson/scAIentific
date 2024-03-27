@@ -5,9 +5,12 @@
 @inject IConfiguration config
 
 <div class="index-container">
-    <P class="text-success">
-        @flashMessage
-    </P>
+    @if (!string.IsNullOrEmpty(flashMessage) && string.IsNullOrEmpty(errorMessage))
+    {
+        <p class="text-success">
+            @flashMessage
+        </p>
+    }
     
     @if (!string.IsNullOrEmpty(errorMessage))
     {
