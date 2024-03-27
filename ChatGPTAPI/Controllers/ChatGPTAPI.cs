@@ -46,8 +46,7 @@ public class ChatGPTAPIController : ControllerBase
             Console.WriteLine("Assistant object is null, not saving to database.");
             return StatusCode(500, "Failed to create assistant object.");
         }
-
-        await _mongoDBService.SaveAssistantAsync(assistantObj);
+        
         Console.WriteLine("Return in the controller");
         Console.WriteLine(assistantObj.AssistantID);
 
@@ -65,8 +64,7 @@ public class ChatGPTAPIController : ControllerBase
     {
         try
         {
-
-             var username = "singletonUser";
+            var username = "singletonUser";
             var assistantObj = await _mongoDBService.GetUserIfExistsAsync(username);
 
             Console.Write("ChatWithAssistant() -> request.UserMessage\n");
@@ -115,7 +113,7 @@ public class ChatGPTAPIController : ControllerBase
         {
             Console.WriteLine();
             // No user found with the provided username
-            return Ok("no assistants found");
+            return StatusCode(404, "Assistant not found");
         }
 
         // User found, return the user object

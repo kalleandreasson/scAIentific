@@ -38,25 +38,30 @@ public class AssistantService
         {
             var assistantID = await checkAssistantAPI();
             var assistantObj = await CheckAssistantDB();
+            var threadID = assistantObj.ThreadID;
             //now checks the first entry in database instead of against the API
-            if (assistantObj == null)
+            if (assistantObj.AssistantID == null)
             {
                 Console.WriteLine("Inside if statement - will create assistant");
                 var request = new CreateAssistantRequest("gpt-4-turbo-preview", "Research expert", null, $"You have demonstrated proficiency in analyzing abstracts of research articles to identify and find the research articles forefront in \"{researchArea}\", Please review the information provided in the attached file. Based on your analysis, formulate a comprehensive response.", tools);
                 var assistantCreate = await _assistantApi.AssistantsEndpoint.CreateAssistantAsync(request);
                 Console.WriteLine($"Created Assistant: {assistantCreate}");
                 var fileID = await UploadFileAsync(filePath, assistantCreate);
-                var threadId = await CreateThread();
+                if (assistantObj.ThreadID == null)
+                {
+                    threadID = await CreateThread();
+                    Console.WriteLine("Didnt have a thread, creating one now");
+                }
 
                 var newAssistantObj = new AssistantObj
                 {
                     AssistantID = assistantCreate,
-                    ThreadID = threadId,
+                    ThreadID = threadID,
                     Username = "singletonUser",
                     FileID = fileID
                     // Initialize other fields as necessary
                 };
-
+                await _mongoDBService.SaveAssistantAsync(newAssistantObj);
                 return newAssistantObj;
 
             }
@@ -70,13 +75,17 @@ public class AssistantService
                 // return assistantID;
 
                 // create a thread
-                var threadId = await CreateThread();
+                 if (assistantObj.ThreadID == null)
+                {
+                    threadID = await CreateThread();
+                    Console.WriteLine("Didnt have a thread, creating one now");
+                }
                 // var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadId);
                 // Console.WriteLine($"Retrieve thread {thread.Id} -> {thread.CreatedAt}");
                  var newAssistantObj = new AssistantObj
                 {
                     AssistantID = assistantID,
-                    ThreadID = threadId,
+                    ThreadID = threadID,
                     Username = "singletonUser",
                     FileID = fileID
                     // Initialize other fields as necessary
@@ -209,6 +218,10 @@ public class AssistantService
 
     private async Task<AssistantObj> CheckAssistantDB() {
         var flag = await _mongoDBService.ListAllAndReturnFirstAsync();
+        if (flag == null)
+        {
+            return null;
+        }
         Console.WriteLine("Database flag: " + flag);
         return flag;
     }
