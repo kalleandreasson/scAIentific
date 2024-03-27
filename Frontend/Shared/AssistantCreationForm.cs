@@ -16,6 +16,9 @@ namespace Frontend.Shared
         public AssistantCreationService? AssistantCreationService {get; set;}
         [Inject]
         public ILogger<AssistantCreationForm>? Logger { get; set; }
+        [Inject]
+        public NavigationManager? NavigationManager { get; set; }
+
         private UserResearch newResearch = new UserResearch();
         private string flashMessage = "";
 
@@ -43,6 +46,7 @@ namespace Frontend.Shared
                 {
                     flashMessage = $"Good! your Assistant that is expert in \"{newResearch.ResearchArea}\"  was successfully created!";
                     uploadedFiles.Clear();
+                    NavigationManager.NavigateTo("/");
                     // Trigger any success actions like navigating to another page or showing a success message
                 }
                 else
