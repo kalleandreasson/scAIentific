@@ -12,6 +12,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<OpenAIService>();
 builder.Services.Configure<OpenAIServiceOptions>(builder.Configuration.GetSection("OpenAI"));
 builder.Services.AddHttpClient<AssistantService>();
+builder.Services.AddHttpClient<FileManagerService>();
 builder.Services.Configure<DatabaseServiceOptions>(builder.Configuration.GetSection("DatabaseServiceOptions"));
 builder.Services.AddSingleton<MongoDBService>();
 
