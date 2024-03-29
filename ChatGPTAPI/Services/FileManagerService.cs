@@ -33,9 +33,11 @@ public class FileManagerService
         // Delete the file from the api 
         string newAssistantFileId = await ReplaceAssistantFileAsync(userName, fileName, filePath);
 
+        Console.WriteLine(newAssistantFileId);
+
         // then update the file reference in the database.
 
-        if (newAssistantFileId != null)
+        if (newAssistantFileId.Contains("file-"))
         {
             await UpdateDatabaseFileReference(userName, newAssistantFileId);
 
@@ -114,28 +116,6 @@ public class FileManagerService
     }
 
 
-
-
-
-
-    // public async Task<string> UploadFileToAssistant(string userName)
-    // {
-    //     Console.WriteLine($"uploading service");
-    //     var user = _mongoDBService.GetUserIfExistsAsync(userName);
-    //     string assistantID = user.Result.AssistantID;
-    //     var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
-
-
-    //     string filePath = "wwwroot/files/Gender-Gergei.docx";
-    //     await File.WriteAllTextAsync(filePath, "Gender and Social Networks");
-    //     var assistantFile = await assistant.UploadFileAsync(filePath);
-    //     Console.WriteLine($"{assistantFile.AssistantId}'s file -> {assistantFile.Id}");
-
-
-
-
-    //     return assistantFile.Id;
-    // }
 
     public async Task<int> ListAssistantFiles(string userName)
     {

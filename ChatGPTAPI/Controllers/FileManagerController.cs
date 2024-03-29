@@ -44,33 +44,6 @@ namespace ChatGPTAPI.Controllers
             return Ok(new { Message = $"File for user {userName} uploaded successfully.", FileId = fileId });
         }
 
-        // [HttpDelete("delete/{userName}")]
-        // public async Task<IActionResult> DeleteFile(string userName)
-        // {
-
-        //     Console.WriteLine($"the delete method, user id {userName}");
-
-        //    bool isDeleted = await _fileManagerService.DeleteFile(userName);
-        //     // Log the file deletion
-        //     _logger.LogInformation($"Deleting file for user {userName}. File ID: ");
-
-        //     // After successful deletion, return the fileId along with a confirmation message.
-        //     return Ok(new { Message = $"File for user {userName} deleted successfully." });
-        // }
-
-
-        //      [HttpPost("uploadtoassistant/{userName}")]
-        //     public async Task<IActionResult> UploadFileToAssistant(string userName)
-        //     {
-
-        //         string uploadedFileId = await _fileManagerService.UploadFileToAssistant(userName);
-
-
-        //         // Placeholder for actual upload logic
-        //         _logger.LogInformation($"Uploading file with the id {uploadedFileId} for user {userName}.");
-        //         return Ok(new { Message = $"File for user {userName} with the file id {uploadedFileId} was uploaded successfully." });
-        //     }
-
         [HttpPost("listassistantfiles/{userName}")]
         public async Task<IActionResult> listAssistantFiles(string userName)
         {
