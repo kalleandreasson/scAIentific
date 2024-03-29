@@ -24,84 +24,119 @@ public class FileManagerService
         _mongoDBService = mongoDBService;
     }
 
-    public async Task<string> UploadFile(string userName)
+    public async Task<string> ReplaceAssistantFile(string userName, string filePath, string fileName)
     {
         // ToDO: Add the userId to the userObject in the database and use it instead of username
         // ToDo: modify the file saver to save the file by the userId
         // ToDo: code a method that will find user file by the userID in the wwwroot and return the filePath
-        var user = _mongoDBService.GetUserIfExistsAsync(userName);
-        string assistantID = user.Result.AssistantID;
-
-        var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
-
 
         // Delete the file from the api 
-        bool isDeleted = await DeleteFile(userName);
+        string newAssistantFileId = await ReplaceAssistantFileAsync(userName, fileName, filePath);
 
-        if (isDeleted == true)
+        // then update the file reference in the database.
+
+        if (newAssistantFileId != null)
         {
-            string filePath = "wwwroot/files/Gender-Gergei.docx";
+            await UpdateDatabaseFileReference(userName, newAssistantFileId);
 
-            // upload the file to the assistant
-            await File.WriteAllTextAsync(filePath, "Gender and Social Networks");
-            var assistantFile = await assistant.UploadFileAsync(filePath);
-            string uploadedFileId = assistantFile.Id;
-            if (assistantFile.Id != null)
-            {
-                await _mongoDBService.ReplaceFileIdForUserAsync(userName, uploadedFileId);
-                // ToDo: delete the uploaded file from wwwroot folder 
-            }
-            return uploadedFileId;
+            // ToDo: delete the uploaded file from wwwroot folder 
+            return newAssistantFileId;
         }
+
         else
         {
             return "the file was not deleted";
         }
     }
 
+    private async Task<string> ReplaceAssistantFileAsync(string userName, string fileName, string filePath)
+    {
+        try
+        {
+            var user = await _mongoDBService.GetUserIfExistsAsync(userName);
+            if (user == null)
+            {
+                throw new InvalidOperationException("User does not exist.");
+            }
+
+            string assistantId = user.AssistantID;
+            var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantId);
+
+            bool isDeleted = await DeleteAssistantFile(userName);
+
+            if (!isDeleted)
+            {
+                // Handle the failure of file deletion appropriately.
+                return null; // Or consider throwing an exception.
+            }
+
+            await File.WriteAllTextAsync(filePath, fileName);
+            var assistantFile = await assistant.UploadFileAsync(filePath);
+
+            return assistantFile?.Id; // Safe navigation in case assistantFile is null.
+        }
+        catch (Exception ex)
+        {
+            // Consider logging the exception and handling any cleanup if necessary.
+            throw; // Rethrowing the exception keeps the stack trace intact.
+        }
+    }
+
 
     // Gets the userFileId from the database and deletes it from the assistant in the api.
-    public async Task<bool> DeleteFile(string userName)
+    private async Task<bool> DeleteAssistantFile(string userName)
     {
         var user = _mongoDBService.GetUserIfExistsAsync(userName);
-        string assistantID = user.Result.AssistantID;
-        string userFileID = user.Result.FileID;
-        var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
+        string assistantId = user.Result.AssistantID;
+        string userFileId = user.Result.FileID;
+        var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantId);
+
 
         // isDeleted returns true if the file was deleted from the api successfully
-        bool isDeleted = await assistant.DeleteFileAsync(userFileID);
+        bool isDeleted = await assistant.DeleteFileAsync(userFileId);
 
         if (isDeleted == true)
         {
+            Console.WriteLine("Delete from the api was called");
             Console.WriteLine(isDeleted);
             return isDeleted;
         }
         else
         {
-            Console.WriteLine($"deleting status = {isDeleted}");
             return isDeleted;
         }
     }
 
-    
-    public async Task<string> UploadFileToAssistant(string userName)
+
+    private async Task UpdateDatabaseFileReference(string userName, string newFileId)
     {
-        Console.WriteLine($"uploading service");
-        var user = _mongoDBService.GetUserIfExistsAsync(userName);
-        string assistantID = user.Result.AssistantID;
-        var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
-
-
-        string filePath = "wwwroot/files/Gender-Gergei.docx";
-        await File.WriteAllTextAsync(filePath, "Gender and Social Networks");
-        var assistantFile = await assistant.UploadFileAsync(filePath);
-        Console.WriteLine($"{assistantFile.AssistantId}'s file -> {assistantFile.Id}");
-
-
-
-
-        return assistantFile.Id;
+        await _mongoDBService.ReplaceFileIdForUserAsync(userName, newFileId);
     }
+
+
+
+
+
+
+    // public async Task<string> UploadFileToAssistant(string userName)
+    // {
+    //     Console.WriteLine($"uploading service");
+    //     var user = _mongoDBService.GetUserIfExistsAsync(userName);
+    //     string assistantID = user.Result.AssistantID;
+    //     var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
+
+
+    //     string filePath = "wwwroot/files/Gender-Gergei.docx";
+    //     await File.WriteAllTextAsync(filePath, "Gender and Social Networks");
+    //     var assistantFile = await assistant.UploadFileAsync(filePath);
+    //     Console.WriteLine($"{assistantFile.AssistantId}'s file -> {assistantFile.Id}");
+
+
+
+
+    //     return assistantFile.Id;
+    // }
+
     public async Task<int> ListAssistantFiles(string userName)
     {
         Console.WriteLine("list service");
@@ -119,20 +154,4 @@ public class FileManagerService
 
         return filesList.Items.Count;
     }
-    public async Task<string> RetrieveFileFromAssistant(string userName)
-    {
-        var user = _mongoDBService.GetUserIfExistsAsync(userName);
-        string assistantID = user.Result.AssistantID;
-        string databaseFileID = user.Result.FileID;
-
-        var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
-
-        var assistantFile = await assistant.RetrieveFileAsync(databaseFileID);
-
-        Console.WriteLine($"{assistantFile.AssistantId}'s file -> {assistantFile.Id}");
-
-        return "fileID";
-    }
-
-
 }
