@@ -13,8 +13,8 @@ public class FileManagerService
     private readonly HttpClient _httpClient;
     private readonly OpenAIClient _assistantApi;
     private readonly string _apiKey;
-
-    public FileManagerService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options, MongoDBService mongoDBService)
+    private readonly ILogger<FileManagerService> _logger;
+    public FileManagerService(ILogger<FileManagerService> logger, HttpClient httpClient, IOptions<OpenAIServiceOptions> options, MongoDBService mongoDBService)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         var settings = options.Value ?? throw new ArgumentNullException(nameof(options));
@@ -22,6 +22,7 @@ public class FileManagerService
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
         _assistantApi = new OpenAIClient(_apiKey);
         _mongoDBService = mongoDBService;
+        _logger = logger;
     }
 
     public async Task<string> ReplaceAssistantFile(string userName, string filePath, string fileName)
@@ -30,57 +31,85 @@ public class FileManagerService
         // ToDo: modify the file saver to save the file by the userId
         // ToDo: code a method that will find user file by the userID in the wwwroot and return the filePath
 
-        // Delete the file from the api 
-        string newAssistantFileId = await ReplaceAssistantFileAsync(userName, fileName, filePath);
-
-        Console.WriteLine(newAssistantFileId);
-
-        // then update the file reference in the database.
-
-        if (newAssistantFileId.Contains("file-"))
-        {
-            await UpdateDatabaseFileReference(userName, newAssistantFileId);
-
-            // ToDo: delete the uploaded file from wwwroot folder 
-            return newAssistantFileId;
-        }
-
-        else
-        {
-            return "the file was not deleted";
-        }
-    }
-
-    private async Task<string> ReplaceAssistantFileAsync(string userName, string fileName, string filePath)
-    {
         try
         {
-            var user = await _mongoDBService.GetUserIfExistsAsync(userName);
-            if (user == null)
-            {
-                throw new InvalidOperationException("User does not exist.");
-            }
-
-            string assistantId = user.AssistantID;
-            var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantId);
-
+            // First, attempt to delete the old file from the assistant.
             bool isDeleted = await DeleteAssistantFile(userName);
-
             if (!isDeleted)
             {
-                // Handle the failure of file deletion appropriately.
-                return null; // Or consider throwing an exception.
+                // If the file couldn't be deleted, stop the process and indicate failure.
+                throw new InvalidOperationException("Failed to delete the old file.");
             }
 
-            await File.WriteAllTextAsync(filePath, fileName);
-            var assistantFile = await assistant.UploadFileAsync(filePath);
+            // Next, try to upload the new file to the assistant.
+            string newAssistantFileId = await UploadFileToAssistantAsync(userName, filePath, fileName);
+            if (string.IsNullOrWhiteSpace(newAssistantFileId))
+            {
+                // If the file couldn't be uploaded, stop the process and indicate failure.
+                throw new InvalidOperationException("Failed to upload the new file to the assistant.");
+            }
 
-            return assistantFile?.Id; // Safe navigation in case assistantFile is null.
+            // Only if both prior operations succeeded, update the database reference.
+            await UpdateDatabaseFileReference(userName, newAssistantFileId);
+
+            // Optionally, delete the uploaded file from the wwwroot folder here if necessary.
+
+            return newAssistantFileId;
         }
         catch (Exception ex)
         {
-            // Consider logging the exception and handling any cleanup if necessary.
-            throw; // Rethrowing the exception keeps the stack trace intact.
+            // Log the exception
+            // Consider how to handle the exception (e.g., retry logic, return a specific error code, etc.)
+            throw; // Rethrowing the exception for now; adjust based on your error handling strategy
+        }
+    }
+
+    private async Task<string> UploadFileToAssistantAsync(string userName, string filePath, string fileName)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(filePath) || string.IsNullOrWhiteSpace(fileName))
+            {
+                throw new ArgumentException("Invalid arguments provided for uploading the file.");
+            }
+
+            var user = await _mongoDBService.GetUserIfExistsAsync(userName);
+            if (user == null)
+            {
+                throw new InvalidOperationException($"User '{userName}' does not exist.");
+            }
+
+            // Example for specific exception handling
+            try
+            {
+                string assistantId = user.AssistantID;
+                var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantId);
+                var assistantFile = await assistant.UploadFileAsync(filePath);
+
+                if (assistantFile == null || string.IsNullOrWhiteSpace(assistantFile.Id))
+                {
+                    throw new InvalidOperationException("Failed to upload the new file.");
+                }
+
+                return assistantFile?.Id;
+            }
+            catch (HttpRequestException httpEx)
+            {
+                // Catch specific exceptions related to API operations
+                // Log with context
+                _logger.LogError($"API exception occurred while uploading file for user '{userName}': {httpEx.Message}");
+                throw; // Optionally, add more context or wrap the exception in a custom exception
+            }
+        }
+        catch (ArgumentException argEx)
+        {
+            _logger.LogError($"Argument exception in UploadFileToAssistantAsync: {argEx.Message}");
+            throw; // Rethrow if you can't handle it here, but log it for debugging purposes
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Unexpected error in UploadFileToAssistantAsync for user '{userName}': {ex.Message}");
+            throw; // Rethrow with generic or specific handling as needed
         }
     }
 
@@ -88,26 +117,34 @@ public class FileManagerService
     // Gets the userFileId from the database and deletes it from the assistant in the api.
     private async Task<bool> DeleteAssistantFile(string userName)
     {
-        var user = _mongoDBService.GetUserIfExistsAsync(userName);
-        string assistantId = user.Result.AssistantID;
-        string userFileId = user.Result.FileID;
-        var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantId);
-
-
-        // isDeleted returns true if the file was deleted from the api successfully
-        bool isDeleted = await assistant.DeleteFileAsync(userFileId);
-
-        if (isDeleted == true)
+        try
         {
-            Console.WriteLine("Delete from the api was called");
-            Console.WriteLine(isDeleted);
+            var user = await _mongoDBService.GetUserIfExistsAsync(userName);
+            if (user == null)
+            {
+                _logger.LogWarning($"Attempted to delete a file for a non-existent user: {userName}");
+                return false; // Or throw a more specific exception if appropriate
+            }
+            string assistantId = user.AssistantID;
+            string userFileId = user.FileID; // Use await instead of .Result
+            var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantId);
+
+            bool isDeleted = await assistant.DeleteFileAsync(userFileId);
+            _logger.LogInformation($"Delete operation status for {userName}: {isDeleted}");
             return isDeleted;
         }
-        else
+        catch (HttpRequestException httpEx)
         {
-            return isDeleted;
+            _logger.LogError(httpEx, $"HTTP request exception occurred while deleting file for user '{userName}'.");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Unexpected error in DeleteAssistantFile for user '{userName}': {ex.Message}");
+            throw; // Rethrowing here, but with logging for diagnostics
         }
     }
+
 
 
     private async Task UpdateDatabaseFileReference(string userName, string newFileId)

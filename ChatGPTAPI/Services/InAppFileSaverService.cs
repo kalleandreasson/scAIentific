@@ -8,11 +8,8 @@ namespace ChatGPTAPI.Services
             this.env = env;
         }
 
-        public async Task<string> Save(IFormFile file, string folderName)
+        public async Task<string> Save(string userName,IFormFile file, string folderName)
         {
-            string userName = "Gergei";
-            // Extract the original filename without the extension
-            var originalFileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.FileName);
 
             // Get the file extension
             var fileExtension = Path.GetExtension(file.FileName);

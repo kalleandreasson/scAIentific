@@ -38,7 +38,7 @@ public class ChatGPTAPIController : ControllerBase
     }
     try
     {
-        var savedFilePath = await _inAppFileSaver.Save(file, "files");
+        var savedFilePath = await _inAppFileSaver.Save("singletonUser",file, "files");
         var assistantObj = await _assistantService.CreateAssistant(savedFilePath, researchArea);
 
         if (assistantObj == null)

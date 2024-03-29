@@ -25,23 +25,49 @@ namespace ChatGPTAPI.Controllers
         }
 
 
-
         // filename is to give the file a name when updated in the api
         [HttpPost("upload/{userName}")]
         public async Task<IActionResult> UploadFile(string userName, string fileName, IFormFile file)
         {
-            Console.WriteLine($"the uploadFile method in the controller, user id {userName}");
+            _logger.LogInformation($"Starting file upload process for user '{userName}'.");
+
             if (file == null || file.Length == 0)
             {
+                _logger.LogWarning("UploadFile called with no file provided or file is empty.");
                 return BadRequest("No file provided or file is empty.");
             }
-            var savedFilePath = await _inAppFileSaver.Save(file, "files");
 
-            string fileId = await _fileManagerService.ReplaceAssistantFile(userName, savedFilePath, fileName);
+            string savedFilePath;
+            try
+            {
+                savedFilePath = await _inAppFileSaver.Save(userName, file, "files");
+                _logger.LogInformation($"File successfully saved to {savedFilePath}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save the file.");
+                return BadRequest("Failed to save the file.");
+            }
 
-            // Placeholder for actual upload logic
-            _logger.LogInformation($"Uploading file for user {userName}. File ID: {fileId}");
-            return Ok(new { Message = $"File for user {userName} uploaded successfully.", FileId = fileId });
+            if (string.IsNullOrWhiteSpace(savedFilePath))
+            {
+                // If savedFilePath is null or empty, assume the save operation failed.
+                _logger.LogWarning("File save operation did not return a valid path.");
+                return BadRequest("Failed to save the file.");
+            }
+
+            try
+            {
+                string fileId = await _fileManagerService.ReplaceAssistantFile(userName, savedFilePath, fileName);
+                _logger.LogInformation($"File for user '{userName}' replaced successfully. File ID: {fileId}");
+                return Ok(new { Message = "File uploaded and replaced successfully.", FileId = fileId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to replace the assistant file for user '{userName}'.");
+                // Consider the appropriate response based on your error handling policy
+                return StatusCode(500, "Failed to replace the assistant file.");
+            }
         }
 
         [HttpPost("listassistantfiles/{userName}")]
