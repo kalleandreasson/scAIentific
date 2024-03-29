@@ -77,4 +77,17 @@ public async Task<List<string>> GetAllThreadIDsAsync()
     return threadIDs;
 }
 
+public async Task ReplaceFileIdForUserAsync(string username, string newFileId)
+{
+    // Build the filter to find the specific user by username
+    var filter = Builders<AssistantObj>.Filter.Eq(user => user.Username, username);
+
+    // Define the update operation to set the new FileId
+    var update = Builders<AssistantObj>.Update.Set(user => user.FileID, newFileId);
+
+    // Perform the update operation on the first matching document
+    await _assistants.UpdateOneAsync(filter, update);
+}
+
+
 }
