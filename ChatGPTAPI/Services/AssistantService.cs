@@ -27,7 +27,7 @@ public class AssistantService
     //Save fileID, assistantID, threadID to database
     //Should only returns assistantID
     //Create a new service for file controller (refactoring)
-    public async Task<AssistantObj> CreateAssistant(string filePath, string researchArea)
+    public async Task<AssistantObj> CreateAssistantWithFileUploadAndThread(string filePath, string researchArea)
     {
         var tools = new List<Tool> { Tool.Retrieval };
 

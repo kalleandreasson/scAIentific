@@ -28,7 +28,7 @@ public class AssistantController : ControllerBase
 
     //Rename method files
     [HttpPost("create-assistant")]
-    public async Task<IActionResult> CreateAssistantWithFileUploadAndThread([FromForm] IFormFile file, [FromQuery] string researchArea)
+    public async Task<IActionResult> CreateAssistant([FromForm] IFormFile file, [FromQuery] string researchArea)
     {
         if (file == null || file.Length == 0)
     {
@@ -37,7 +37,7 @@ public class AssistantController : ControllerBase
     try
     {
         var savedFilePath = await _inAppFileSaver.Save("singletonUser",file, "files");
-        var assistantObj = await _assistantService.CreateAssistant(savedFilePath, researchArea);
+        var assistantObj = await _assistantService.CreateAssistantWithFileUploadAndThread(savedFilePath, researchArea);
 
         if (assistantObj == null)
         {

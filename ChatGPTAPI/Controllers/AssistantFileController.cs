@@ -10,14 +10,14 @@ using Microsoft.Extensions.Logging;
 
 namespace ChatGPTAPI.Controllers
 {
-    [Route("[controller]")]
-    public class FileManagerController : Controller
+    [Route("assistant-file")]
+    public class AssistantFileController : Controller
     {
-        private readonly ILogger<FileManagerController> _logger;
+        private readonly ILogger<AssistantFileController> _logger;
         private readonly FileManagerService _fileManagerService;
         private readonly InAppFileSaverService _inAppFileSaver;
 
-        public FileManagerController(ILogger<FileManagerController> logger, FileManagerService fileManagerService, InAppFileSaverService inAppFileSaver)
+        public AssistantFileController(ILogger<AssistantFileController> logger, FileManagerService fileManagerService, InAppFileSaverService inAppFileSaver)
         {
             _logger = logger;
             _inAppFileSaver = inAppFileSaver;
@@ -70,7 +70,7 @@ namespace ChatGPTAPI.Controllers
             }
         }
 
-        [HttpPost("listassistantfiles/{userName}")]
+        [HttpPost("get-assistant-files/{userName}")]
         public async Task<IActionResult> listAssistantFiles(string userName)
         {
 
