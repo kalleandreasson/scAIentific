@@ -110,7 +110,6 @@ public class AssistantService
         {
             Console.WriteLine($"no files ->{filesList.Items.Count}");
             // Upload and attach a file to the assistant.
-            await File.WriteAllTextAsync(filePath, "Gender and Social Networks");
             var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
             var assistantFile = await assistant.UploadFileAsync(filePath);
             //Would be good if we could remove either one of these two same api calls
