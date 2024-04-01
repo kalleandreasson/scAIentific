@@ -23,7 +23,7 @@
         try
         {
             // Use GetAsync to obtain the HttpResponseMessage
-            var response = await Http.GetAsync($"{configuration.GetValue<string>("APIBaseUrl")}research-front/assistant-check");
+            var response = await Http.GetAsync($"{configuration.GetValue<string>("APIBaseUrl")}research-front/get-assistant");
             
             if (response.IsSuccessStatusCode)
             {
@@ -37,7 +37,7 @@
                 else
                 {
                     // Navigate to the UploadFile page/component if the assistant is not found
-                    NavigationManager.NavigateTo("/createassistant");
+                    NavigationManager.NavigateTo("/create-assistant");
                 }
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
