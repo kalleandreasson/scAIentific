@@ -13,7 +13,9 @@ namespace Frontend.Shared
     public partial class AssistantCreationForm
     {
         [Inject]
-        public AssistantCreationService? AssistantCreationService {get; set;}
+        public IConfiguration? Configuration { get; set; }
+        [Inject]
+        public FileUploadingService? FileUploadingService { get; set; }
         [Inject]
         public ILogger<AssistantCreationForm>? Logger { get; set; }
         [Inject]
@@ -22,10 +24,8 @@ namespace Frontend.Shared
         private UserResearch newResearch = new UserResearch();
         private string flashMessage = "";
 
-        private int maxAllowedFiles = 1;
-        private long maxFileSize = 1024 * 1024 * 512; // 512 MB
         private string? errorMessage;
-        private List<string> uploadedFiles = new(); 
+        private List<string> uploadedFiles = new();
 
         private async Task HandleValidSubmit()
         {
@@ -38,9 +38,10 @@ namespace Frontend.Shared
             }
             try
             {
-                var apiBaseUrl = config["APIBaseUrl"];
+                string apiBaseUrl = config["APIBaseUrl"];
+                string apiUrl = $"{apiBaseUrl}research-front/generateByFile?researchArea={Uri.EscapeDataString(newResearch.ResearchArea)}";
                 // Explicitly declare the tuple types instead of using var
-                (bool isSuccess, string latestErrorMessage) = await AssistantCreationService.SendResearchAreaAndFileToApi(filesToUpload, apiBaseUrl, newResearch.ResearchArea);
+                (bool isSuccess, string latestErrorMessage) = await FileUploadingService.SendDataAndFileToApi(filesToUpload, apiUrl);
 
                 if (isSuccess)
                 {
@@ -53,7 +54,7 @@ namespace Frontend.Shared
                 {
                     errorMessage = latestErrorMessage;
                 }
-           }
+            }
             catch (Exception ex)
             {
                 Logger?.LogError(ex, "Failed to submit research assistant creation form.");
@@ -66,39 +67,5 @@ namespace Frontend.Shared
             }
         }
 
-        private List<IBrowserFile> filesToUpload = new(); // To hold the file in memory before upload
-
-        private void LoadFiles(InputFileChangeEventArgs e)
-        {
-            errorMessage = string.Empty; // Reset the error message
-            uploadedFiles.Clear(); // Clear previously uploaded files list for display
-            filesToUpload.Clear(); // Clear previously selected files
-            try
-            {
-                 if (e.FileCount > maxAllowedFiles)
-                {
-                    errorMessage = $"Error: Attempting to upload {e.FileCount} files, but only {maxAllowedFiles} is allowed.";
-                    return;
-                }
-
-                foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
-                {
-                    if (file.Size > maxFileSize)
-                    {
-                        errorMessage = $"File size exceeds the maximum limit of {maxFileSize / (1024 * 1024)} MB.";
-                        return;
-                    }
-
-                    filesToUpload.Add(file);
-                    uploadedFiles.Add(file.Name);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger?.LogError(ex, "An error occurred while processing the files.");
-                errorMessage = "An unexpected error occurred while processing the files. Please try again.";
-            }
-        }
-        
     }
 }
