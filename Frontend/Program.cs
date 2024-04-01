@@ -17,7 +17,7 @@ builder.Services.AddServerSideBlazor();
 var apiBaseUrl = builder.Configuration.GetValue<string>("APIBaseUrl");
 
 // Configure HttpClient for UploadFileService with the API Base URL from configuration
-builder.Services.AddHttpClient<AssistantCreationService>(client => 
+builder.Services.AddHttpClient<FileUploadingService>(client => 
 {
     client.BaseAddress = new Uri(apiBaseUrl);
 })
@@ -36,7 +36,7 @@ builder.Services.AddHttpClient<ChatService>(client =>
 });
 
 builder.Services.AddScoped<ExcelService>();
-builder.Services.AddScoped<AssistantCreationService>();
+builder.Services.AddScoped<FileUploadingService>();
 
 var app = builder.Build();
 

@@ -7,25 +7,19 @@ using System.Threading.Tasks;
 
 namespace Frontend.Services
 {
-    public class AssistantCreationService
+    public class FileUploadingService
     {
         private readonly HttpClient _httpClient;
         private readonly long _maxFileSize = 1024 * 1024 * 500; // 500MB
 
-        public AssistantCreationService(HttpClient httpClient)
+        public FileUploadingService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
 
-        public async Task<(bool isSuccess, string errorMessage)> SendResearchAreaAndFileToApi(IEnumerable<IBrowserFile> filesToUpload, string apiBaseUrl, string researchArea)
+        public async Task<(bool isSuccess, string errorMessage)> SendDataAndFileToApi(IEnumerable<IBrowserFile> filesToUpload, string apiUrl)
         {
-            // Validate researchArea
-            if (string.IsNullOrWhiteSpace(researchArea))
-            {
-                return (false, "Research area must not be empty.");
-            }
-
             // Validate filesToUpload
             if (filesToUpload == null || !filesToUpload.Any())
             {
@@ -42,7 +36,7 @@ namespace Frontend.Services
                 }
 
                 // Append the research area as a query parameter to the URL
-                var urlWithQuery = $"{apiBaseUrl}research-front/generateByFile?researchArea={Uri.EscapeDataString(researchArea)}";
+                var urlWithQuery = $"{apiUrl}";
 
                 var response = await _httpClient.PostAsync(urlWithQuery, content);
                 if (response.IsSuccessStatusCode)
