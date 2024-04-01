@@ -3,7 +3,10 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Frontend.Models
 @using Frontend.Services
-@inject IConfiguration config
+@inject IConfiguration Configuration
+@inject ILogger<AssistantCreationForm> Logger
+@inject NavigationManager NavigationManager
+@inject FileUploadingService FileUploadingService
 
 <div class="index-container">
     @if (!string.IsNullOrEmpty(flashMessage) && string.IsNullOrEmpty(errorMessage))
@@ -52,3 +55,52 @@
         </div>
     }
 </div>
+
+
+@code
+{
+    private UserResearch newResearch = new UserResearch();
+    private string flashMessage = "";
+
+    private string? errorMessage;
+    private List<string> uploadedFiles = new();
+    private async Task HandleValidSubmit()
+        {
+            flashMessage = "";
+            errorMessage = "";
+            if (!filesToUpload.Any())
+            {
+                errorMessage = "Please upload a file.";
+                return;
+            }
+            try
+            {
+                string apiBaseUrl = Configuration["APIBaseUrl"];
+                string apiUrl = $"{apiBaseUrl}research-front/generateByFile?researchArea={Uri.EscapeDataString(newResearch.ResearchArea)}";
+                // Explicitly declare the tuple types instead of using var
+                (bool isSuccess, string latestErrorMessage) = await FileUploadingService.SendDataAndFileToApi(filesToUpload, apiUrl);
+
+                if (isSuccess)
+                {
+                    flashMessage = $"Good! your Assistant that is expert in \"{newResearch.ResearchArea}\"  was successfully created!";
+                    uploadedFiles.Clear();
+                    NavigationManager.NavigateTo("/");
+                    // Trigger any success actions like navigating to another page or showing a success message
+                }
+                else
+                {
+                    errorMessage = latestErrorMessage;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError(ex, "Failed to submit research assistant creation form.");
+                errorMessage = "Failed to create the assistant due to an unexpected error. Please try again later.";
+            }
+            finally
+            {
+                // Reset research model for new input
+                newResearch = new UserResearch();
+            }
+        }
+}

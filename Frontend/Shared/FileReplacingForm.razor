@@ -3,7 +3,11 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Frontend.Models
 @using Frontend.Services
-@inject IConfiguration config
+@inject IConfiguration Configuration
+@inject ILogger<FileReplacingForm> Logger
+@inject NavigationManager NavigationManager
+@inject FileUploadingService FileUploadingService
+
 
 <div class="index-container">
     @if (!string.IsNullOrEmpty(flashMessage) && string.IsNullOrEmpty(errorMessage))
@@ -52,3 +56,52 @@
         </div>
     }
 </div>
+
+@code{
+     private ReplaceFile replaceFile = new ReplaceFile();
+        private string flashMessage = "";
+
+        private string? errorMessage;
+        private List<string> uploadedFiles = new();
+
+        private async Task HandleValidSubmit()
+        {
+            flashMessage = "";
+            errorMessage = "";
+            if (!filesToUpload.Any())
+            {
+                errorMessage = "Please upload a file.";
+                return;
+            }
+            try
+            {
+                string apiBaseUrl = Configuration["APIBaseUrl"];
+                string userName= "singletonUser";
+                string apiUrl = $"{apiBaseUrl}FileManager/upload/{userName}?fileName={Uri.EscapeDataString(replaceFile.FileName)}";
+                // Explicitly declare the tuple types instead of using var
+                (bool isSuccess, string latestErrorMessage) = await FileUploadingService.SendDataAndFileToApi(filesToUpload, apiUrl);
+
+                if (isSuccess)
+                {
+                    flashMessage = $"Good! Now you have replaced the old file with \"{replaceFile.FileName}\" file successfully!";
+                    uploadedFiles.Clear();
+                    NavigationManager.NavigateTo("/");
+                    // Trigger any success actions like navigating to another page or showing a success message
+                }
+                else
+                {
+                    errorMessage = latestErrorMessage;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError(ex, "Failed to submit replacing file form.");
+                errorMessage = "Failed to create the assistant due to an unexpected error. Please try again later.";
+            }
+            finally
+            {
+                // Reset replaceFile model for new input
+                replaceFile = new ReplaceFile();
+            }
+        }
+}
