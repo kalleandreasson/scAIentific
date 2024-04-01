@@ -1,0 +1,54 @@
+@using Frontend.Shared
+@inherits BaseFileUploadComponent
+@using Microsoft.AspNetCore.Components.Forms
+@using Frontend.Models
+@using Frontend.Services
+@inject IConfiguration config
+
+<div class="index-container">
+    @if (!string.IsNullOrEmpty(flashMessage) && string.IsNullOrEmpty(errorMessage))
+    {
+        <p class="text-success">
+            @flashMessage
+        </p>
+    }
+    
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <h3>Error</h3>
+        <p class="text-danger">@errorMessage</p>
+    }
+
+    <h2>Replace with new file</h2>
+
+    <EditForm Model="@replaceFile" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <p>
+            <label for="fileName">
+                Enter the file name:
+                <InputText id="fileName" @bind-Value="replaceFile.FileName"/>
+            </label>
+        </p>
+        <p>
+            Upload file (.docx):
+            <InputFile OnChange="LoadFiles" accept=".docx"/>
+        </p>
+        
+        <button type="submit">Replace</button>
+    </EditForm>
+
+    @if (uploadedFiles.Count > 0)
+    {
+        <div class="uploaded-files-section">
+            <h2>Uploaded Files</h2>
+            <ul class="uploaded-files-list">
+                @foreach (var fileName in uploadedFiles)
+                {
+                    <li>@fileName</li>
+                }
+            </ul>
+        </div>
+    }
+</div>

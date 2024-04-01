@@ -29,7 +29,7 @@ namespace ChatGPTAPI.Controllers
         [HttpPost("upload/{userName}")]
         public async Task<IActionResult> UploadFile(string userName, string fileName, IFormFile file)
         {
-            _logger.LogInformation($"Starting file upload process for user '{userName}'.");
+            _logger.LogInformation($"Starting file upload process for user '{userName}' whith the file name {fileName}.");
 
             if (file == null || file.Length == 0)
             {
@@ -59,7 +59,7 @@ namespace ChatGPTAPI.Controllers
             try
             {
                 string fileId = await _fileManagerService.ReplaceAssistantFile(userName, savedFilePath, fileName);
-                _logger.LogInformation($"File for user '{userName}' replaced successfully. File ID: {fileId}");
+                _logger.LogInformation($"File for user '{userName}' replaced successfully. the new file ID: {fileId}");
                 return Ok(new { Message = "File uploaded and replaced successfully.", FileId = fileId });
             }
             catch (Exception ex)

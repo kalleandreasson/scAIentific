@@ -12,6 +12,8 @@ namespace Frontend.Pages
     {
         [Inject]
         public ChatService? ChatService {get; set;}
+        [Inject]
+        public NavigationManager? NavigationManager {get; set;}
 
         private string userQuery = "";
         private List<ChatMessage> chatHistory = new List<ChatMessage>();
@@ -39,6 +41,10 @@ namespace Frontend.Pages
                 chatHistory = chatHistory.OrderBy(m => m.CreatedAt).ToList();
             }
             userQuery = "";
+        }
+        private async Task navigateToReplaceFilePage()
+        {
+            NavigationManager.NavigateTo("/replacefile");
         }
     }
 }
