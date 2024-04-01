@@ -29,8 +29,6 @@ public class AssistantService
     //Create a new service for file controller (refactoring)
     public async Task<AssistantObj> CreateAssistant(string filePath, string researchArea)
     {
-        //var flag = await deleteAllAssistant();
-        //Console.WriteLine(flag);
         var tools = new List<Tool> { Tool.Retrieval };
 
         Console.WriteLine("inside Assistant method");
@@ -75,14 +73,14 @@ public class AssistantService
                 // return assistantID;
 
                 // create a thread
-                 if (assistantObj.ThreadID == null)
+                if (assistantObj.ThreadID == null)
                 {
                     threadID = await CreateThread();
                     Console.WriteLine("Didnt have a thread, creating one now");
                 }
                 // var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadId);
                 // Console.WriteLine($"Retrieve thread {thread.Id} -> {thread.CreatedAt}");
-                 var newAssistantObj = new AssistantObj
+                var newAssistantObj = new AssistantObj
                 {
                     AssistantID = assistantID,
                     ThreadID = threadID,
@@ -100,7 +98,6 @@ public class AssistantService
             Console.WriteLine($"An error occurred while creating the assistant: {ex.Message}");
             return null;
         }
-
     }
 
     public async Task<string> UploadFileAsync(string filePath, string assistantID)
@@ -163,7 +160,8 @@ public class AssistantService
         return messages;
     }
 
-    public async Task<List<MessageResponse>> FetchMessageList(string threadID) {
+    public async Task<List<MessageResponse>> FetchMessageList(string threadID)
+    {
         var messages = new List<MessageResponse>();
         try
         {
@@ -212,10 +210,11 @@ public class AssistantService
         }
 
         // Assuming you want to return the ID of the first assistant as before
-        return assistantsList.Items[0].Id; 
+        return assistantsList.Items[0].Id;
     }
 
-    private async Task<AssistantObj> CheckAssistantDB() {
+    private async Task<AssistantObj> CheckAssistantDB()
+    {
         var flag = await _mongoDBService.ListAllAndReturnFirstAsync();
         if (flag == null)
         {
@@ -268,7 +267,8 @@ public class AssistantService
         return messageList;
     }
 
-    public async Task<string> RetrieveThread(string threadID) {
+    public async Task<string> RetrieveThread(string threadID)
+    {
         var thread = await _assistantApi.ThreadsEndpoint.RetrieveThreadAsync(threadID);
         return thread;
     }

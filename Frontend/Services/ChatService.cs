@@ -12,6 +12,7 @@ namespace Frontend.Services
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
         private readonly string _chatEndpoint;
+        private readonly string _chatHistoryEndpoint;
 
         public ChatService(HttpClient httpClient, IConfiguration configuration)
         {
@@ -19,14 +20,15 @@ namespace Frontend.Services
             string apiBaseUrl = configuration.GetValue<string>("APIBaseUrl");
 
             // Construct the ChatEndpoint using the base URL from the configuration
-            _chatEndpoint = $"{apiBaseUrl}research-front/assistant-chat";
+            _chatHistoryEndpoint = $"{apiBaseUrl}chat/chat-history";
+            _chatEndpoint = $"{apiBaseUrl}chat/send-message";
         }
 
         public async Task<ChatResponse> GetChatHistoryAsync()
         {
             try
             {
-                HttpResponseMessage response = await _httpClient.GetAsync(_chatEndpoint);
+                HttpResponseMessage response = await _httpClient.GetAsync(_chatHistoryEndpoint);
 
                 response.EnsureSuccessStatusCode();
 

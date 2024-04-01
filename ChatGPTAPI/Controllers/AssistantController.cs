@@ -7,16 +7,16 @@ namespace ChatGPTAPI.Controllers;
 
 [ApiController]
 [Route("research-front")]
-public class ChatGPTAPIController : ControllerBase
+public class AssistantController : ControllerBase
 {
     private readonly OpenAIService _openAIApiService;
     private readonly AssistantService _assistantService;
     private readonly InAppFileSaverService _inAppFileSaver;
-    private readonly ILogger<ChatGPTAPIController> _logger;
+    private readonly ILogger<AssistantController> _logger;
     private readonly MongoDBService _mongoDBService;
 
 
-    public ChatGPTAPIController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver, ILogger<ChatGPTAPIController> logger, AssistantService assistantService, MongoDBService mongoDBService)
+    public AssistantController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver, ILogger<AssistantController> logger, AssistantService assistantService, MongoDBService mongoDBService)
     {
         _openAIApiService = openAIApiService;
         _inAppFileSaver = inAppFileSaver;
@@ -25,12 +25,10 @@ public class ChatGPTAPIController : ControllerBase
         _mongoDBService = mongoDBService;
     }
 
-    //Create file controller with two endpoints - delete and upload file
-    //Change to create assistant endpoint
-    //Take file and researchArea as input
+
     //Rename method files
-    [HttpPost("generateByFile")]
-    public async Task<IActionResult> FindResearchFrontByFile([FromForm] IFormFile file, [FromQuery] string researchArea)
+    [HttpPost("create-assistant")]
+    public async Task<IActionResult> CreateAssistantWithFileUploadAndThread([FromForm] IFormFile file, [FromQuery] string researchArea)
     {
         if (file == null || file.Length == 0)
     {
@@ -59,49 +57,8 @@ public class ChatGPTAPIController : ControllerBase
     }
     }
 
-    [HttpPost("assistant-chat")]
-    public async Task<IActionResult> ChatWithAssistant([FromBody] UserQuery request)
-    {
-        try
-        {
-            var username = "singletonUser";
-            var assistantObj = await _mongoDBService.GetUserIfExistsAsync(username);
-
-            Console.Write("ChatWithAssistant() -> request.UserMessage\n");
-            var messages = await _assistantService.ProcessUserQueryAndFetchResponses(request.UserMessage, assistantObj.ThreadID, assistantObj.AssistantID);
-
-            return Ok(new { Messages = messages });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An unexpected error occurred during chat with assistant.");
-            return StatusCode(500, "An unexpected error occurred.");
-        }
-    }
-
-    [HttpGet("assistant-chat")]
-    public async Task<IActionResult> ChatWithAssistant()
-    {
-        try
-        {
-            var username = "singletonUser";
-            var user = await _mongoDBService.GetUserIfExistsAsync(username);
-            if (user == null)
-            {
-                return NotFound("Singleton user not found.");
-            }
-
-            var messages = await _assistantService.FetchMessageList(user.ThreadID);
-            return Ok(new { Messages = messages });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An unexpected error occurred during chat with assistant.");
-            return StatusCode(500, "An unexpected error occurred.");
-        }
-    }
-
-    [HttpGet("assistant-check")]
+    
+    [HttpGet("get-assistant")]
     public async Task<IActionResult> AssistantCheck()
     {
         try
