@@ -9,7 +9,7 @@ namespace Frontend.Models
     public class ReplaceFile
     {
         public string? userId { get; set; }
-        [Required]
+
         public string? FileName { get; set; }
         
     }

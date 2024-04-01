@@ -22,18 +22,35 @@
     {
         try
         {
-            var response = await Http.GetStringAsync($"{configuration.GetValue<string>("APIBaseUrl")}research-front/assistant-check");
-            // Navigate based on the assistant check response
-            // Assuming the response "asst_" prefix indicates an assistant is available
-            if (response != null && response.StartsWith("asst_"))
+            // Use GetAsync to obtain the HttpResponseMessage
+            var response = await Http.GetAsync($"{configuration.GetValue<string>("APIBaseUrl")}research-front/assistant-check");
+            
+            if (response.IsSuccessStatusCode)
             {
-                // Navigate to the Assistant component/page
-                NavigationManager.NavigateTo("/assistant");
+                var responseBody = await response.Content.ReadAsStringAsync();
+                // Navigate based on the assistant check response
+                if (responseBody != null && responseBody.StartsWith("asst_"))
+                {
+                    // Navigate to the Assistant component/page
+                    NavigationManager.NavigateTo("/assistant");
+                }
+                else
+                {
+                    // Navigate to the UploadFile page/component if the assistant is not found
+                    NavigationManager.NavigateTo("/createassistant");
+                }
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // Handle 404 specifically if the assistant is not found
+                Console.WriteLine("Assistant not found");
+                NavigationManager.NavigateTo("/createassistant");
             }
             else
             {
-                // Navigate to the UploadFile page/component
-                NavigationManager.NavigateTo("/createassistant");
+                // Handle other types of errors
+                Console.WriteLine($"Server returned error: {response.StatusCode}");
+                // NavigationManager.NavigateTo("/error"); // Uncomment or adjust based on your application's routing
             }
         }
         catch (Exception ex)

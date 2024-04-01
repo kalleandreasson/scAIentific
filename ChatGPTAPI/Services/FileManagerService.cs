@@ -25,7 +25,7 @@ public class FileManagerService
         _logger = logger;
     }
 
-    public async Task<string> ReplaceAssistantFile(string userName, string filePath, string fileName)
+    public async Task<string> ReplaceAssistantFile(string userName, string filePath)
     {
         // ToDO: Add the userId to the userObject in the database and use it instead of username
         // ToDo: modify the file saver to save the file by the userId
@@ -42,7 +42,7 @@ public class FileManagerService
             }
 
             // Next, try to upload the new file to the assistant.
-            string newAssistantFileId = await UploadFileToAssistantAsync(userName, filePath, fileName);
+            string newAssistantFileId = await UploadFileToAssistantAsync(userName, filePath);
             if (string.IsNullOrWhiteSpace(newAssistantFileId))
             {
                 // If the file couldn't be uploaded, stop the process and indicate failure.
@@ -64,11 +64,11 @@ public class FileManagerService
         }
     }
 
-    private async Task<string> UploadFileToAssistantAsync(string userName, string filePath, string fileName)
+    private async Task<string> UploadFileToAssistantAsync(string userName, string filePath)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(filePath) || string.IsNullOrWhiteSpace(fileName))
+            if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(filePath))
             {
                 throw new ArgumentException("Invalid arguments provided for uploading the file.");
             }

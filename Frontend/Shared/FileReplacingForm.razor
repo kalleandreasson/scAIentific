@@ -77,7 +77,7 @@
             {
                 string apiBaseUrl = Configuration["APIBaseUrl"];
                 string userName= "singletonUser";
-                string apiUrl = $"{apiBaseUrl}FileManager/upload/{userName}?fileName={Uri.EscapeDataString(replaceFile.FileName)}";
+                string apiUrl = $"{apiBaseUrl}FileManager/upload/{userName}";
                 // Explicitly declare the tuple types instead of using var
                 (bool isSuccess, string latestErrorMessage) = await FileUploadingService.SendDataAndFileToApi(filesToUpload, apiUrl);
 

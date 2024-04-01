@@ -27,9 +27,9 @@ namespace ChatGPTAPI.Controllers
 
         // filename is to give the file a name when updated in the api
         [HttpPost("upload/{userName}")]
-        public async Task<IActionResult> UploadFile(string userName, string fileName, IFormFile file)
+        public async Task<IActionResult> UploadFile(string userName, IFormFile file)
         {
-            _logger.LogInformation($"Starting file upload process for user '{userName}' with the file name {fileName}.");
+            _logger.LogInformation($"Starting file upload process for user '{userName}'");
 
             if (file == null || file.Length == 0)
             {
@@ -58,7 +58,7 @@ namespace ChatGPTAPI.Controllers
 
             try
             {
-                string fileId = await _fileManagerService.ReplaceAssistantFile(userName, savedFilePath, fileName);
+                string fileId = await _fileManagerService.ReplaceAssistantFile(userName, savedFilePath);
                 _logger.LogInformation($"File for user '{userName}' replaced successfully. The new file ID: {fileId}");
                 return Ok(new { Message = "File uploaded and replaced successfully.", FileId = fileId });
             }
