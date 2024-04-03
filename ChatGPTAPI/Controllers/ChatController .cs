@@ -10,18 +10,18 @@ namespace ChatGPTAPI.Controllers;
 public class ChatController  : ControllerBase
 {
     private readonly OpenAIService _openAIApiService;
-    private readonly AssistantService _assistantService;
+    private readonly ChatService _chatService;
     private readonly InAppFileSaverService _inAppFileSaver;
     private readonly ILogger<ChatController > _logger;
     private readonly MongoDBService _mongoDBService;
 
 
-    public ChatController (OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver, ILogger<ChatController > logger, AssistantService assistantService, MongoDBService mongoDBService)
+    public ChatController (OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver, ILogger<ChatController > logger, ChatService chatService, MongoDBService mongoDBService)
     {
         _openAIApiService = openAIApiService;
         _inAppFileSaver = inAppFileSaver;
         _logger = logger;
-        _assistantService = assistantService;
+        _chatService = chatService;
         _mongoDBService = mongoDBService;
     }
 
@@ -34,7 +34,7 @@ public class ChatController  : ControllerBase
             var assistantObj = await _mongoDBService.GetUserIfExistsAsync(username);
 
             Console.Write("ChatWithAssistant() -> request.UserMessage\n");
-            var messages = await _assistantService.ProcessUserQueryAndFetchResponses(request.UserMessage, assistantObj.ThreadID, assistantObj.AssistantID);
+            var messages = await _chatService.ProcessUserQueryAndFetchResponses(request.UserMessage, assistantObj.ThreadID, assistantObj.AssistantID);
 
             return Ok(new { Messages = messages });
         }
@@ -57,7 +57,7 @@ public class ChatController  : ControllerBase
                 return NotFound("Singleton user not found.");
             }
 
-            var messages = await _assistantService.FetchMessageList(user.ThreadID);
+            var messages = await _chatService.FetchMessageList(user.ThreadID);
             return Ok(new { Messages = messages });
         }
         catch (Exception ex)
