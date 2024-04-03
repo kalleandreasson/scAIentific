@@ -38,7 +38,7 @@ namespace Frontend.Pages
             if (chatResponse?.Messages != null)
             {
                 chatHistory.AddRange(chatResponse.Messages);
-                chatHistory = chatHistory.OrderBy(m => m.CreatedAt).ToList();
+                chatHistory = chatHistory.GroupBy(m => m.Id).Select(g => g.First()).OrderBy(m => m.CreatedAt).ToList();
             }
             userQuery = "";
         }
