@@ -150,13 +150,13 @@ public class AssistantService
 
             _logger.LogInformation($"Deleting assistant and its file for user: {userName}.");
             // Perform deletions in parallel to improve efficiency
-            var deleteFileTask = assistant.DeleteFileAsync(userAssistantObj.FileID);
-            var deleteAssistantTask = _assistantApi.AssistantsEndpoint.DeleteAssistantAsync(assistant);
-            var deleteThreadTask = _assistantApi.ThreadsEndpoint.DeleteThreadAsync(userAssistantObj.ThreadID);
+            var deleteFileTask = await assistant.DeleteFileAsync(userAssistantObj.FileID);
+            var deleteAssistantTask = await _assistantApi.AssistantsEndpoint.DeleteAssistantAsync(assistant);
+            var deleteThreadTask = await _assistantApi.ThreadsEndpoint.DeleteThreadAsync(userAssistantObj.ThreadID);
 
-            await Task.WhenAll(deleteFileTask, deleteAssistantTask, deleteThreadTask);
+            // await Task.WhenAll(deleteFileTask, deleteAssistantTask, deleteThreadTask);
 
-            await _mongoDBService.ClearUserAssistantDetailsAsync(userName);
+            await _mongoDBService.DeleteUserAssistantDetailsAsync(userName);
 
             _logger.LogInformation($"Successfully deleted all resources for user: {userName}.");
             return $"Successfully deleted assistant and resources for user '{userName}'.";
