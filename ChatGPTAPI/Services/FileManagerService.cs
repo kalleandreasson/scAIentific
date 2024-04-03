@@ -157,8 +157,13 @@ public class FileManagerService
     public async Task<int> ListAssistantFiles(string userName)
     {
         Console.WriteLine("list service");
-        var user = _mongoDBService.GetUserIfExistsAsync(userName);
-        string assistantID = user.Result.AssistantID;
+        var user = await _mongoDBService.GetUserIfExistsAsync(userName);
+        if (user == null)
+        {
+            _logger.LogWarning($"User '{userName}' not found.");
+            return 0; // or throw a more specific exception
+        }
+        string assistantID = user.AssistantID;
 
         var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
 
@@ -170,5 +175,20 @@ public class FileManagerService
         }
 
         return filesList.Items.Count;
+    }
+
+    public async Task<int> DeleteAssistantFiles(string assistantID)
+    {
+        var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
+
+        var filesList = await assistant.ListFilesAsync();
+        foreach (var file in filesList.Items)
+        {
+            await assistant.DeleteFileAsync(file.Id);
+        }
+
+        var filesListAfterDeletion = await assistant.ListFilesAsync();
+
+        return filesListAfterDeletion.Items.Count;
     }
 }

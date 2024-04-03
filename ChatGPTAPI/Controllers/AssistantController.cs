@@ -25,92 +25,104 @@ public class AssistantController : ControllerBase
         _mongoDBService = mongoDBService;
     }
 
-
-    //Rename method files
-    [HttpPost("create-assistant")]
-    public async Task<IActionResult> CreateAssistant([FromForm] IFormFile file, [FromQuery] string researchArea)
-    {
-        if (file == null || file.Length == 0)
-    {
-        return BadRequest("No file provided or file is empty.");
-    }
-    try
-    {
-        var savedFilePath = await _inAppFileSaver.Save("singletonUser",file, "files");
-        var assistantObj = await _assistantService.CreateAssistantWithFileUploadAndThread(savedFilePath, researchArea);
-
-        if (assistantObj == null)
-        {
-            Console.WriteLine("Assistant object is null, not saving to database.");
-            return StatusCode(500, "Failed to create assistant object.");
-        }
-        
-        Console.WriteLine("Return in the controller");
-        Console.WriteLine(assistantObj.AssistantID);
-
-        return Ok(assistantObj.AssistantID);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error saving or processing the file.");
-        return StatusCode(500, "There was an error processing the file.");
-    }
-    }
-
-    
     [HttpGet("get-assistant")]
-    public async Task<IActionResult> AssistantCheck()
-    {
-        try
-    {   
-        var username = "singletonUser";
-        var user = await _mongoDBService.GetUserIfExistsAsync(username);
-        
-        if (user == null)
-        {
-            Console.WriteLine();
-            // No user found with the provided username
-            return StatusCode(404, "Assistant not found");
-        }
-
-        // User found, return the user object
-        return Ok(user.AssistantID);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "An unexpected error occurred while trying to fetch the user.");
-        return StatusCode(500, "An unexpected error occurred.");
-    }
-    }
-
-
-    [HttpGet("dbtest")]
-    private async Task<IActionResult> Dbtest()
+    public async Task<IActionResult> getUserAssistant(string userName)
     {
         try
         {
-            var newUser = new AssistantObj
-            {
-                AssistantID = "Db test",
-                ThreadID = "Db test"
-                // Initialize other fields as necessary
-            };
+            Console.WriteLine("assistant check");
+            string userAssistant = await _assistantService.GetUserAssistantAsync(userName);
 
-            await _mongoDBService.SaveAssistantAsync(newUser);
-            return Ok("This user was added to the database: " + newUser);
+            // User found, return the user object
+            return Ok(userAssistant);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unexpected error occurred during chat with assistant.");
+            _logger.LogError(ex, "An unexpected error occurred while trying to fetch the user.");
             return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
-    [HttpGet("retrieveThread")]
-    private async Task<IActionResult> RetreiveThread() {
-        var threadID = "";
-        var retrievedThread = await _assistantService.RetrieveThread(threadID);
-        return Ok(retrievedThread);
+    //Rename method files
+    [HttpPost("create-assistant")]
+    public async Task<IActionResult> CreateAssistant([FromForm] IFormFile file, [FromQuery] string researchArea, string userName)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("No file provided or file is empty.");
+        }
+        try
+        {
+            var savedFilePath = await _inAppFileSaver.Save(userName, file, "files");
+            var assistantObj = await _assistantService.CreateAssistantWithFileUploadAndThread(savedFilePath, researchArea, userName);
+
+            if (assistantObj == null)
+            {
+                Console.WriteLine("Assistant object is null, not saving to database.");
+                return StatusCode(500, "Failed to create assistant object.");
+            }
+
+            Console.WriteLine("Return in the controller");
+            Console.WriteLine(assistantObj.AssistantID);
+
+            return Ok(assistantObj.AssistantID);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving or processing the file.");
+            return StatusCode(500, "There was an error processing the file.");
+        }
     }
+
+
+    [HttpDelete("delete-assistant")]
+    public async Task<IActionResult> DeleteAssistant(string userName)
+    {
+        try
+        {
+            var deletionStatus = await _assistantService.DeleteUserAssistantAndThreadsFromApiAndDB(userName);
+            return Ok(new { Message = $"Assistant deletion for user '{userName}' was {deletionStatus}." });
+        }
+        catch (KeyNotFoundException knfEx)
+        {
+            _logger.LogError(knfEx, $"User or Assistant not found for username: {userName}");
+            return NotFound(new { Message = $"User or Assistant not found for username: {userName}." });
+        }
+        catch (InvalidOperationException ioeEx)
+        {
+            _logger.LogError(ioeEx, $"Invalid operation for username: {userName}. Error: {ioeEx.Message}");
+            return BadRequest(new { Message = $"Invalid operation for username: {userName}." });
+        }
+        catch (Exception ex)
+        {
+            // Log the exception and return a generic error response
+            _logger.LogError(ex, $"An unexpected error occurred while deleting assistant for username: {userName}.");
+            return StatusCode(500, new { Message = "An unexpected error occurred. Please try again later." });
+        }
+    }
+
+    [HttpGet("get-all-assistants")]
+    public async Task<IActionResult> GetAllAssistants()
+    {
+        try
+        {
+            var assistantsList = await _assistantService.ListAllApisAssistant();
+
+            if (!assistantsList.Items.Any())
+            {
+                return Ok(new { Message = "No assistants found." });
+            }
+
+            return Ok(assistantsList.Items);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while trying to fetch assistants.");
+            return StatusCode(500, new { Message = "An unexpected error occurred." });
+        }
+    }
+
+
+
 
 }

@@ -75,8 +75,9 @@
             }
             try
             {
+                string userName = "singletonUser";
                 string apiBaseUrl = Configuration["APIBaseUrl"];
-                string apiUrl = $"{apiBaseUrl}research-front/create-assistant?researchArea={Uri.EscapeDataString(newResearch.ResearchArea)}";
+                string apiUrl = apiBaseUrl + "research-front/create-assistant?researchArea=" + Uri.EscapeDataString(newResearch.ResearchArea) + "&userName=" + Uri.EscapeDataString(userName);
                 // Explicitly declare the tuple types instead of using var
                 (bool isSuccess, string latestErrorMessage) = await FileUploadingService.SendDataAndFileToApi(filesToUpload, apiUrl);
 
