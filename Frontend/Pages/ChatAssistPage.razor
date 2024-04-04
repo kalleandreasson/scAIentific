@@ -7,14 +7,18 @@
 <PageTitle>Assistant</PageTitle>
 
 @if (!isChatHistoryLoaded)
+
 {
     <div>
         <h1>Loading...</h1>
     </div>
 }
+
 else
+
 {
     <div class="index-container">
+         
         <h1>Research Assistant</h1>
         <div class="chat-history">
             @foreach (var message in chatHistory)
@@ -39,5 +43,17 @@ else
                 }
             }
         </div>
+        <EditForm Model="@chat" OnValidSubmit="HandleSubmitAsync">
+            <InputText @bind-Value="@userQuery" />
+            <button class="position-right" type="submit">Send</button>
+        </EditForm>
+           <DeleteAssistantBtn OnDeletionSuccess="HandleDeletionSuccess" />
     </div>
 }
+
+
+
+
+       
+    
+
