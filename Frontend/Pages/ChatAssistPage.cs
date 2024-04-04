@@ -5,15 +5,17 @@ using System.Threading.Tasks;
 using Frontend.Models;
 using Frontend.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace Frontend.Pages
 {
-    public partial class  ChatAssistPage : ComponentBase
+    public partial class ChatAssistPage : ComponentBase
     {
         [Inject]
-        public ChatService? ChatService {get; set;}
+        public ChatService? ChatService { get; set; }
         [Inject]
-        public NavigationManager? NavigationManager {get; set;}
+        public NavigationManager? NavigationManager { get; set; }
+        private ElementReference chatHistoryElement;
 
         private string userQuery = "";
         private List<ChatMessage> chatHistory = new List<ChatMessage>();
@@ -30,6 +32,16 @@ namespace Frontend.Pages
             isChatHistoryLoaded = true; // Indicate that the chat history has been loaded
         }
 
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (chatHistory.Any())
+            {
+                await Task.Delay(500);
+                Console.WriteLine($"Is chatHistoryElement set? {chatHistoryElement.Id}");
+                await JsRuntime.InvokeVoidAsync("scrollToBottom", chatHistoryElement);
+            }
+        }
+
         private async Task HandleSubmitAsync()
         {
             var chatRequest = new ChatRequest { UserMessage = userQuery };
@@ -41,6 +53,11 @@ namespace Frontend.Pages
                 chatHistory = chatHistory.GroupBy(m => m.Id).Select(g => g.First()).OrderBy(m => m.CreatedAt).ToList();
             }
             userQuery = "";
+
+            await InvokeAsync(StateHasChanged); // Request the component to re-render
+            await Task.Delay(100); // Allow time for the UI to update
+            await JsRuntime.InvokeVoidAsync("scrollToBottom", chatHistoryElement);
+
         }
         private async Task HandleDeletionSuccess(bool success)
         {
@@ -49,6 +66,6 @@ namespace Frontend.Pages
                 NavigationManager.NavigateTo("/");
                 Console.WriteLine($"success: {success}");
             }
-        }                                       
+        }
     }
 }

@@ -3,6 +3,7 @@
 @using Frontend.Models
 @using Frontend.Services
 @using System.Globalization
+@inject IJSRuntime JsRuntime
 
 <PageTitle>Assistant</PageTitle>
 
@@ -22,7 +23,7 @@ else
     <div class="index-container">
          
         <h1>Research Assistant</h1>
-        <div class="chat-history">
+        <div class="chat-history" @ref="chatHistoryElement">
             @foreach (var message in chatHistory)
 
             {
