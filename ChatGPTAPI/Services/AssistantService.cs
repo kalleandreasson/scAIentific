@@ -37,15 +37,14 @@ public class AssistantService
         try
         {
             var userAssistantObj = await _mongoDBService.GetUserIfExistsAsync(userName);
+            if (userAssistantObj != null)
+            {
+                _logger.LogInformation($"the user: {userName} already has an assistant with id:{userAssistantObj.AssistantID}.");
+                return userAssistantObj;
+            };
             var createdAssistant = await CreateNewAssistant(researchArea);
             var createdFileId = await UploadFileToAssistant(filePath, createdAssistant);
             var CreatedThreadId = await CreateThread();
-            if (userAssistantObj != null)
-            {
-                _logger.LogInformation($"Updating assistant for user: {userName}.");
-                await _mongoDBService.UpdateUserFieldsAsync(userName, createdAssistant, createdFileId, CreatedThreadId);
-                return userAssistantObj;
-            };
             _logger.LogInformation($"No existing assistant found. Creating new assistant for user: {userName}.");
             var newUserAssistantObj = new AssistantObj
             {
