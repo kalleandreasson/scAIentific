@@ -13,11 +13,10 @@ public class AssistantService
     private readonly string _apiKey;
     private readonly OpenAIClient _assistantApi;
     private readonly MongoDBService _mongoDBService;
-    private readonly FileManagerService _fileManagerService;
     private readonly ILogger<AssistantService> _logger;
 
 
-    public AssistantService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options, MongoDBService mongoDBService, FileManagerService fileManagerService, ILogger<AssistantService> logger)
+    public AssistantService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options, MongoDBService mongoDBService, ILogger<AssistantService> logger)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         var settings = options.Value ?? throw new ArgumentNullException(nameof(options));
@@ -25,7 +24,6 @@ public class AssistantService
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
         _assistantApi = new OpenAIClient(_apiKey);
         _mongoDBService = mongoDBService;
-        _fileManagerService = fileManagerService;
         _logger = logger;
     }
 
@@ -176,7 +174,7 @@ public class AssistantService
 
             foreach (var assistant in assistantsList.Items)
             {
-                var remainingFiles = await _fileManagerService.DeleteAssistantFiles(assistant.Id).ConfigureAwait(false);
+                var remainingFiles = await DeleteAssistantFiles(assistant.Id).ConfigureAwait(false);
                 var isDeleted = await _assistantApi.AssistantsEndpoint.DeleteAssistantAsync(assistant).ConfigureAwait(false);
 
                 if (isDeleted)
@@ -208,6 +206,22 @@ public class AssistantService
 
         return "All assistants and threads deleted successfully.";
     }
+
+    public async Task<int> DeleteAssistantFiles(string assistantID)
+    {
+        var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(assistantID);
+
+        var filesList = await assistant.ListFilesAsync();
+        foreach (var file in filesList.Items)
+        {
+            await assistant.DeleteFileAsync(file.Id);
+        }
+
+        var filesListAfterDeletion = await assistant.ListFilesAsync();
+
+        return filesListAfterDeletion.Items.Count;
+    }
+
 
     /// <summary>
     /// this method check if the user has and assistant and if the user has an assistant it check if it exist in the api.
@@ -242,33 +256,33 @@ public class AssistantService
 
 
 
-   public async Task<ListResponse<AssistantResponse>> ListAllApisAssistant()
-{
-    try
+    public async Task<ListResponse<AssistantResponse>> ListAllApisAssistant()
     {
-        var assistantsList = await _assistantApi.AssistantsEndpoint.ListAssistantsAsync();
-        if (!assistantsList.Items.Any())
+        try
         {
-            _logger.LogInformation("No assistants found.");
-        }
-        else
-        {
-            _logger.LogInformation($"Found {assistantsList.Items.Count} assistant(s).");
-            // Optionally log details for each assistant
-            foreach (var assistant in assistantsList.Items)
+            var assistantsList = await _assistantApi.AssistantsEndpoint.ListAssistantsAsync();
+            if (!assistantsList.Items.Any())
             {
-                LogAssistantDetails(assistant);
+                _logger.LogInformation("No assistants found.");
             }
-        }
+            else
+            {
+                _logger.LogInformation($"Found {assistantsList.Items.Count} assistant(s).");
+                // Optionally log details for each assistant
+                foreach (var assistant in assistantsList.Items)
+                {
+                    LogAssistantDetails(assistant);
+                }
+            }
 
-        return assistantsList;
+            return assistantsList;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving all assistants.");
+            throw;
+        }
     }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "An error occurred while retrieving all assistants.");
-        throw;
-    }
-}
 
 
 

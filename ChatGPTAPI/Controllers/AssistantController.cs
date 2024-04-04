@@ -9,20 +9,16 @@ namespace ChatGPTAPI.Controllers;
 [Route("research-front")]
 public class AssistantController : ControllerBase
 {
-    private readonly OpenAIService _openAIApiService;
     private readonly AssistantService _assistantService;
     private readonly InAppFileSaverService _inAppFileSaver;
     private readonly ILogger<AssistantController> _logger;
-    private readonly MongoDBService _mongoDBService;
 
 
-    public AssistantController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver, ILogger<AssistantController> logger, AssistantService assistantService, MongoDBService mongoDBService)
+    public AssistantController( InAppFileSaverService inAppFileSaver, ILogger<AssistantController> logger, AssistantService assistantService)
     {
-        _openAIApiService = openAIApiService;
         _inAppFileSaver = inAppFileSaver;
         _logger = logger;
         _assistantService = assistantService;
-        _mongoDBService = mongoDBService;
     }
 
     [HttpGet("get-assistant")]
