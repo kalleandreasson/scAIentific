@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Frontend.Pages
 {
-    public partial class  AiAssistant : ComponentBase
+    public partial class  ChatAssistPage : ComponentBase
     {
         [Inject]
         public ChatService? ChatService {get; set;}
@@ -42,9 +42,13 @@ namespace Frontend.Pages
             }
             userQuery = "";
         }
-        private async Task navigateToReplaceFilePage()
+        private async Task HandleDeletionSuccess(bool success)
         {
-            NavigationManager.NavigateTo("/replacefile");
-        }
+            if (success)
+            {
+                NavigationManager.NavigateTo("/");
+                Console.WriteLine($"success: {success}");
+            }
+        }                                       
     }
 }

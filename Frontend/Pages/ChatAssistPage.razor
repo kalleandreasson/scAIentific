@@ -7,22 +7,39 @@
 <PageTitle>Assistant</PageTitle>
 
 @if (!isChatHistoryLoaded)
+
 {
-    <div><h1>Loading...</h1></div>
+    <div>
+        <h1>Loading...</h1>
+    </div>
 }
+
 else
+
 {
+      
+        
     <div class="index-container">
+         
         <h1>Research Assistant</h1>
         <div class="chat-history">
             @foreach (var message in chatHistory)
+
             {
-                var messageTime = DateTimeOffset.FromUnixTimeSeconds(message.CreatedAt).ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+
+                var messageTime = DateTimeOffset.FromUnixTimeSeconds(message.CreatedAt).ToLocalTime().ToString("g",
+                CultureInfo.CurrentCulture);
+
                 var messageType = message.Role == 3 ? "User" : "Assistant";
+
                 if (message.Content != null && message.Content.Any())
+
                 {
+
                     var firstContent = message.Content.First();
+
                     if (firstContent.Text != null)
+
                     {
                         <div class="@($"message {messageType.ToLower()}")">
                             <div class="message-info">
@@ -32,13 +49,15 @@ else
                             <p>@firstContent.Text.Value</p>
                         </div>
                     }
+
                 }
+
             }
         </div>
         <EditForm Model="@chat" OnValidSubmit="HandleSubmitAsync">
             <InputText @bind-Value="@userQuery" />
-            <button type="submit">Send</button>
+            <button class="position-right" type="submit">Send</button>
         </EditForm>
-        <button class="index-button" @onclick="navigateToReplaceFilePage">Replace with new file</button>
+           <DeleteAssistantBtn OnDeletionSuccess="HandleDeletionSuccess" />
     </div>
 }

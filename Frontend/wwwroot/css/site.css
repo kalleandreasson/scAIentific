@@ -107,6 +107,13 @@ button:hover {
   color: #FEF4EA;
 }
 
+.position-left {
+  float: right;
+}
+.position-right {
+  float: left;
+}
+
 
 .main {
   max-width: 80%;

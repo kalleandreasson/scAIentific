@@ -1,0 +1,75 @@
+@using Frontend.Shared
+@inherits BaseFileUploadComponent
+@using Microsoft.AspNetCore.Components.Forms
+@using Frontend.Models
+@using Frontend.Services
+@inject IConfiguration Configuration
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject ILogger<DeleteAssistantBtn> Logger
+
+
+
+<div class="position-left" >
+    @if (!string.IsNullOrEmpty(flashMessage) && string.IsNullOrEmpty(errorMessage))
+
+    {
+        <p class="text-success">@flashMessage</p>
+    }
+    @if (!string.IsNullOrEmpty(errorMessage))
+
+    {
+        <h3>Error</h3>
+        <p class="text-danger">@errorMessage</p>
+    }
+    <button @onclick="HandleSubmit">Delete Assistant</button>
+</div>
+
+
+
+@code {
+    [Parameter]
+    public EventCallback<bool> OnDeletionSuccess { get; set; }
+
+    private string userName = "singletonUser";
+
+    private string flashMessage = "";
+
+    private string errorMessage = "";
+
+    private async Task HandleSubmit()
+
+    {
+        try
+        {
+            flashMessage = "";
+            errorMessage = "";
+        
+            string apiBaseUrl = Configuration["APIBaseUrl"];
+            string apiUrl = $"{apiBaseUrl}research-front/delete-assistant?userName={Uri.EscapeDataString(userName)}";
+        
+            var response = await Http.DeleteAsync(apiUrl);
+        
+            if (response.IsSuccessStatusCode)
+            {
+                await OnDeletionSuccess.InvokeAsync(true);
+                flashMessage = $"The assistant was deleted successfully!";
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Logger.LogWarning("Assistant not found.");
+            }
+            else
+            {
+                Logger.LogWarning($"Server returned error: {response.StatusCode}.");
+            }
+        }
+
+        catch (Exception ex)
+
+        {
+            Logger?.LogError(ex, "Failed to delete the assistant");
+            errorMessage = "Failed to delete the assistant due to an unexpected error. Please try again later.";
+        }
+    }
+}
