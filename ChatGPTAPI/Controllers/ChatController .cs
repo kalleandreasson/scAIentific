@@ -26,11 +26,10 @@ public class ChatController  : ControllerBase
     }
 
     [HttpPost("send-message")]
-    public async Task<IActionResult> ChatWithAssistant([FromBody] UserQuery request)
+    public async Task<IActionResult> ChatWithAssistant([FromBody] UserQuery request, string username)
     {
         try
         {
-            var username = "singletonUser";
             var assistantObj = await _mongoDBService.GetUserIfExistsAsync(username);
 
             Console.Write("ChatWithAssistant() -> request.UserMessage\n");
@@ -46,11 +45,10 @@ public class ChatController  : ControllerBase
     }
 
     [HttpGet("chat-history")]
-    public async Task<IActionResult> ChatWithAssistant()
+    public async Task<IActionResult> ChatWithAssistant(string username)
     {
         try
         {
-            var username = "singletonUser";
             var user = await _mongoDBService.GetUserIfExistsAsync(username);
             if (user == null)
             {
