@@ -1,6 +1,7 @@
 @page "/register"
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
 
 <PageTitle>Register</PageTitle>
 
@@ -32,11 +33,24 @@
 </EditForm>
 
 @code {
+
+    private HttpClient mockHttpClient;
+
+    protected override void OnInitialized()
+    {
+        var handler = new MockHttpMessageHandler();
+        mockHttpClient = new HttpClient(handler) {
+            BaseAddress = new Uri(Configuration["APIBaseUrl"]) // Properly set this in appsettings.json
+        };
+    }
+
     private UserRegistrationModel newUser = new UserRegistrationModel();
 
     private async Task HandleRegister()
     {
-        var response = await Http.PostAsJsonAsync("register", newUser);
+        string registerEndpoint = "register";  // Assuming the base URL is set in the mockHttpClient
+
+        var response = await mockHttpClient.PostAsJsonAsync(registerEndpoint, newUser);
         if (response.IsSuccessStatusCode)
         {
             NavigationManager.NavigateTo("/login");
@@ -46,4 +60,20 @@
             Console.WriteLine("Registration failed");
         }
     }
+
+    @* private async Task HandleRegister()
+    {
+         string apiBaseUrl = Configuration["APIBaseUrl"];
+         string registerEndpoint = $"{apiBaseUrl}register";
+
+        var response = await Http.PostAsJsonAsync("registerEndpoint", newUser);
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            Console.WriteLine("Registration failed");
+        }
+    } *@
 }
