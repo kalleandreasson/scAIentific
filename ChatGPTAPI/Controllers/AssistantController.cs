@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using ChatGPTAPI.Models;
-using ChatGPTAPI.Services; // Ensure this using directive is correct for your project structure
+using ChatGPTAPI.Services;
+using Microsoft.AspNetCore.Authorization; // Ensure this using directive is correct for your project structure
 
 namespace ChatGPTAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("research-front")]
 public class AssistantController : ControllerBase

@@ -30,7 +30,7 @@ public class AssistantService
     //Save fileID, assistantID, threadID to database
     //Should only returns assistantID
     //Create a new service for file controller (refactoring)
-    public async Task<AssistantObj> CreateAssistantWithFileUploadAndThread(string filePath, string researchArea, string userName)
+    public async Task<UserObj> CreateAssistantWithFileUploadAndThread(string filePath, string researchArea, string userName)
     {
         try
         {
@@ -54,7 +54,7 @@ public class AssistantService
 
             var CreatedThreadId = await CreateThread();
             _logger.LogInformation($"No existing assistant found. Creating new assistant for user: {userName}.");
-            var newUserAssistantObj = new AssistantObj
+            var newUserAssistantObj = new UserObj
             {
                 Username = userName,
                 AssistantID = createdAssistant,
