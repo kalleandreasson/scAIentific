@@ -1,8 +1,42 @@
 @page "/login"
 @inject HttpClient Http
-@* @inject NavigationManager NavigationManager
-@inject SessionService SessionService *@
+@inject NavigationManager NavigationManager
+@inject SessionService SessionService
+
 
 <PageTitle>Login</PageTitle>
 
-<p>login</p>
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Username:</label>
+        <InputText @bind-Value="loginModel.Username" />
+    </div>
+    <div>
+        <label>Password:</label>
+        <InputText @bind-Value="loginModel.Password" type="password" />
+    </div>
+    <button type="submit">Login</button>
+</EditForm>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+
+    private async Task HandleLogin()
+    {
+        var response = await Http.PostAsJsonAsync("login", loginModel);
+        if (response.IsSuccessStatusCode)
+        {
+            var jwt = await response.Content.ReadAsStringAsync();
+            SessionService.SetToken(jwt); // Save JWT for session management
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            Console.WriteLine("Login failed");
+        }
+    }
+}
+
