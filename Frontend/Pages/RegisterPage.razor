@@ -1,0 +1,49 @@
+@page "/register"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<PageTitle>Register</PageTitle>
+
+<EditForm Model="newUser" OnValidSubmit="HandleRegister">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Username:</label>
+        <InputText @bind-Value="newUser.Username" />
+    </div>
+    <div>
+        <label>Password:</label>
+        <InputText @bind-Value="newUser.Password" type="password" />
+    </div>
+    <div>
+        <label>First Name:</label>
+        <InputText @bind-Value="newUser.FirstName" />
+    </div>
+    <div>
+        <label>Last Name:</label>
+        <InputText @bind-Value="newUser.LastName" />
+    </div>
+    <div>
+        <label>Email:</label>
+        <InputText @bind-Value="newUser.Email" type="email" />
+    </div>
+    <button type="submit">Register</button>
+</EditForm>
+
+@code {
+    private UserRegistrationModel newUser = new UserRegistrationModel();
+
+    private async Task HandleRegister()
+    {
+        var response = await Http.PostAsJsonAsync("register", newUser);
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            Console.WriteLine("Registration failed");
+        }
+    }
+}
