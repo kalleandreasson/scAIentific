@@ -33,8 +33,7 @@
 </EditForm>
 
 @code {
-
-    private HttpClient mockHttpClient;
+ private HttpClient mockHttpClient;
 
     protected override void OnInitialized()
     {
@@ -48,17 +47,27 @@
 
     private async Task HandleRegister()
     {
-        string registerEndpoint = "register";  // Assuming the base URL is set in the mockHttpClient
+        string registerEndpoint = "register";  
 
         var response = await mockHttpClient.PostAsJsonAsync(registerEndpoint, newUser);
         if (response.IsSuccessStatusCode)
         {
-            NavigationManager.NavigateTo("/login");
+            // Parse the JSON response to extract the user ID
+            var userIdJson = await response.Content.ReadFromJsonAsync<UserResponse>();
+            Console.WriteLine($"Registration successful, User ID: {userIdJson.Id}");
+
+            // You can store this ID in session or local storage, or use it to navigate to a user-specific page
+                   NavigationManager.NavigateTo("/login");
         }
         else
         {
             Console.WriteLine("Registration failed");
         }
+    }
+
+    private class UserResponse
+    {
+        public string Id { get; set; }
     }
 
     @* private async Task HandleRegister()
