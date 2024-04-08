@@ -147,7 +147,7 @@ public class AssistantService
 
             _logger.LogInformation($"Deleting assistant and its file for user: {userName}.");
             // Perform deletions in parallel to improve efficiency
-            var deleteFileTask = await assistant.DeleteFileAsync(userAssistantObj.FileID);
+            var deleteFileTask = await _assistantApi.FilesEndpoint.DeleteFileAsync(userAssistantObj.FileID);
             var deleteAssistantTask = await _assistantApi.AssistantsEndpoint.DeleteAssistantAsync(assistant);
             var deleteThreadTask = await _assistantApi.ThreadsEndpoint.DeleteThreadAsync(userAssistantObj.ThreadID);
 
