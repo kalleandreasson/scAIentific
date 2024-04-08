@@ -13,11 +13,10 @@ public class ChatService
     private readonly string _apiKey;
     private readonly OpenAIClient _assistantApi;
     private readonly MongoDBService _mongoDBService;
-    private readonly FileManagerService _fileManagerService;
     private readonly ILogger<ChatService> _logger;
 
 
-    public ChatService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options, MongoDBService mongoDBService, FileManagerService fileManagerService, ILogger<ChatService> logger)
+    public ChatService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options, MongoDBService mongoDBService, ILogger<ChatService> logger)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         var settings = options.Value ?? throw new ArgumentNullException(nameof(options));
@@ -25,7 +24,6 @@ public class ChatService
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
         _assistantApi = new OpenAIClient(_apiKey);
         _mongoDBService = mongoDBService;
-        _fileManagerService = fileManagerService;
         _logger = logger;
     }
 
