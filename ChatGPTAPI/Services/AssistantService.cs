@@ -38,19 +38,15 @@ public class AssistantService
             if (userAssistantObj != null)
             {
                 _logger.LogInformation($"the user: {userName} already has an assistant with id:{userAssistantObj.AssistantID}.");
+
+                DeleteFileFromServer(filePath);
+
                 return userAssistantObj;
             };
             var createdAssistant = await CreateNewAssistant(researchArea);
             var createdFileId = await UploadFileToAssistant(filePath, createdAssistant);
 
-            try
-            {
-                File.Delete(filePath);
-            }
-            catch (IOException ioEx)
-            {
-                _logger.LogError($"IO exception occurred while deleting file '{filePath}': {ioEx.Message}");
-            }
+            DeleteFileFromServer(filePath);
 
             var CreatedThreadId = await CreateThread();
             _logger.LogInformation($"No existing assistant found. Creating new assistant for user: {userName}.");
@@ -116,6 +112,18 @@ public class AssistantService
         return assistantFile.Id;
     }
 
+    private void DeleteFileFromServer(string filePath)
+    {
+        try
+        {
+            File.Delete(filePath);
+        }
+        catch (IOException ioEx)
+        {
+            _logger.LogError($"IO exception occurred while deleting file '{filePath}' from the server: {ioEx.Message}");
+        }
+    }
+
 
     private async Task<string> CreateThread()
     {
@@ -140,7 +148,7 @@ public class AssistantService
         }
     }
 
-    
+
     public async Task<string> DeleteUserAssistantAndThreadsFromApiAndDB(string userName)
     {
         try
@@ -231,7 +239,7 @@ public class AssistantService
         var filesListAfterDeletion = await assistant.ListFilesAsync();
 
         return filesListAfterDeletion.Items.Count;
-    } 
+    }
 
 
     /// <summary>
