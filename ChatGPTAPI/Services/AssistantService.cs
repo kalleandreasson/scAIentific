@@ -42,6 +42,16 @@ public class AssistantService
             };
             var createdAssistant = await CreateNewAssistant(researchArea);
             var createdFileId = await UploadFileToAssistant(filePath, createdAssistant);
+
+            try
+            {
+                File.Delete(filePath);
+            }
+            catch (IOException ioEx)
+            {
+                _logger.LogError($"IO exception occurred while deleting file '{filePath}': {ioEx.Message}");
+            }
+
             var CreatedThreadId = await CreateThread();
             _logger.LogInformation($"No existing assistant found. Creating new assistant for user: {userName}.");
             var newUserAssistantObj = new AssistantObj
@@ -130,6 +140,7 @@ public class AssistantService
         }
     }
 
+    
     public async Task<string> DeleteUserAssistantAndThreadsFromApiAndDB(string userName)
     {
         try
@@ -220,7 +231,7 @@ public class AssistantService
         var filesListAfterDeletion = await assistant.ListFilesAsync();
 
         return filesListAfterDeletion.Items.Count;
-    }
+    } 
 
 
     /// <summary>
