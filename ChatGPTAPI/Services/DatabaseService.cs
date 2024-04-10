@@ -126,15 +126,39 @@ public class MongoDBService
         await _users.UpdateOneAsync(filter, update);
     }
 
-    public async Task<Boolean> CheckUserCredentials(string username, string password) {
+    public async Task<Boolean> CheckUserCredentials(string username, string password)
+    {
         UserObj user = await _users.Find(u => u.Username == username).FirstOrDefaultAsync();
 
-        if (user == null || !BC.Verify(password, user.Password)) {
+        if (user == null || !BC.Verify(password, user.Password))
+        {
             return false;
-        } else {
+        }
+        else
+        {
             return true;
         }
     }
 
+    public async Task<UserObj> saveUser(string username, string password, string email)
+    {
+        UserObj user = await _users.Find(u => u.Username == username).FirstOrDefaultAsync();
+        if (user == null)
+        {
+            var emailCheck = await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
+            if (emailCheck == null)
+            {
+                var newUserObj = new UserObj
+                {
+                    Username = username,
+                    Password = BC.HashPassword(password),
+                    Email = email,
+                };
+                await _users.InsertOneAsync(newUserObj);
+                return newUserObj;
+            }
 
+        }
+        throw new InvalidOperationException("Already existing in the database");
+    }
 }

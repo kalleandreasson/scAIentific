@@ -29,7 +29,7 @@ public class AuthController  : ControllerBase
         _mongoDBService = mongoDBService;
     }
 
-      /// <summary>
+        /// <summary>
         /// Allows you to authorize to use fishing report api
         /// </summary>
         /// <param name="user">user that wants to authorize</param>
@@ -43,11 +43,11 @@ public class AuthController  : ControllerBase
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserObj user) {
-            if (user is null) {
+        public async Task<IActionResult> Login(string username, string password) {
+            if (username == null || password == null) {
                 return BadRequest("Invalid user request!!!");
             }
-            if (await _mongoDBService.CheckUserCredentials(user.Username, user.Password)) {
+            if (await _mongoDBService.CheckUserCredentials(username, password)) {
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
                 var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
                 var tokeOptions = new JwtSecurityToken(issuer: _jwtValidIssuer, claims: new List < Claim > (), expires: DateTime.Now.AddMinutes(60), signingCredentials: signingCredentials);
@@ -60,8 +60,9 @@ public class AuthController  : ControllerBase
         }
     
         [HttpPost("register")]
-        public async Task<IActionResult> Register(UserObj userObj)
+        public async Task<IActionResult> Register(string username, string password, string email )
         {
-        
+            var user = await _mongoDBService.saveUser(username, password, email);
+            return Ok();
         }
 }
