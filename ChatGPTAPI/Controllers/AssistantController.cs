@@ -2,32 +2,38 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using ChatGPTAPI.Models;
 using ChatGPTAPI.Services;
-using Microsoft.AspNetCore.Authorization; // Ensure this using directive is correct for your project structure
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims; // Ensure this using directive is correct for your project structure
 
 namespace ChatGPTAPI.Controllers;
 
-[Authorize]
-[ApiController]
+
+[ApiController, Authorize]
 [Route("research-front")]
 public class AssistantController : ControllerBase
 {
     private readonly AssistantService _assistantService;
     private readonly InAppFileSaverService _inAppFileSaver;
     private readonly ILogger<AssistantController> _logger;
+    private readonly MongoDBService _mongoDBService;
 
 
-    public AssistantController( InAppFileSaverService inAppFileSaver, ILogger<AssistantController> logger, AssistantService assistantService)
+    public AssistantController(InAppFileSaverService inAppFileSaver, ILogger<AssistantController> logger, AssistantService assistantService, MongoDBService mongoDBService)
     {
         _inAppFileSaver = inAppFileSaver;
         _logger = logger;
         _assistantService = assistantService;
+        _mongoDBService = mongoDBService;
     }
 
     [HttpGet("get-assistant")]
-    public async Task<IActionResult> getUserAssistant(string userName)
+    public async Task<IActionResult> getUserAssistant()
     {
         try
         {
+            var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
+            Console.WriteLine(userName);
+            
             Console.WriteLine("assistant check");
             string userAssistant = await _assistantService.GetUserAssistantAsync(userName);
 
@@ -120,7 +126,14 @@ public class AssistantController : ControllerBase
         }
     }
 
-
+    private async Task<string> TokenCheck(string userName) {
+        UserObj tokenCheck = await _mongoDBService.validateUser(userName);
+            if (string.IsNullOrEmpty(userName) || tokenCheck.Username == null)
+            {
+                return "Invalid token or username not included in token.";
+            }
+        return tokenCheck.Username;
+    }
 
 
 }

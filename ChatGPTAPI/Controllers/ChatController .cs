@@ -6,8 +6,7 @@ using Microsoft.AspNetCore.Authorization; // Ensure this using directive is corr
 
 namespace ChatGPTAPI.Controllers;
 
-[Authorize]
-[ApiController]
+[ApiController, Authorize]
 [Route("chat")]
 public class ChatController  : ControllerBase
 {

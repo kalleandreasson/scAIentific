@@ -140,6 +140,7 @@ public class MongoDBService
         }
     }
 
+    //Should return status code 409 is the user is already existing
     public async Task<UserObj> saveUser(string username, string password, string email)
     {
         UserObj user = await _users.Find(u => u.Username == username).FirstOrDefaultAsync();
@@ -161,4 +162,14 @@ public class MongoDBService
         }
         throw new InvalidOperationException("Already existing in the database");
     }
+
+    public async Task<UserObj> validateUser(string username) {
+        UserObj user = await _users.Find(u => u.Username == username).FirstOrDefaultAsync();
+        if (user == null)
+        {
+            return null;
+        } 
+        return user;
+    }
+
 }
