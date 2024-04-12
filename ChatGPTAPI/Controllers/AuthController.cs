@@ -43,11 +43,11 @@ public class AuthController  : ControllerBase
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost("login")]
-        public async Task<IActionResult> Login(string username, string password) {
-            if (username == null || password == null) {
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest) {
+            if (loginRequest.Username == null || loginRequest.Password == null) {
                 return BadRequest("Invalid user request!!!");
             }
-            if (await _mongoDBService.CheckUserCredentials(username, password)) {
+            if (await _mongoDBService.CheckUserCredentials(loginRequest.Username, loginRequest.Password)) {
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
                 var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
                 var tokeOptions = new JwtSecurityToken(issuer: _jwtValidIssuer, claims: new List < Claim > (), expires: DateTime.Now.AddMinutes(60), signingCredentials: signingCredentials);
@@ -60,9 +60,9 @@ public class AuthController  : ControllerBase
         }
     
         [HttpPost("register")]
-        public async Task<IActionResult> Register(string username, string password, string email )
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
-            var user = await _mongoDBService.saveUser(username, password, email);
+            var user = await _mongoDBService.saveUser(registerRequest.Username, registerRequest.Password, registerRequest.Email);
             return Ok();
         }
 }
