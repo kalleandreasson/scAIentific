@@ -29,11 +29,11 @@ public class AssistantController : ControllerBase
     [HttpGet("get-assistant")]
     public async Task<IActionResult> getUserAssistant()
     {
+        var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
+        Console.WriteLine(userName);
         try
         {
-            var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
-            Console.WriteLine(userName);
-            
+
             Console.WriteLine("assistant check");
             string userAssistant = await _assistantService.GetUserAssistantAsync(userName);
 
@@ -49,8 +49,10 @@ public class AssistantController : ControllerBase
 
     //Rename method files
     [HttpPost("create-assistant")]
-    public async Task<IActionResult> CreateAssistant([FromForm] IFormFile file, [FromQuery] string researchArea, string userName)
+    public async Task<IActionResult> CreateAssistant([FromForm] IFormFile file, [FromQuery] string researchArea)
     {
+        var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
+        Console.WriteLine(userName);
         if (file == null || file.Length == 0)
         {
             return BadRequest("No file provided or file is empty.");
@@ -80,8 +82,10 @@ public class AssistantController : ControllerBase
 
 
     [HttpDelete("delete-assistant")]
-    public async Task<IActionResult> DeleteAssistant(string userName)
+    public async Task<IActionResult> DeleteAssistant()
     {
+        var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
+        Console.WriteLine(userName);
         try
         {
             var deletionStatus = await _assistantService.DeleteUserAssistantAndThreadsFromApiAndDB(userName);
@@ -126,12 +130,13 @@ public class AssistantController : ControllerBase
         }
     }
 
-    private async Task<string> TokenCheck(string userName) {
+    private async Task<string> TokenCheck(string userName)
+    {
         UserObj tokenCheck = await _mongoDBService.validateUser(userName);
-            if (string.IsNullOrEmpty(userName) || tokenCheck.Username == null)
-            {
-                return "Invalid token or username not included in token.";
-            }
+        if (string.IsNullOrEmpty(userName) || tokenCheck.Username == null)
+        {
+            throw new ArgumentException("Invalid token");
+        }
         return tokenCheck.Username;
     }
 
