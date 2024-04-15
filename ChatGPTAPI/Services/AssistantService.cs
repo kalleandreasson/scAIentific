@@ -52,12 +52,11 @@ public class AssistantService
             _logger.LogInformation($"No existing assistant found. Creating new assistant for user: {userName}.");
             var newUserAssistantObj = new UserObj
             {
-                Username = userName,
                 AssistantID = createdAssistant,
                 FileID = createdFileId,
                 ThreadID = CreatedThreadId
             };
-            await _mongoDBService.SaveAssistantAsync(newUserAssistantObj);
+            await _mongoDBService.SaveAssistantAsync(newUserAssistantObj, userName);
             return newUserAssistantObj;
 
         }

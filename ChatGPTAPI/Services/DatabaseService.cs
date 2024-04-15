@@ -18,9 +18,16 @@ public class MongoDBService
         _users = database.GetCollection<UserObj>("UserObj");
     }
 
-    public async Task SaveAssistantAsync(UserObj assistantObject)
+    public async Task SaveAssistantAsync(UserObj assistantObject, string username)
     {
-        await _users.InsertOneAsync(assistantObject);
+        var filter = Builders<UserObj>.Filter.Eq(u => u.Username, username);
+        var update = Builders<UserObj>.Update
+            .Set(u => u.AssistantID, assistantObject.AssistantID)
+            .Set(u => u.ThreadID, assistantObject.ThreadID)
+            .Set(u => u.FileID, assistantObject.FileID);
+        // Add as many Set operations as needed for different fields
+
+        await _users.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
     }
 
     public async Task DeleteUserAssistantDetailsAsync(string username)
@@ -163,12 +170,13 @@ public class MongoDBService
         throw new InvalidOperationException("Already existing in the database");
     }
 
-    public async Task<UserObj> validateUser(string username) {
+    public async Task<UserObj> validateUser(string username)
+    {
         UserObj user = await _users.Find(u => u.Username == username).FirstOrDefaultAsync();
         if (user == null)
         {
             return null;
-        } 
+        }
         return user;
     }
 
