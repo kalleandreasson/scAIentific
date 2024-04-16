@@ -51,7 +51,7 @@ public class AuthController : ControllerBase
         {
             return BadRequest("Invalid user request!!!");
         }
-        if (await _mongoDBService.CheckUserCredentials(loginRequest.Username, loginRequest.Username))
+        if (await _mongoDBService.CheckUserCredentials(loginRequest.Username, loginRequest.Password))
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
             var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
@@ -71,12 +71,15 @@ public class AuthController : ControllerBase
             );
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
-            return Ok(new JWTTokenResponse
+            return new JsonResult(new { Token = tokenString })
             {
-                Token = tokenString
-            });
+                StatusCode = StatusCodes.Status201Created
+            };
         }
-        return Unauthorized();
+         return new JsonResult(new { message = "Unauthorized credentials" })
+            {
+                StatusCode = StatusCodes.Status401Unauthorized
+            };
     }
 
     [HttpPost("register")]
@@ -85,8 +88,14 @@ public class AuthController : ControllerBase
         var user = await _mongoDBService.saveUser(registerRequest.Username, registerRequest.Password, registerRequest.Email);
         if (user == null)
         {
-            return StatusCode(409);
+            return new JsonResult(new { message = "already exists" })
+            {
+                StatusCode = StatusCodes.Status409Conflict
+            };
         }
-        return StatusCode(201);
+        return new JsonResult(new { id = user.Id })
+        {
+            StatusCode = StatusCodes.Status201Created
+        };
     }
 }

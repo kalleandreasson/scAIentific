@@ -71,7 +71,10 @@ public class AssistantController : ControllerBase
             Console.WriteLine("Return in the controller");
             Console.WriteLine(assistantObj.AssistantID);
 
-            return Ok(assistantObj.AssistantID);
+            return new JsonResult(new { assistant_id = assistantObj.AssistantID })
+            {
+                StatusCode = StatusCodes.Status201Created
+            };
         }
         catch (Exception ex)
         {
@@ -89,7 +92,10 @@ public class AssistantController : ControllerBase
         try
         {
             var deletionStatus = await _assistantService.DeleteUserAssistantAndThreadsFromApiAndDB(userName);
-            return Ok(new { Message = $"Assistant deletion for user '{userName}' was {deletionStatus}." });
+            return new JsonResult(new { Message = $"Assistant deletion for user '{userName}' was {deletionStatus}." })
+            {
+                StatusCode = StatusCodes.Status204NoContent
+            };
         }
         catch (KeyNotFoundException knfEx)
         {

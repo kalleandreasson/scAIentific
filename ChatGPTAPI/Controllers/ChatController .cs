@@ -9,16 +9,16 @@ namespace ChatGPTAPI.Controllers;
 
 [ApiController, Authorize]
 [Route("chat")]
-public class ChatController  : ControllerBase
+public class ChatController : ControllerBase
 {
     private readonly OpenAIService _openAIApiService;
     private readonly ChatService _chatService;
     private readonly InAppFileSaverService _inAppFileSaver;
-    private readonly ILogger<ChatController > _logger;
+    private readonly ILogger<ChatController> _logger;
     private readonly MongoDBService _mongoDBService;
 
 
-    public ChatController (OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver, ILogger<ChatController > logger, ChatService chatService, MongoDBService mongoDBService)
+    public ChatController(OpenAIService openAIApiService, InAppFileSaverService inAppFileSaver, ILogger<ChatController> logger, ChatService chatService, MongoDBService mongoDBService)
     {
         _openAIApiService = openAIApiService;
         _inAppFileSaver = inAppFileSaver;
@@ -31,15 +31,38 @@ public class ChatController  : ControllerBase
     public async Task<IActionResult> ChatWithAssistant([FromBody] UserQuery request)
     {
         var username = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
+        if(username == null) {
+            return new JsonResult(new { message = "Invalid access token" })
+            {
+                StatusCode = StatusCodes.Status401Unauthorized
+            };
+        }
+
+        if(request.UserMessage == null || request.UserMessage.Length == 0) {
+             return new JsonResult(new { message = "Message content cannot be empty" })
+            {
+                StatusCode = StatusCodes.Status400BadRequest
+            };
+        }
+
         Console.WriteLine(username);
         try
         {
             var assistantObj = await _mongoDBService.GetAssistantObjIfExsistAsync(username);
-
+            if (assistantObj == null)
+            {
+                return new JsonResult(new { message = "Assistant not found" })
+                {
+                    StatusCode = StatusCodes.Status412PreconditionFailed
+                };
+            }
             Console.Write("ChatWithAssistant() -> request.UserMessage\n");
-            var messages = await _chatService.ProcessUserQueryAndFetchResponses(request.UserMessage, assistantObj.ThreadID, assistantObj.AssistantID);
+            var messagesList = await _chatService.ProcessUserQueryAndFetchResponses(request.UserMessage, assistantObj.ThreadID, assistantObj.AssistantID);
 
-            return Ok(new { Messages = messages });
+             return new JsonResult(new { Messages = messagesList })
+            {
+                StatusCode = StatusCodes.Status200OK
+            };
         }
         catch (Exception ex)
         {
@@ -58,11 +81,17 @@ public class ChatController  : ControllerBase
             var user = await _mongoDBService.GetAssistantObjIfExsistAsync(username);
             if (user == null)
             {
-                return NotFound("Singleton user not found.");
+                return new JsonResult(new { message = "Assistant not found" })
+            {
+                StatusCode = StatusCodes.Status412PreconditionFailed
+            };
             }
 
-            var messages = await _chatService.FetchMessageList(user.ThreadID);
-            return Ok(new { Messages = messages });
+            var messagesList = await _chatService.FetchMessageList(user.ThreadID);
+             return new JsonResult(new { Messages = messagesList })
+            {
+                StatusCode = StatusCodes.Status200OK
+            };
         }
         catch (Exception ex)
         {
@@ -71,12 +100,12 @@ public class ChatController  : ControllerBase
         }
     }
 
-        private async Task<string> TokenCheck(string userName)
+    private async Task<string> TokenCheck(string userName)
     {
         UserObj tokenCheck = await _mongoDBService.validateUser(userName);
         if (string.IsNullOrEmpty(userName) || tokenCheck.Username == null)
         {
-            throw new ArgumentException("Invalid token");
+            return null;
         }
         return tokenCheck.Username;
     }

@@ -28,10 +28,10 @@ public class MongoDBService
     public async Task DeleteUserAssistantDetailsAsync(string username)
     {
         // Build the filter to find the specific user by username
-        var filter = Builders<UserObj>.Filter.Eq(user => user.Username, username);
+        var filter = Builders<AssistantObj>.Filter.Eq(user => user.Username, username);
 
         // Perform the delete operation on the first matching document
-        var result = await _users.DeleteOneAsync(filter);
+        var result = await _assistant.DeleteOneAsync(filter);
 
         if (result.DeletedCount == 0)
         {
@@ -143,13 +143,14 @@ public class MongoDBService
     public async Task<Boolean> CheckUserCredentials(string username, string password)
     {
         UserObj user = await _users.Find(u => u.Username == username).FirstOrDefaultAsync();
-
         if (user == null || !BC.Verify(password, user.Password))
         {
+            Console.WriteLine("false");
             return false;
         }
         else
         {
+            Console.WriteLine("true");
             return true;
         }
     }
