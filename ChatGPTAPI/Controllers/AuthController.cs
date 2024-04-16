@@ -45,13 +45,13 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
 
     //Check if production or development and use public/private key
-    public async Task<IActionResult> Login(string username, string password)
+    public async Task<IActionResult> Login(LoginRequest loginRequest)
     {
-        if (username == null || password == null)
+        if (loginRequest.Username == null || loginRequest.Password == null)
         {
             return BadRequest("Invalid user request!!!");
         }
-        if (await _mongoDBService.CheckUserCredentials(username, password))
+        if (await _mongoDBService.CheckUserCredentials(loginRequest.Username, loginRequest.Username))
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
             var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
@@ -59,7 +59,7 @@ public class AuthController : ControllerBase
             // Create the claims for the token
             var claims = new List<Claim>
     {
-        new Claim(ClaimTypes.Name, username) // Add the username as a claim
+        new Claim(ClaimTypes.Name, loginRequest.Username) // Add the username as a claim
         // You can add more claims if needed
     };
 
@@ -80,9 +80,13 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(string username, string password, string email)
+    public async Task<IActionResult> Register(RegisterRequest registerRequest)
     {
-        var user = await _mongoDBService.saveUser(username, password, email);
-        return Ok();
+        var user = await _mongoDBService.saveUser(registerRequest.Username, registerRequest.Password, registerRequest.Email);
+        if (user == null)
+        {
+            return StatusCode(409);
+        }
+        return StatusCode(201);
     }
 }

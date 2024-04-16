@@ -14,8 +14,5 @@ public class UserObj
     [EmailAddress(ErrorMessage = "Please provide a valid email address.")]
     public string Email { get; set; }
     public ObjectId Id { get; set; } // MongoDB unique ID
-    public string AssistantID { get; set; }
-    public string ThreadID { get; set; }
-    public string FileID { get; set; }
 
 }

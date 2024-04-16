@@ -30,11 +30,11 @@ public class AssistantService
     //Save fileID, assistantID, threadID to database
     //Should only returns assistantID
     //Create a new service for file controller (refactoring)
-    public async Task<UserObj> CreateAssistantWithFileUploadAndThread(string filePath, string researchArea, string userName)
+   public async Task<AssistantObj> CreateAssistantWithFileUploadAndThread(string filePath, string researchArea, string userName)
     {
         try
         {
-            var userAssistantObj = await _mongoDBService.GetUserIfExistsAsync(userName);
+            var userAssistantObj = await _mongoDBService.GetAssistantObjIfExsistAsync(userName);
             if (userAssistantObj != null)
             {
                 _logger.LogInformation($"the user: {userName} already has an assistant with id:{userAssistantObj.AssistantID}.");
@@ -50,13 +50,14 @@ public class AssistantService
 
             var CreatedThreadId = await CreateThread();
             _logger.LogInformation($"No existing assistant found. Creating new assistant for user: {userName}.");
-            var newUserAssistantObj = new UserObj
+            var newUserAssistantObj = new AssistantObj
             {
+                Username = userName,
                 AssistantID = createdAssistant,
                 FileID = createdFileId,
                 ThreadID = CreatedThreadId
             };
-            await _mongoDBService.SaveAssistantAsync(newUserAssistantObj, userName);
+            await _mongoDBService.SaveAssistantAsync(newUserAssistantObj);
             return newUserAssistantObj;
 
         }
@@ -152,7 +153,7 @@ public class AssistantService
     {
         try
         {
-            var userAssistantObj = await _mongoDBService.GetUserIfExistsAsync(userName);
+            var userAssistantObj = await _mongoDBService.GetAssistantObjIfExsistAsync(userName);
             if (userAssistantObj == null)
             {
                 throw new KeyNotFoundException($"User '{userName}' or their assistant does not exist.");
@@ -257,7 +258,7 @@ public class AssistantService
     {
         try
         {
-            var userAssistantObj = await _mongoDBService.GetUserIfExistsAsync(userName);
+            var userAssistantObj = await _mongoDBService.GetAssistantObjIfExsistAsync(userName);
             if (userAssistantObj == null || string.IsNullOrEmpty(userAssistantObj.AssistantID))
             {
                 _logger.LogInformation($"No assistant found for user {userName}.");

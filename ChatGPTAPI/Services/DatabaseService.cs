@@ -8,6 +8,7 @@ using ChatGPTAPI.Models;
 public class MongoDBService
 {
     private readonly IMongoCollection<UserObj> _users;
+    private readonly IMongoCollection<AssistantObj> _assistant;
     private readonly string _dbConnectionString;
 
     public MongoDBService(IOptions<DatabaseServiceOptions> options)
@@ -16,18 +17,12 @@ public class MongoDBService
         var client = new MongoClient(settings.DatabaseConnectString); // Uses the Atlas connection string
         var database = client.GetDatabase("YourDatabaseNameHere");
         _users = database.GetCollection<UserObj>("UserObj");
+        _assistant = database.GetCollection<AssistantObj>("AssistantObj");
     }
 
-    public async Task SaveAssistantAsync(UserObj assistantObject, string username)
+    public async Task SaveAssistantAsync(AssistantObj assistantObject)
     {
-        var filter = Builders<UserObj>.Filter.Eq(u => u.Username, username);
-        var update = Builders<UserObj>.Update
-            .Set(u => u.AssistantID, assistantObject.AssistantID)
-            .Set(u => u.ThreadID, assistantObject.ThreadID)
-            .Set(u => u.FileID, assistantObject.FileID);
-        // Add as many Set operations as needed for different fields
-
-        await _users.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
+       await _assistant.InsertOneAsync(assistantObject);
     }
 
     public async Task DeleteUserAssistantDetailsAsync(string username)
@@ -47,13 +42,13 @@ public class MongoDBService
     }
 
 
-    public async Task<UserObj> GetAssistantByAssistantIDAsync(string assistantID)
+    public async Task<AssistantObj> GetAssistantByAssistantIDAsync(string assistantID)
     {
         // Build the filter based on the AssistantID
-        var filter = Builders<UserObj>.Filter.Eq(assistant => assistant.AssistantID, assistantID);
+        var filter = Builders<AssistantObj>.Filter.Eq(assistant => assistant.AssistantID, assistantID);
 
         // Attempt to find the AssistantObj in the collection
-        return await _users.Find(filter).FirstOrDefaultAsync();
+        return await _assistant.Find(filter).FirstOrDefaultAsync();
     }
 
     public async Task<UserObj> GetUserIfExistsAsync(string username)
@@ -68,9 +63,21 @@ public class MongoDBService
         return user;
     }
 
-    public async Task<UserObj> ListAllAndReturnFirstAsync()
+        public async Task<AssistantObj> GetAssistantObjIfExsistAsync(string username)
     {
-        var allAssistants = await _users.Find(_ => true).ToListAsync();
+        // Build the filter based on the username
+        var filter = Builders<AssistantObj>.Filter.Eq(user => user.Username, username);
+
+        // Attempt to find the user in the collection
+        var user = await _assistant.Find(filter).FirstOrDefaultAsync();
+
+        // This will return the user if found, or null if not found
+        return user;
+    }
+
+    public async Task<AssistantObj> ListAllAndReturnFirstAsync()
+    {
+        var allAssistants = await _assistant.Find(_ => true).ToListAsync();
 
         foreach (var assistant in allAssistants)
         {
@@ -93,9 +100,9 @@ public class MongoDBService
 
     public async Task<List<string>> GetAllThreadIDsAsync()
     {
-        var filter = Builders<UserObj>.Filter.Empty;
-        var projection = Builders<UserObj>.Projection.Include("ThreadID");
-        var threadIDsCursor = await _users.Find(filter).Project<UserObj>(projection).ToListAsync();
+        var filter = Builders<AssistantObj>.Filter.Empty;
+        var projection = Builders<AssistantObj>.Projection.Include("ThreadID");
+        var threadIDsCursor = await _assistant.Find(filter).Project<AssistantObj>(projection).ToListAsync();
 
         // Assuming ThreadID is a string, extract just the ThreadID from each AssistantObj
         var threadIDs = threadIDsCursor.Select(assistant => assistant.ThreadID).ToList();
@@ -106,22 +113,22 @@ public class MongoDBService
     public async Task ReplaceFileIdForUserAsync(string username, string newFileId)
     {
         // Build the filter to find the specific user by username
-        var filter = Builders<UserObj>.Filter.Eq(user => user.Username, username);
+        var filter = Builders<AssistantObj>.Filter.Eq(user => user.Username, username);
 
         // Define the update operation to set the new FileId
-        var update = Builders<UserObj>.Update.Set(user => user.FileID, newFileId);
+        var update = Builders<AssistantObj>.Update.Set(user => user.FileID, newFileId);
 
         // Perform the update operation on the first matching document
-        await _users.UpdateOneAsync(filter, update);
+        await _assistant.UpdateOneAsync(filter, update);
     }
 
     public async Task UpdateUserFieldsAsync(string username, string newAssistantID, string newFileID, string newThreadID)
     {
         // Build the filter to find the specific user by username
-        var filter = Builders<UserObj>.Filter.Eq(user => user.Username, username);
+        var filter = Builders<AssistantObj>.Filter.Eq(user => user.Username, username);
 
         // Define the update operation to set the new values for AssistantID, ThreadID, and FileID
-        var update = Builders<UserObj>.Update
+        var update = Builders<AssistantObj>.Update
             .Set(user => user.AssistantID, newAssistantID)
             .Set(user => user.ThreadID, newThreadID)
             .Set(user => user.FileID, newFileID);
@@ -130,7 +137,7 @@ public class MongoDBService
         update = update.Unset(user => user.Username);
 
         // Perform the update operation on the first matching document
-        await _users.UpdateOneAsync(filter, update);
+        await _assistant.UpdateOneAsync(filter, update);
     }
 
     public async Task<Boolean> CheckUserCredentials(string username, string password)
@@ -167,7 +174,7 @@ public class MongoDBService
             }
 
         }
-        throw new InvalidOperationException("Already existing in the database");
+        return null;
     }
 
     public async Task<UserObj> validateUser(string username)

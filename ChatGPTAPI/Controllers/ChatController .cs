@@ -34,7 +34,7 @@ public class ChatController  : ControllerBase
         Console.WriteLine(username);
         try
         {
-            var assistantObj = await _mongoDBService.GetUserIfExistsAsync(username);
+            var assistantObj = await _mongoDBService.GetAssistantObjIfExsistAsync(username);
 
             Console.Write("ChatWithAssistant() -> request.UserMessage\n");
             var messages = await _chatService.ProcessUserQueryAndFetchResponses(request.UserMessage, assistantObj.ThreadID, assistantObj.AssistantID);
@@ -55,7 +55,7 @@ public class ChatController  : ControllerBase
         Console.WriteLine(username);
         try
         {
-            var user = await _mongoDBService.GetUserIfExistsAsync(username);
+            var user = await _mongoDBService.GetAssistantObjIfExsistAsync(username);
             if (user == null)
             {
                 return NotFound("Singleton user not found.");

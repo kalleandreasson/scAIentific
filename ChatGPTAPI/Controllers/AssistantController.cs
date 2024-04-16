@@ -49,7 +49,7 @@ public class AssistantController : ControllerBase
 
     //Rename method files
     [HttpPost("create-assistant")]
-    public async Task<IActionResult> CreateAssistant([FromForm] IFormFile file, [FromQuery] string researchArea)
+    public async Task<IActionResult> CreateAssistant([FromForm] IFormFile file, [FromForm] string researchArea)
     {
         var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
         Console.WriteLine(userName);
