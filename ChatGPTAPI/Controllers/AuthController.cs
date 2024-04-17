@@ -76,10 +76,10 @@ public class AuthController : ControllerBase
                 StatusCode = StatusCodes.Status201Created
             };
         }
-         return new JsonResult(new { message = "Unauthorized credentials" })
-            {
-                StatusCode = StatusCodes.Status401Unauthorized
-            };
+        return new JsonResult(new { message = "Incorrect username or password" })
+        {
+            StatusCode = StatusCodes.Status401Unauthorized
+        };
     }
 
     [HttpPost("register")]

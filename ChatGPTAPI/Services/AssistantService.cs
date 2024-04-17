@@ -1,12 +1,10 @@
 using System.Net.Http.Headers;
 using System.Text;
-using Newtonsoft.Json;
+using ChatGPTAPI.Services;
 using Microsoft.Extensions.Options;
 using OpenAI;
 using OpenAI.Assistants;
-using OpenAI.Audio;
 using OpenAI.Threads;
-
 public class AssistantService
 {
     private readonly HttpClient _httpClient;
@@ -27,46 +25,45 @@ public class AssistantService
         _logger = logger;
     }
 
-    //Save fileID, assistantID, threadID to database
-    //Should only returns assistantID
-    //Create a new service for file controller (refactoring)
-   public async Task<AssistantObj> CreateAssistantWithFileUploadAndThread(string filePath, string researchArea, string userName)
+    public async Task<OperationResult<AssistantObj>> CreateAssistantWithFileUploadAndThread(string filePath, string researchArea, string userName)
     {
         try
         {
             var userAssistantObj = await _mongoDBService.GetAssistantObjIfExsistAsync(userName);
             if (userAssistantObj != null)
             {
-                _logger.LogInformation($"the user: {userName} already has an assistant with id:{userAssistantObj.AssistantID}.");
+                _logger.LogInformation($"The user: {userName} already has an assistant with id: {userAssistantObj.AssistantID}.");
+                return OperationResult<AssistantObj>.CreateFailure("User already has an assistant");
+            }
 
-                DeleteFileFromServer(filePath);
-
-                return userAssistantObj;
-            };
             var createdAssistant = await CreateNewAssistant(researchArea);
             var createdFileId = await UploadFileToAssistant(filePath, createdAssistant);
+            var createdThreadId = await CreateThread();
 
-            DeleteFileFromServer(filePath);
-
-            var CreatedThreadId = await CreateThread();
             _logger.LogInformation($"No existing assistant found. Creating new assistant for user: {userName}.");
+
             var newUserAssistantObj = new AssistantObj
             {
                 Username = userName,
                 AssistantID = createdAssistant,
                 FileID = createdFileId,
-                ThreadID = CreatedThreadId
+                ThreadID = createdThreadId
             };
-            await _mongoDBService.SaveAssistantAsync(newUserAssistantObj);
-            return newUserAssistantObj;
 
+            await _mongoDBService.SaveAssistantAsync(newUserAssistantObj);
+            return OperationResult<AssistantObj>.CreateSuccessful(newUserAssistantObj);
         }
         catch (Exception ex)
         {
             _logger.LogError($"An error occurred while creating or updating the assistant for {userName}: {ex}");
-            return null;
+            return OperationResult<AssistantObj>.CreateFailure(ex.Message);
+        }
+        finally
+        {
+            DeleteFileFromServer(filePath);
         }
     }
+
 
     private async Task<AssistantResponse> CreateNewAssistant(string researchArea)
     {

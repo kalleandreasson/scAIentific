@@ -33,11 +33,7 @@ public class AssistantController : ControllerBase
         Console.WriteLine(userName);
         try
         {
-
-            Console.WriteLine("assistant check");
             string userAssistant = await _assistantService.GetUserAssistantAsync(userName);
-
-            // User found, return the user object
             return Ok(userAssistant);
         }
         catch (Exception ex)
@@ -47,7 +43,6 @@ public class AssistantController : ControllerBase
         }
     }
 
-    //Rename method files
     [HttpPost("create-assistant")]
     public async Task<IActionResult> CreateAssistant([FromForm] IFormFile file, [FromForm] string researchArea)
     {
@@ -57,30 +52,24 @@ public class AssistantController : ControllerBase
         {
             return BadRequest("No file provided or file is empty.");
         }
-        try
-        {
-            var savedFilePath = await _inAppFileSaver.Save(userName, file, "files");
-            var assistantObj = await _assistantService.CreateAssistantWithFileUploadAndThread(savedFilePath, researchArea, userName);
 
-            if (assistantObj == null)
+        var savedFilePath = await _inAppFileSaver.Save(userName, file, "files");
+        var result = await _assistantService.CreateAssistantWithFileUploadAndThread(savedFilePath, researchArea, userName);
+
+        if (!result.Success)
+        {
+            if (result.ErrorMessage == "User already has an assistant")
             {
-                Console.WriteLine("Assistant object is null, not saving to database.");
-                return StatusCode(500, "Failed to create assistant object.");
+                return StatusCode(409, new { title = "Conflict", status = 409, detail = "User already has an assistant" });
             }
-
-            Console.WriteLine("Return in the controller");
-            Console.WriteLine(assistantObj.AssistantID);
-
-            return new JsonResult(new { assistant_id = assistantObj.AssistantID })
-            {
-                StatusCode = StatusCodes.Status201Created
-            };
+            
+            return StatusCode(500, new { title = "Internal Server Error", status = 500, detail = result.ErrorMessage });
         }
-        catch (Exception ex)
+
+        return new JsonResult(new { assistant_id = result.Data.AssistantID })
         {
-            _logger.LogError(ex, "Error saving or processing the file.");
-            return StatusCode(500, "There was an error processing the file.");
-        }
+            StatusCode = StatusCodes.Status201Created
+        };
     }
 
 
