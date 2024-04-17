@@ -2,10 +2,13 @@ using System.ComponentModel;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Microsoft.Extensions.Options;
+using BC = BCrypt.Net.BCrypt;
+using ChatGPTAPI.Models;
 
 public class MongoDBService
 {
-    private readonly IMongoCollection<AssistantObj> _assistants;
+    private readonly IMongoCollection<UserObj> _users;
+    private readonly IMongoCollection<AssistantObj> _assistant;
     private readonly string _dbConnectionString;
 
     public MongoDBService(IOptions<DatabaseServiceOptions> options)
@@ -13,12 +16,13 @@ public class MongoDBService
         var settings = options.Value ?? throw new ArgumentNullException(nameof(options));
         var client = new MongoClient(settings.DatabaseConnectString); // Uses the Atlas connection string
         var database = client.GetDatabase("YourDatabaseNameHere");
-        _assistants = database.GetCollection<AssistantObj>("AssistantsObj");
+        _users = database.GetCollection<UserObj>("UserObj");
+        _assistant = database.GetCollection<AssistantObj>("AssistantObj");
     }
 
     public async Task SaveAssistantAsync(AssistantObj assistantObject)
     {
-        await _assistants.InsertOneAsync(assistantObject);
+       await _assistant.InsertOneAsync(assistantObject);
     }
 
     public async Task DeleteUserAssistantDetailsAsync(string username)
@@ -27,7 +31,7 @@ public class MongoDBService
         var filter = Builders<AssistantObj>.Filter.Eq(user => user.Username, username);
 
         // Perform the delete operation on the first matching document
-        var result = await _assistants.DeleteOneAsync(filter);
+        var result = await _assistant.DeleteOneAsync(filter);
 
         if (result.DeletedCount == 0)
         {
@@ -44,16 +48,28 @@ public class MongoDBService
         var filter = Builders<AssistantObj>.Filter.Eq(assistant => assistant.AssistantID, assistantID);
 
         // Attempt to find the AssistantObj in the collection
-        return await _assistants.Find(filter).FirstOrDefaultAsync();
+        return await _assistant.Find(filter).FirstOrDefaultAsync();
     }
 
-    public async Task<AssistantObj> GetUserIfExistsAsync(string username)
+    public async Task<UserObj> GetUserIfExistsAsync(string username)
+    {
+        // Build the filter based on the username
+        var filter = Builders<UserObj>.Filter.Eq(user => user.Username, username);
+
+        // Attempt to find the user in the collection
+        var user = await _users.Find(filter).FirstOrDefaultAsync();
+
+        // This will return the user if found, or null if not found
+        return user;
+    }
+
+        public async Task<AssistantObj> GetAssistantObjIfExsistAsync(string username)
     {
         // Build the filter based on the username
         var filter = Builders<AssistantObj>.Filter.Eq(user => user.Username, username);
 
         // Attempt to find the user in the collection
-        var user = await _assistants.Find(filter).FirstOrDefaultAsync();
+        var user = await _assistant.Find(filter).FirstOrDefaultAsync();
 
         // This will return the user if found, or null if not found
         return user;
@@ -61,7 +77,7 @@ public class MongoDBService
 
     public async Task<AssistantObj> ListAllAndReturnFirstAsync()
     {
-        var allAssistants = await _assistants.Find(_ => true).ToListAsync();
+        var allAssistants = await _assistant.Find(_ => true).ToListAsync();
 
         foreach (var assistant in allAssistants)
         {
@@ -76,17 +92,17 @@ public class MongoDBService
     public async Task DeleteAllAssistantsAsync()
     {
         // Use an empty filter to match all documents
-        var filter = Builders<AssistantObj>.Filter.Empty;
+        var filter = Builders<UserObj>.Filter.Empty;
 
         // Delete all documents in the collection
-        await _assistants.DeleteManyAsync(filter);
+        await _users.DeleteManyAsync(filter);
     }
 
     public async Task<List<string>> GetAllThreadIDsAsync()
     {
         var filter = Builders<AssistantObj>.Filter.Empty;
         var projection = Builders<AssistantObj>.Projection.Include("ThreadID");
-        var threadIDsCursor = await _assistants.Find(filter).Project<AssistantObj>(projection).ToListAsync();
+        var threadIDsCursor = await _assistant.Find(filter).Project<AssistantObj>(projection).ToListAsync();
 
         // Assuming ThreadID is a string, extract just the ThreadID from each AssistantObj
         var threadIDs = threadIDsCursor.Select(assistant => assistant.ThreadID).ToList();
@@ -103,7 +119,7 @@ public class MongoDBService
         var update = Builders<AssistantObj>.Update.Set(user => user.FileID, newFileId);
 
         // Perform the update operation on the first matching document
-        await _assistants.UpdateOneAsync(filter, update);
+        await _assistant.UpdateOneAsync(filter, update);
     }
 
     public async Task UpdateUserFieldsAsync(string username, string newAssistantID, string newFileID, string newThreadID)
@@ -121,10 +137,55 @@ public class MongoDBService
         update = update.Unset(user => user.Username);
 
         // Perform the update operation on the first matching document
-        await _assistants.UpdateOneAsync(filter, update);
+        await _assistant.UpdateOneAsync(filter, update);
     }
 
+    public async Task<Boolean> CheckUserCredentials(string username, string password)
+    {
+        UserObj user = await _users.Find(u => u.Username == username).FirstOrDefaultAsync();
+        if (user == null || !BC.Verify(password, user.Password))
+        {
+            Console.WriteLine("false");
+            return false;
+        }
+        else
+        {
+            Console.WriteLine("true");
+            return true;
+        }
+    }
 
+    //Should return status code 409 is the user is already existing
+    public async Task<UserObj> saveUser(string username, string password, string email)
+    {
+        UserObj user = await _users.Find(u => u.Username == username).FirstOrDefaultAsync();
+        if (user == null)
+        {
+            var emailCheck = await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
+            if (emailCheck == null)
+            {
+                var newUserObj = new UserObj
+                {
+                    Username = username,
+                    Password = BC.HashPassword(password),
+                    Email = email,
+                };
+                await _users.InsertOneAsync(newUserObj);
+                return newUserObj;
+            }
 
+        }
+        return null;
+    }
+
+    public async Task<UserObj> validateUser(string username)
+    {
+        UserObj user = await _users.Find(u => u.Username == username).FirstOrDefaultAsync();
+        if (user == null)
+        {
+            return null;
+        }
+        return user;
+    }
 
 }

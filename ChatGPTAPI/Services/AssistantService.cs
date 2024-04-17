@@ -1,12 +1,10 @@
 using System.Net.Http.Headers;
 using System.Text;
-using Newtonsoft.Json;
+using ChatGPTAPI.Services;
 using Microsoft.Extensions.Options;
 using OpenAI;
 using OpenAI.Assistants;
-using OpenAI.Audio;
 using OpenAI.Threads;
-
 public class AssistantService
 {
     private readonly HttpClient _httpClient;
@@ -27,40 +25,45 @@ public class AssistantService
         _logger = logger;
     }
 
-    //Save fileID, assistantID, threadID to database
-    //Should only returns assistantID
-    //Create a new service for file controller (refactoring)
-    public async Task<AssistantObj> CreateAssistantWithFileUploadAndThread(string filePath, string researchArea, string userName)
+    public async Task<OperationResult<AssistantObj>> CreateAssistantWithFileUploadAndThread(string filePath, string researchArea, string userName)
     {
         try
         {
-            var userAssistantObj = await _mongoDBService.GetUserIfExistsAsync(userName);
+            var userAssistantObj = await _mongoDBService.GetAssistantObjIfExsistAsync(userName);
             if (userAssistantObj != null)
             {
-                _logger.LogInformation($"the user: {userName} already has an assistant with id:{userAssistantObj.AssistantID}.");
-                return userAssistantObj;
-            };
+                _logger.LogInformation($"The user: {userName} already has an assistant with id: {userAssistantObj.AssistantID}.");
+                return OperationResult<AssistantObj>.CreateFailure("User already has an assistant");
+            }
+
             var createdAssistant = await CreateNewAssistant(researchArea);
             var createdFileId = await UploadFileToAssistant(filePath, createdAssistant);
-            var CreatedThreadId = await CreateThread();
+            var createdThreadId = await CreateThread();
+
             _logger.LogInformation($"No existing assistant found. Creating new assistant for user: {userName}.");
+
             var newUserAssistantObj = new AssistantObj
             {
                 Username = userName,
                 AssistantID = createdAssistant,
                 FileID = createdFileId,
-                ThreadID = CreatedThreadId
+                ThreadID = createdThreadId
             };
-            await _mongoDBService.SaveAssistantAsync(newUserAssistantObj);
-            return newUserAssistantObj;
 
+            await _mongoDBService.SaveAssistantAsync(newUserAssistantObj);
+            return OperationResult<AssistantObj>.CreateSuccessful(newUserAssistantObj);
         }
         catch (Exception ex)
         {
             _logger.LogError($"An error occurred while creating or updating the assistant for {userName}: {ex}");
-            return null;
+            return OperationResult<AssistantObj>.CreateFailure(ex.Message);
+        }
+        finally
+        {
+            DeleteFileFromServer(filePath);
         }
     }
+
 
     private async Task<AssistantResponse> CreateNewAssistant(string researchArea)
     {
@@ -106,6 +109,18 @@ public class AssistantService
         return assistantFile.Id;
     }
 
+    private void DeleteFileFromServer(string filePath)
+    {
+        try
+        {
+            File.Delete(filePath);
+        }
+        catch (IOException ioEx)
+        {
+            _logger.LogError($"IO exception occurred while deleting file '{filePath}' from the server: {ioEx.Message}");
+        }
+    }
+
 
     private async Task<string> CreateThread()
     {
@@ -130,14 +145,15 @@ public class AssistantService
         }
     }
 
+
     public async Task<string> DeleteUserAssistantAndThreadsFromApiAndDB(string userName)
     {
         try
         {
-            var userAssistantObj = await _mongoDBService.GetUserIfExistsAsync(userName);
+            var userAssistantObj = await _mongoDBService.GetAssistantObjIfExsistAsync(userName);
             if (userAssistantObj == null)
             {
-                throw new KeyNotFoundException($"User '{userName}' or their assistant does not exist.");
+                throw new KeyNotFoundException($"No assistant found");
             }
             var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(userAssistantObj.AssistantID);
             if (assistant == null)
@@ -146,12 +162,11 @@ public class AssistantService
             }
 
             _logger.LogInformation($"Deleting assistant and its file for user: {userName}.");
-            // Perform deletions in parallel to improve efficiency
+ 
             var deleteFileTask = await _assistantApi.FilesEndpoint.DeleteFileAsync(userAssistantObj.FileID);
             var deleteAssistantTask = await _assistantApi.AssistantsEndpoint.DeleteAssistantAsync(assistant);
             var deleteThreadTask = await _assistantApi.ThreadsEndpoint.DeleteThreadAsync(userAssistantObj.ThreadID);
 
-            // await Task.WhenAll(deleteFileTask, deleteAssistantTask, deleteThreadTask);
 
             await _mongoDBService.DeleteUserAssistantDetailsAsync(userName);
 
@@ -239,7 +254,7 @@ public class AssistantService
     {
         try
         {
-            var userAssistantObj = await _mongoDBService.GetUserIfExistsAsync(userName);
+            var userAssistantObj = await _mongoDBService.GetAssistantObjIfExsistAsync(userName);
             if (userAssistantObj == null || string.IsNullOrEmpty(userAssistantObj.AssistantID))
             {
                 _logger.LogInformation($"No assistant found for user {userName}.");

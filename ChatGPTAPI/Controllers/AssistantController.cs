@@ -1,36 +1,51 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using ChatGPTAPI.Models;
-using ChatGPTAPI.Services; // Ensure this using directive is correct for your project structure
+using ChatGPTAPI.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims; // Ensure this using directive is correct for your project structure
 
 namespace ChatGPTAPI.Controllers;
 
-[ApiController]
+
+[ApiController, Authorize]
 [Route("research-front")]
 public class AssistantController : ControllerBase
 {
     private readonly AssistantService _assistantService;
     private readonly InAppFileSaverService _inAppFileSaver;
     private readonly ILogger<AssistantController> _logger;
+    private readonly MongoDBService _mongoDBService;
 
 
-    public AssistantController( InAppFileSaverService inAppFileSaver, ILogger<AssistantController> logger, AssistantService assistantService)
+    public AssistantController(InAppFileSaverService inAppFileSaver, ILogger<AssistantController> logger, AssistantService assistantService, MongoDBService mongoDBService)
     {
         _inAppFileSaver = inAppFileSaver;
         _logger = logger;
         _assistantService = assistantService;
+        _mongoDBService = mongoDBService;
     }
 
     [HttpGet("get-assistant")]
-    public async Task<IActionResult> getUserAssistant(string userName)
+    public async Task<IActionResult> getUserAssistant()
     {
+        var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
+
         try
         {
-            Console.WriteLine("assistant check");
             string userAssistant = await _assistantService.GetUserAssistantAsync(userName);
-
-            // User found, return the user object
-            return Ok(userAssistant);
+          
+            if (userAssistant == "No assistant is found")
+            {
+                return new JsonResult(new { Message = userAssistant })
+                {
+                    StatusCode = StatusCodes.Status404NotFound
+                };
+            }
+            return new JsonResult(new { assistant_id = userAssistant })
+            {
+                StatusCode = StatusCodes.Status200OK
+            };
         }
         catch (Exception ex)
         {
@@ -39,63 +54,74 @@ public class AssistantController : ControllerBase
         }
     }
 
-    //Rename method files
     [HttpPost("create-assistant")]
-    public async Task<IActionResult> CreateAssistant([FromForm] IFormFile file, [FromQuery] string researchArea, string userName)
+    public async Task<IActionResult> CreateAssistant([FromForm] IFormFile file, [FromForm] string researchArea)
     {
+        var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
+        Console.WriteLine(userName);
         if (file == null || file.Length == 0)
         {
             return BadRequest("No file provided or file is empty.");
         }
-        try
-        {
-            var savedFilePath = await _inAppFileSaver.Save(userName, file, "files");
-            var assistantObj = await _assistantService.CreateAssistantWithFileUploadAndThread(savedFilePath, researchArea, userName);
 
-            if (assistantObj == null)
+        var savedFilePath = await _inAppFileSaver.Save(userName, file, "files");
+        var result = await _assistantService.CreateAssistantWithFileUploadAndThread(savedFilePath, researchArea, userName);
+
+        if (!result.Success)
+        {
+            if (result.ErrorMessage == "User already has an assistant")
             {
-                Console.WriteLine("Assistant object is null, not saving to database.");
-                return StatusCode(500, "Failed to create assistant object.");
+                return StatusCode(409, new { title = "Conflict", status = 409, detail = "User already has an assistant" });
             }
 
-            Console.WriteLine("Return in the controller");
-            Console.WriteLine(assistantObj.AssistantID);
+            return StatusCode(500, new { title = "Internal Server Error", status = 500, detail = result.ErrorMessage });
+        }
 
-            return Ok(assistantObj.AssistantID);
-        }
-        catch (Exception ex)
+        return new JsonResult(new { assistant_id = result.Data.AssistantID })
         {
-            _logger.LogError(ex, "Error saving or processing the file.");
-            return StatusCode(500, "There was an error processing the file.");
-        }
+            StatusCode = StatusCodes.Status201Created
+        };
     }
 
 
     [HttpDelete("delete-assistant")]
-    public async Task<IActionResult> DeleteAssistant(string userName)
+    public async Task<IActionResult> DeleteAssistant()
     {
+        var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
+        Console.WriteLine(userName);
         try
         {
             var deletionStatus = await _assistantService.DeleteUserAssistantAndThreadsFromApiAndDB(userName);
-            return Ok(new { Message = $"Assistant deletion for user '{userName}' was {deletionStatus}." });
+
+            if (deletionStatus.StartsWith("Successfully deleted"))
+            {
+                return NoContent();
+            }
+            else
+            {
+                return new JsonResult(new { Message = deletionStatus })
+                {
+                    StatusCode = StatusCodes.Status404NotFound
+                };
+            }
         }
-        catch (KeyNotFoundException knfEx)
+        catch (KeyNotFoundException)
         {
-            _logger.LogError(knfEx, $"User or Assistant not found for username: {userName}");
-            return NotFound(new { Message = $"User or Assistant not found for username: {userName}." });
+            _logger.LogError($"No assistant found for username: {userName}");
+            return NotFound(new { Message = "No assistant found for username: " + userName });
         }
-        catch (InvalidOperationException ioeEx)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ioeEx, $"Invalid operation for username: {userName}. Error: {ioeEx.Message}");
+            _logger.LogError(ex, $"Invalid operation for username: {userName}. Error: {ex.Message}");
             return BadRequest(new { Message = $"Invalid operation for username: {userName}." });
         }
         catch (Exception ex)
         {
-            // Log the exception and return a generic error response
             _logger.LogError(ex, $"An unexpected error occurred while deleting assistant for username: {userName}.");
             return StatusCode(500, new { Message = "An unexpected error occurred. Please try again later." });
         }
     }
+
 
     [HttpGet("get-all-assistants")]
     public async Task<IActionResult> GetAllAssistants()
@@ -118,7 +144,15 @@ public class AssistantController : ControllerBase
         }
     }
 
-
+    private async Task<string> TokenCheck(string userName)
+    {
+        UserObj tokenCheck = await _mongoDBService.validateUser(userName);
+        if (string.IsNullOrEmpty(userName) || tokenCheck.Username == null)
+        {
+            throw new ArgumentException("Invalid token");
+        }
+        return tokenCheck.Username;
+    }
 
 
 }
