@@ -1,8 +1,10 @@
 ﻿@page "/"
+@using Frontend.Services;
 @using Frontend.Shared
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject IConfiguration configuration
+@inject SessionService SessionService
 
 
 <PageTitle>Home</PageTitle>
@@ -22,9 +24,11 @@
     {
         try
         {
-            string userName = "singletonUser";
+
+            Console.WriteLine(SessionService.GetToken());
             // Use GetAsync to obtain the HttpResponseMessage
-            var response = await Http.GetAsync($"{configuration.GetValue<string>("APIBaseUrl")}research-front/get-assistant?userName={Uri.EscapeDataString(userName)}");
+            //Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", SessionService.GetToken());
+            var response = await Http.GetAsync($"{configuration.GetValue<string>("APIBaseUrl")}research-front/get-assistant");
             
             if (response.IsSuccessStatusCode)
             {

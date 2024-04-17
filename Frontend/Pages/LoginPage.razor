@@ -4,6 +4,7 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject SessionService SessionService
+@inject IConfiguration Configuration
 
 
 <PageTitle>Login</PageTitle>
@@ -28,16 +29,30 @@
 
     private async Task HandleLogin()
     {
-        var response = await Http.PostAsJsonAsync("login", loginModel);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var jwt = await response.Content.ReadAsStringAsync();
-            SessionService.SetToken(jwt); // Save JWT for session management
-            NavigationManager.NavigateTo("/");
+            string apiBaseUrl = Configuration["APIBaseUrl"] ?? throw new InvalidOperationException("API base URL not configured.");
+            string registerEndpoint = $"{apiBaseUrl}auth/login";
+
+            Console.WriteLine($"Calling API at: {registerEndpoint}");
+
+            var response = await Http.PostAsJsonAsync(registerEndpoint, loginModel);
+            if (response.IsSuccessStatusCode)
+            {
+                var jwt = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"JWT received: {jwt}");
+                SessionService.SetToken(jwt); // Save JWT for session management
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                Console.WriteLine("Login failed. Status code: " + response.StatusCode);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Login failed");
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            throw; // Consider handling the exception more gracefully
         }
     }
 }

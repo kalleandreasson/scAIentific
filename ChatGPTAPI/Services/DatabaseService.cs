@@ -145,12 +145,10 @@ public class MongoDBService
         UserObj user = await _users.Find(u => u.Username == username).FirstOrDefaultAsync();
         if (user == null || !BC.Verify(password, user.Password))
         {
-            Console.WriteLine("false");
             return false;
         }
         else
         {
-            Console.WriteLine("true");
             return true;
         }
     }

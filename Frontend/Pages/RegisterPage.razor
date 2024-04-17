@@ -20,14 +20,6 @@
         <InputText @bind-Value="newUser.Password" type="password" />
     </div>
     <div>
-        <label>First Name:</label>
-        <InputText @bind-Value="newUser.FirstName" />
-    </div>
-    <div>
-        <label>Last Name:</label>
-        <InputText @bind-Value="newUser.LastName" />
-    </div>
-    <div>
         <label>Email:</label>
         <InputText @bind-Value="newUser.Email" type="email" />
     </div>
@@ -35,49 +27,20 @@
 </EditForm>
 
 @code {
- private HttpClient mockHttpClient;
-
-    protected override void OnInitialized()
-    {
-        var handler = new MockHttpMessageHandler();
-        mockHttpClient = new HttpClient(handler) {
-            BaseAddress = new Uri(Configuration["APIBaseUrl"]) // Properly set this in appsettings.json
-        };
-    }
 
     private UserRegistrationModel newUser = new UserRegistrationModel();
-
-    private async Task HandleRegister()
-    {
-        string registerEndpoint = "register";  
-
-        var response = await mockHttpClient.PostAsJsonAsync(registerEndpoint, newUser);
-        if (response.IsSuccessStatusCode)
-        {
-            // Parse the JSON response to extract the user ID
-            var userIdJson = await response.Content.ReadFromJsonAsync<UserResponse>();
-            Console.WriteLine($"Registration successful, User ID: {userIdJson.Id}");
-
-            // You can store this ID in session or local storage, or use it to navigate to a user-specific page
-                   NavigationManager.NavigateTo("/login");
-        }
-        else
-        {
-            Console.WriteLine("Registration failed");
-        }
-    }
 
     private class UserResponse
     {
         public string Id { get; set; }
     }
 
-    @* private async Task HandleRegister()
+     private async Task HandleRegister()
     {
          string apiBaseUrl = Configuration["APIBaseUrl"];
-         string registerEndpoint = $"{apiBaseUrl}register";
+         string registerEndpoint = $"{apiBaseUrl}auth/register";
 
-        var response = await Http.PostAsJsonAsync("registerEndpoint", newUser);
+        var response = await Http.PostAsJsonAsync(registerEndpoint, newUser);
         if (response.IsSuccessStatusCode)
         {
             NavigationManager.NavigateTo("/login");
@@ -86,5 +49,5 @@
         {
             Console.WriteLine("Registration failed");
         }
-    } *@
+    } 
 }
