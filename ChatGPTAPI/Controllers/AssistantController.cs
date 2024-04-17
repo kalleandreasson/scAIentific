@@ -30,11 +30,14 @@ public class AssistantController : ControllerBase
     public async Task<IActionResult> getUserAssistant()
     {
         var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
-        Console.WriteLine(userName);
+
         try
         {
             string userAssistant = await _assistantService.GetUserAssistantAsync(userName);
-            return Ok(userAssistant);
+            return new JsonResult(new { assistant_id = userAssistant })
+            {
+                StatusCode = StatusCodes.Status200OK
+            };
         }
         catch (Exception ex)
         {
@@ -62,7 +65,7 @@ public class AssistantController : ControllerBase
             {
                 return StatusCode(409, new { title = "Conflict", status = 409, detail = "User already has an assistant" });
             }
-            
+
             return StatusCode(500, new { title = "Internal Server Error", status = 500, detail = result.ErrorMessage });
         }
 
@@ -81,28 +84,36 @@ public class AssistantController : ControllerBase
         try
         {
             var deletionStatus = await _assistantService.DeleteUserAssistantAndThreadsFromApiAndDB(userName);
-            return new JsonResult(new { Message = $"Assistant deletion for user '{userName}' was {deletionStatus}." })
+            
+            if (deletionStatus.StartsWith("Successfully deleted"))
             {
-                StatusCode = StatusCodes.Status204NoContent
-            };
+                return NoContent(); 
+            }
+            else
+            {
+                return new JsonResult(new { Message = deletionStatus })
+                {
+                    StatusCode = StatusCodes.Status404NotFound 
+                };
+            }
         }
-        catch (KeyNotFoundException knfEx)
+        catch (KeyNotFoundException)
         {
-            _logger.LogError(knfEx, $"User or Assistant not found for username: {userName}");
-            return NotFound(new { Message = $"User or Assistant not found for username: {userName}." });
+            _logger.LogError($"No assistant found for username: {userName}");
+            return NotFound(new { Message = "No assistant found for username: " + userName });
         }
-        catch (InvalidOperationException ioeEx)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ioeEx, $"Invalid operation for username: {userName}. Error: {ioeEx.Message}");
+            _logger.LogError(ex, $"Invalid operation for username: {userName}. Error: {ex.Message}");
             return BadRequest(new { Message = $"Invalid operation for username: {userName}." });
         }
         catch (Exception ex)
         {
-            // Log the exception and return a generic error response
             _logger.LogError(ex, $"An unexpected error occurred while deleting assistant for username: {userName}.");
             return StatusCode(500, new { Message = "An unexpected error occurred. Please try again later." });
         }
     }
+
 
     [HttpGet("get-all-assistants")]
     public async Task<IActionResult> GetAllAssistants()

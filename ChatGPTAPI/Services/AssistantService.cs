@@ -153,7 +153,7 @@ public class AssistantService
             var userAssistantObj = await _mongoDBService.GetAssistantObjIfExsistAsync(userName);
             if (userAssistantObj == null)
             {
-                throw new KeyNotFoundException($"User '{userName}' or their assistant does not exist.");
+                throw new KeyNotFoundException($"No assistant found");
             }
             var assistant = await _assistantApi.AssistantsEndpoint.RetrieveAssistantAsync(userAssistantObj.AssistantID);
             if (assistant == null)
@@ -162,12 +162,11 @@ public class AssistantService
             }
 
             _logger.LogInformation($"Deleting assistant and its file for user: {userName}.");
-            // Perform deletions in parallel to improve efficiency
+ 
             var deleteFileTask = await _assistantApi.FilesEndpoint.DeleteFileAsync(userAssistantObj.FileID);
             var deleteAssistantTask = await _assistantApi.AssistantsEndpoint.DeleteAssistantAsync(assistant);
             var deleteThreadTask = await _assistantApi.ThreadsEndpoint.DeleteThreadAsync(userAssistantObj.ThreadID);
 
-            // await Task.WhenAll(deleteFileTask, deleteAssistantTask, deleteThreadTask);
 
             await _mongoDBService.DeleteUserAssistantDetailsAsync(userName);
 
