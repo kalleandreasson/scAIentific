@@ -34,6 +34,14 @@ public class AssistantController : ControllerBase
         try
         {
             string userAssistant = await _assistantService.GetUserAssistantAsync(userName);
+          
+            if (userAssistant == "No assistant is found")
+            {
+                return new JsonResult(new { Message = userAssistant })
+                {
+                    StatusCode = StatusCodes.Status404NotFound
+                };
+            }
             return new JsonResult(new { assistant_id = userAssistant })
             {
                 StatusCode = StatusCodes.Status200OK
@@ -84,16 +92,16 @@ public class AssistantController : ControllerBase
         try
         {
             var deletionStatus = await _assistantService.DeleteUserAssistantAndThreadsFromApiAndDB(userName);
-            
+
             if (deletionStatus.StartsWith("Successfully deleted"))
             {
-                return NoContent(); 
+                return NoContent();
             }
             else
             {
                 return new JsonResult(new { Message = deletionStatus })
                 {
-                    StatusCode = StatusCodes.Status404NotFound 
+                    StatusCode = StatusCodes.Status404NotFound
                 };
             }
         }
