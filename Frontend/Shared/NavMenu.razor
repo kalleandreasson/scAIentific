@@ -1,34 +1,72 @@
-﻿<nav class="navbar">
+﻿@inject SessionService sessionService
+@inject NavigationManager NavigationManager
+
+<nav class="navbar">
   <a class="navbar-brand" href="/">scAIentific</a>
   <div class="" id="navbarText">
     <ul class="nav nav-pills nav-fill">
       @* <li class="nav-item active">
-         <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span>Home
-            </NavLink>
+      <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+      <span class="oi oi-home" aria-hidden="true"></span>Home
+      </NavLink>
       </li> *@
-      <li class="nav-item">
-        <NavLink class="nav-link" href="register">
-                <span class="oi oi-plus" aria-hidden="true"></span>Register
-            </NavLink>
-      </li>
-      <li class="nav-item">
-        <NavLink class="nav-link" href="login">
-                <span class="oi oi-plus" aria-hidden="true"></span>login
-            </NavLink>
-      </li>
+       @if (!isLoggedIn)
+            {
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="register">
+                        <span class="oi oi-plus" aria-hidden="true"></span>Register
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="login">
+                        <span class="oi oi-plus" aria-hidden="true"></span>Login
+                    </NavLink>
+                </li>
+            }
+            else
+            {
+                <li class="nav-item">
+                    <button class="nav-link btn btn-link" @onclick="Logout">
+                        <span class="oi oi-account-logout" aria-hidden="true"></span>Logout
+                    </button>
+                </li>
+            }
     </ul>
   </div>
 </nav>
 
 
 @code {
-    private bool collapseNavMenu = true;
+  private bool isLoggedIn;
+  private bool collapseNavMenu = true;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+  private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    private void ToggleNavMenu()
+  private void ToggleNavMenu()
+  {
+    collapseNavMenu = !collapseNavMenu;
+  }
+
+     protected override async Task OnParametersSetAsync()
     {
-        collapseNavMenu = !collapseNavMenu;
+        isLoggedIn = await IsUserLoggedIn();
     }
+
+    private async Task<bool> IsUserLoggedIn()
+    {
+        var token = sessionService.GetToken();
+        Console.WriteLine("Token in navbar razor component: "+token);
+        if(token == null || token.Length == 0) {
+          return false;
+        }
+        Console.WriteLine("User is now logged in, navbar should be hidden");
+        return true;
+    }
+  private async Task Logout()
+  {
+    sessionService.ClearToken();
+    isLoggedIn = false;
+    NavigationManager.NavigateTo("/", forceLoad: true);
+  }
+
 }

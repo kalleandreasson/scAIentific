@@ -17,5 +17,10 @@ namespace Frontend.Services
         {
             return _jwtToken;
         }
+
+        public void ClearToken()
+        {
+            _jwtToken = null;
+        }
     }
 }

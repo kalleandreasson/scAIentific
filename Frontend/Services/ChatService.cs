@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Frontend.Services;
 using Frontend.Models;
+using System.Net.Http.Headers;
 
 
 namespace Frontend.Services
@@ -14,7 +15,7 @@ namespace Frontend.Services
         private readonly IConfiguration _config;
         private readonly string _chatEndpoint;
         private readonly string _chatHistoryEndpoint;
-            private SessionService sessionService;
+        private SessionService sessionService;
 
         public ChatService(HttpClient httpClient, IConfiguration configuration)
         {
@@ -31,14 +32,15 @@ namespace Frontend.Services
             try
             {
 
-            var token = sessionService.GetToken(); // Method to get the stored token
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                throw new InvalidOperationException("No authentication token available.");
-            }
+                var token = sessionService.GetToken(); // Ensure this fetches the token correctly
+                Console.WriteLine(token);
 
-            // Set the authorization header with the bearer token
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                if (string.IsNullOrEmpty(token))
+                {
+                    throw new InvalidOperationException("No authentication token available.");
+                }
+
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                 HttpResponseMessage response = await _httpClient.GetAsync(_chatHistoryEndpoint);
 
@@ -77,6 +79,17 @@ namespace Frontend.Services
 
             try
             {
+
+                var token = sessionService.GetToken(); // Ensure this fetches the token correctly
+                Console.WriteLine(token);
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    throw new InvalidOperationException("No authentication token available.");
+                }
+
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
                 // Sending the request as JSON and expecting a response as JSON
                 HttpResponseMessage response = await _httpClient.PostAsJsonAsync(_chatEndpoint, chatRequest);
 

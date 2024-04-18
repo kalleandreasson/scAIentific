@@ -39,9 +39,8 @@
             var response = await Http.PostAsJsonAsync(registerEndpoint, loginModel);
             if (response.IsSuccessStatusCode)
             {
-                var jwt = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"JWT received: {jwt}");
-                SessionService.SetToken(jwt); // Save JWT for session management
+                var authResponse = await response.Content.ReadFromJsonAsync<JWTTokenResponse>();
+                SessionService.SetToken(authResponse.Token); // Save JWT for session management
                 NavigationManager.NavigateTo("/");
             }
             else

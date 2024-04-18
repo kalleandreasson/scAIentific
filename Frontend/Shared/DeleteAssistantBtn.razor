@@ -3,14 +3,16 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Frontend.Models
 @using Frontend.Services
+@using System.Net.Http.Headers
+@inject SessionService sessionService
 @inject IConfiguration Configuration
-@inject HttpClient Http
+@inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @inject ILogger<DeleteAssistantBtn> Logger
 
 
 
-<div class="position-left" >
+<div class="position-left">
     @if (!string.IsNullOrEmpty(flashMessage) && string.IsNullOrEmpty(errorMessage))
 
     {
@@ -44,12 +46,24 @@
         {
             flashMessage = "";
             errorMessage = "";
-        
+
             string apiBaseUrl = Configuration["APIBaseUrl"];
             string apiUrl = $"{apiBaseUrl}research-front/delete-assistant?userName={Uri.EscapeDataString(userName)}";
-        
-            var response = await Http.DeleteAsync(apiUrl);
-        
+
+            var httpClient = HttpClientFactory.CreateClient("AuthorizedClient");
+            var token = sessionService.GetToken(); // Ensure this fetches the token correctly
+            Console.WriteLine(token);
+
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new InvalidOperationException("No authentication token available.");
+            }
+
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+
+            var response = await httpClient.DeleteAsync(apiUrl);
+
             if (response.IsSuccessStatusCode)
             {
                 await OnDeletionSuccess.InvokeAsync(true);
