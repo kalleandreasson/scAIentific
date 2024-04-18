@@ -2,6 +2,7 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Frontend.Services;
 using Frontend.Models;
 
 
@@ -13,6 +14,7 @@ namespace Frontend.Services
         private readonly IConfiguration _config;
         private readonly string _chatEndpoint;
         private readonly string _chatHistoryEndpoint;
+            private SessionService sessionService;
 
         public ChatService(HttpClient httpClient, IConfiguration configuration)
         {
@@ -28,6 +30,16 @@ namespace Frontend.Services
         {
             try
             {
+
+            var token = sessionService.GetToken(); // Method to get the stored token
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new InvalidOperationException("No authentication token available.");
+            }
+
+            // Set the authorization header with the bearer token
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
                 HttpResponseMessage response = await _httpClient.GetAsync(_chatHistoryEndpoint);
 
                 response.EnsureSuccessStatusCode();

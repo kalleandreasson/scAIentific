@@ -35,6 +35,12 @@ builder.Services.AddHttpClient<ChatService>(client =>
     client.BaseAddress = new Uri(apiBaseUrl); 
 });
 
+builder.Services.AddHttpClient("AuthorizedClient", client =>
+{
+    // Configure base URL universally for this client
+    client.BaseAddress = new Uri(apiBaseUrl);
+});
+
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<ExcelService>();
 builder.Services.AddScoped<FileUploadingService>();

@@ -1,10 +1,11 @@
 ﻿@page "/"
 @using Frontend.Services;
 @using Frontend.Shared
-@inject HttpClient Http
+@using System.Net.Http.Headers
+@inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @inject IConfiguration configuration
-@inject SessionService SessionService
+@inject SessionService sessionService
 
 
 <PageTitle>Home</PageTitle>
@@ -15,20 +16,42 @@
             <h1>Welcome to scAIentific - Your AI-powered Research Assistant</h1>
         </div>
     </section>
-
-    <button class="index-button" @onclick="CheckAssistantStatus">Start</button>
+    @if (isLoggedIn) {
+          <button class="index-button" @onclick="CheckAssistantStatus">Start</button>
+    }
 </div>
 
 @code {
+
+    private bool isLoggedIn = false;
+
+     protected override async Task OnInitializedAsync()
+    {
+        isLoggedIn = await IsUserLoggedIn();
+    }
+
+    private async Task<bool> IsUserLoggedIn()
+    {
+        var token = sessionService.GetToken();
+        return !string.IsNullOrEmpty(token);
+    }
+
     private async Task CheckAssistantStatus()
     {
         try
         {
+        var httpClient = HttpClientFactory.CreateClient("AuthorizedClient");
+        var token = sessionService.GetToken(); // Ensure this fetches the token correctly
+        Console.WriteLine(token);
 
-            Console.WriteLine(SessionService.GetToken());
-            // Use GetAsync to obtain the HttpResponseMessage
-            //Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", SessionService.GetToken());
-            var response = await Http.GetAsync($"{configuration.GetValue<string>("APIBaseUrl")}research-front/get-assistant");
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new InvalidOperationException("No authentication token available.");
+        }
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await httpClient.GetAsync($"{configuration.GetValue<string>("APIBaseUrl")}research-front/get-assistant");
             
             if (response.IsSuccessStatusCode)
             {

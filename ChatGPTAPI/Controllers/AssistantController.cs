@@ -30,7 +30,7 @@ public class AssistantController : ControllerBase
     public async Task<IActionResult> getUserAssistant()
     {
         var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
-
+        Console.WriteLine(userName);
         try
         {
             string userAssistant = await _assistantService.GetUserAssistantAsync(userName);

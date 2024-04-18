@@ -22,8 +22,10 @@ namespace Frontend.Pages
         private bool isChatHistoryLoaded = false;
         private object chat = new { };
 
+
         protected override async Task OnInitializedAsync()
         {
+
             var chatResponse = await ChatService.GetChatHistoryAsync();
             if (chatResponse?.Messages != null)
             {
