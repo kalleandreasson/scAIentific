@@ -99,10 +99,9 @@ Here's a refinement of your test cases for the user registration process to ensu
 **Objective**: Ensure that the logout functionality works correctly.
 **Steps**:
 1. Navigate to the scAIentific homepage.
-2. Click on the login option in the navbar.
-3. Log in with a valid user account.
-4. Click on the logout option in the navbar.
-5. Confirm logout action if prompted.
+2. Complete TC3.1 to log in with valid credentials.
+3. Click on the logout option in the navbar.
+4. Confirm logout action if prompted.
 
 **Expected Result**: The user should be logged out successfully and redirected to the homepage that has a welcome sentence .
 
@@ -183,7 +182,7 @@ Here's a refinement of your test cases for the user registration process to ensu
 3. Leave the input field empty.
 4. Click on the 'Send' button.
 
-**Expected Result**:n error message should be displayed, indicating that the user cannot send an empty query.
+**Expected Result**: An error message should be displayed, indicating that the user cannot send an empty query.
 
 ##### TC7.1: Retrieve Chat History
 
@@ -203,10 +202,10 @@ Here's a refinement of your test cases for the user registration process to ensu
 **Objective**: Test Deleting the assistant.
 **Steps**:
 
-1. Try to upload a file larger than 512 MB.
-2. Attempt to submit an unsupported file type.
+1. Complete TC3.1 to log in with valid credentials
+2. Click on delete assistant.
 
-**Expected Result**: The application should display appropriate error messages.
+**Expected Result**:  The assistant is deleted and the user is redirected to the home page.
 
 #### Conclusion
 
