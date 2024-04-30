@@ -29,7 +29,7 @@ builder.Services.AddHttpClient<FileUploadingService>(client =>
 }));
 
 // Configure HttpClient for ChatService with the API Base URL from configuration
-builder.Services.AddHttpClient<ChatService>(client =>
+builder.Services.AddHttpClient<ChatService>("ChatClient", client =>
 {
     // Here we use the base address from the configuration, making it dynamic
     client.BaseAddress = new Uri(apiBaseUrl); 

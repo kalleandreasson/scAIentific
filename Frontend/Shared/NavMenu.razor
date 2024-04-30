@@ -55,7 +55,6 @@
     private async Task<bool> IsUserLoggedIn()
     {
         var token = sessionService.GetToken();
-        Console.WriteLine("Token in navbar razor component: "+token);
         if(token == null || token.Length == 0) {
           return false;
         }

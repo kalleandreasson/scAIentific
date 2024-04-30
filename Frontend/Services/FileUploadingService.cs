@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Components.Forms;
 using Frontend.Models;
+using Frontend.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,16 +10,17 @@ namespace Frontend.Services
 {
     public class FileUploadingService
     {
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly long _maxFileSize = 1024 * 1024 * 500; // 500MB
+        private SessionService _sessionService;
 
-        public FileUploadingService(HttpClient httpClient)
+        public FileUploadingService(IHttpClientFactory httpClientFactory, SessionService sessionService)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
+            _sessionService = sessionService;
         }
-
-
-        public async Task<(bool isSuccess, string errorMessage)> SendDataAndFileToApi(IEnumerable<IBrowserFile> filesToUpload, string apiUrl)
+        
+       public async Task<(bool isSuccess, string errorMessage)> SendDataAndFileToApi(IEnumerable<IBrowserFile> filesToUpload, string apiUrl, string researchArea)
         {
             // Validate filesToUpload
             if (filesToUpload == null || !filesToUpload.Any())
@@ -34,11 +36,24 @@ namespace Frontend.Services
                     fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
                     content.Add(fileContent, "file", file.Name);
                 }
+                content.Add(new StringContent(researchArea), "researchArea");
+
+        var token = _sessionService.GetToken(); // Ensure this fetches the token correctly
+        Console.WriteLine(token);
+
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new InvalidOperationException("No authentication token available.");
+        }
+
+        var httpClient = _httpClientFactory.CreateClient("AuthorizedClient");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                 // Append the research area as a query parameter to the URL
                 var urlWithQuery = $"{apiUrl}";
 
-                var response = await _httpClient.PostAsync(urlWithQuery, content);
+                var response = await httpClient.PostAsync(urlWithQuery, content);
                 if (response.IsSuccessStatusCode)
                 {
                     return (true, string.Empty);
