@@ -12,9 +12,11 @@ public class AssistantService
     private readonly OpenAIClient _assistantApi;
     private readonly MongoDBService _mongoDBService;
     private readonly ILogger<AssistantService> _logger;
+    private readonly ChatService _chatService;
+    private readonly EmailSenderService _emailSenderService;
 
 
-    public AssistantService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options, MongoDBService mongoDBService, ILogger<AssistantService> logger)
+    public AssistantService(HttpClient httpClient, IOptions<OpenAIServiceOptions> options, MongoDBService mongoDBService, ILogger<AssistantService> logger, ChatService chatService, EmailSenderService emailSenderService)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         var settings = options.Value ?? throw new ArgumentNullException(nameof(options));
@@ -23,6 +25,8 @@ public class AssistantService
         _assistantApi = new OpenAIClient(_apiKey);
         _mongoDBService = mongoDBService;
         _logger = logger;
+        _chatService = chatService;
+        _emailSenderService = emailSenderService;
     }
 
     public async Task<OperationResult<AssistantObj>> CreateAssistantWithFileUploadAndThread(string filePath, string researchArea, string userName)
@@ -162,7 +166,12 @@ public class AssistantService
             }
 
             _logger.LogInformation($"Deleting assistant and its file for user: {userName}.");
- 
+
+            string emailBody = await FormatChatHistoryForEmail(userAssistantObj.ThreadID);
+            var user = _mongoDBService.GetUserIfExistsAsync(userName);
+            await _emailSenderService.sendEmailAsync(user.Result.Email, userName, emailBody);
+      
+
             var deleteFileTask = await _assistantApi.FilesEndpoint.DeleteFileAsync(userAssistantObj.FileID);
             var deleteAssistantTask = await _assistantApi.AssistantsEndpoint.DeleteAssistantAsync(assistant);
             var deleteThreadTask = await _assistantApi.ThreadsEndpoint.DeleteThreadAsync(userAssistantObj.ThreadID);
@@ -179,6 +188,21 @@ public class AssistantService
             return $"An error occurred while deleting resources for user '{userName}': {ex.Message}";
         }
     }
+
+    public async Task<string> FormatChatHistoryForEmail(string threadID)
+    {
+        var messageList = await _chatService.FetchMessageList(threadID);
+        Console.WriteLine($"Raw messages count: {messageList.Count}");  // Check how many messages were fetched
+
+        // For plain text format:
+        var emailBodyPlainText = string.Join("\n", messageList.Select(msg => $"{msg.Role}: {msg.Content.First().Text.Value}"));
+
+        // Return the preferred format:
+        return emailBodyPlainText;  // or return emailBodyHtml for HTML content
+    }
+
+
+
 
     public async Task<string> DeleteAllAssistantsAndThreadsAsync()
     {
@@ -328,4 +352,8 @@ public class AssistantService
         _logger.LogInformation(assistantDetails.ToString());
     }
 
+}
+public class TextContent
+{
+    public string? Text { get; set; } // Or it could be another complex type
 }
