@@ -51,9 +51,8 @@
             string apiUrl = $"{apiBaseUrl}research-front/delete-assistant?userName={Uri.EscapeDataString(userName)}";
 
             var httpClient = HttpClientFactory.CreateClient("AuthorizedClient");
-            var token = sessionService.GetToken(); // Ensure this fetches the token correctly
-            Console.WriteLine(token);
-
+            var token = sessionService.GetToken();
+            
             if (string.IsNullOrEmpty(token))
             {
                 throw new InvalidOperationException("No authentication token available.");

@@ -34,7 +34,6 @@
             string apiBaseUrl = Configuration["APIBaseUrl"] ?? throw new InvalidOperationException("API base URL not configured.");
             string registerEndpoint = $"{apiBaseUrl}auth/login";
 
-            Console.WriteLine($"Calling API at: {registerEndpoint}");
 
             var response = await Http.PostAsJsonAsync(registerEndpoint, loginModel);
             if (response.IsSuccessStatusCode)

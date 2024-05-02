@@ -15,9 +15,9 @@ namespace Frontend.Services
         private readonly IConfiguration _config;
         private readonly string _chatEndpoint;
         private readonly string _chatHistoryEndpoint;
-        private SessionService sessionService;
+        private SessionService _sessionService;
 
-        public ChatService(HttpClient httpClient, IConfiguration configuration)
+        public ChatService(HttpClient httpClient, IConfiguration configuration, SessionService sessionService)
         {
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             string apiBaseUrl = configuration.GetValue<string>("APIBaseUrl");
@@ -25,15 +25,14 @@ namespace Frontend.Services
             // Construct the ChatEndpoint using the base URL from the configuration
             _chatHistoryEndpoint = $"{apiBaseUrl}chat/chat-history";
             _chatEndpoint = $"{apiBaseUrl}chat/send-message";
+            _sessionService = sessionService;
         }
 
         public async Task<ChatResponse> GetChatHistoryAsync()
         {
             try
             {
-
-                var token = sessionService.GetToken(); // Ensure this fetches the token correctly
-                Console.WriteLine(token);
+                var token = _sessionService.GetToken(); 
 
                 if (string.IsNullOrEmpty(token))
                 {
@@ -49,12 +48,14 @@ namespace Frontend.Services
                 // Deserialize the JSON response to a List<ChatMessage>
                 ChatResponse chatHistory = await response.Content.ReadFromJsonAsync<ChatResponse>();
 
-                foreach (var message in chatHistory.Messages)
+                if (chatHistory != null)
                 {
-                    var dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(message.CreatedAt);
-                    message.CreatedAtDateTime = dateTimeOffset.LocalDateTime;
+                    foreach (var message in chatHistory.Messages)
+                    {
+                        var dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(message.CreatedAt);
+                        message.CreatedAtDateTime = dateTimeOffset.LocalDateTime;
+                    }
                 }
-
                 return chatHistory;
             }
             catch (HttpRequestException ex)
@@ -75,13 +76,10 @@ namespace Frontend.Services
             if (chatRequest == null)
                 throw new ArgumentNullException(nameof(chatRequest));
 
-            Console.WriteLine(chatRequest.UserMessage);
-
             try
             {
 
-                var token = sessionService.GetToken(); // Ensure this fetches the token correctly
-                Console.WriteLine(token);
+                var token = _sessionService.GetToken(); // Ensure this fetches the token correctly
 
                 if (string.IsNullOrEmpty(token))
                 {

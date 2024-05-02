@@ -27,16 +27,13 @@
 
      protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine(isLoggedIn);
         isLoggedIn = await IsUserLoggedIn();
     }
 
     private async Task<bool> IsUserLoggedIn()
     {
 
-        Console.WriteLine(sessionService.GetToken());
         var token = sessionService.GetToken();
-        Console.WriteLine(token);
         return !string.IsNullOrEmpty(token);
     }
 
@@ -45,9 +42,7 @@
         try
         {
         var httpClient = HttpClientFactory.CreateClient("AuthorizedClient");
-        var token = sessionService.GetToken(); // Ensure this fetches the token correctly
-        Console.WriteLine(3);
-        Console.WriteLine(token);
+        var token = sessionService.GetToken();
 
         if (string.IsNullOrEmpty(token))
         {
@@ -57,12 +52,9 @@
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var response = await httpClient.GetAsync($"{configuration.GetValue<string>("APIBaseUrl")}research-front/get-assistant");
-            Console.WriteLine(3);
             if (response.IsSuccessStatusCode)
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(responseBody);
-                // Navigate based on the assistant check response
                 if (responseBody != null && responseBody.StartsWith("{\"assistant_id"))
                 {
                     // Navigate to the Assistant component/page

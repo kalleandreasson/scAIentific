@@ -41,8 +41,7 @@ namespace Frontend.Services
                 }
                 content.Add(new StringContent(researchArea), "researchArea");
 
-        var token = _sessionService.GetToken(); // Ensure this fetches the token correctly
-        Console.WriteLine(token);
+        var token = _sessionService.GetToken();
 
         if (string.IsNullOrEmpty(token))
         {
