@@ -22,7 +22,6 @@ This document provides a series of manual tests for the frontend of scAIentific,
 
 **Expected Result**: The homepage should load with a welcome sentence, the navigation bar including login, register options, and the logo.
 
-Here's a refinement of your test cases for the user registration process to ensure clarity and detail. These improvements will ensure that the steps are easy to follow, and the expected results are clear, especially regarding error handling for registration issues like email or username conflicts:
 
 ### TC2.1: User Registration
 
