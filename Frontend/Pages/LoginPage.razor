@@ -9,10 +9,17 @@
 
 <PageTitle>Login</PageTitle>
 
+
+
 <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
     <ValidationSummary />
-
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
     <div>
         <label>Username:</label>
         <InputText @bind-Value="loginModel.Username" />
@@ -26,7 +33,7 @@
 
 @code {
     private LoginModel loginModel = new LoginModel();
-
+    private string errorMessage;
     private async Task HandleLogin()
     {
         try
@@ -44,7 +51,7 @@
             }
             else
             {
-                Console.WriteLine("Login failed. Status code: " + response.StatusCode);
+                errorMessage = "Login failed. Please check your username and password.";
             }
         }
         catch (Exception ex)
