@@ -27,12 +27,13 @@ scAIentific's goal is to explore how AI can facilitate and streamline the proces
 
 - **Frontend**: Blazor
 - **Backend**: C#, .NET
+- **Ai Model**: Open ai chat GPT 4.
 
 ## Getting Started
 
 ### Prerequisites
 
-- .NET core 7 an above.
+- .NET core 8.
 - An IDE such as Visual Studio or Visual Studio Code
 - Access to the provided AI model or equivalent
 
@@ -62,11 +63,12 @@ dotnet run
 ## Usage
 
 - Navigate to the frontend application through your web browser.
-- Follow the UI prompts to upload your scientific texts and receive the analysis.  
+- Register a new user, login and create your Ai research assistant and start interacting with it.  
 
 ## Project design
 ![assistant-page](AppOverview/assistant-page.png)  
 ![uploadFile-page](AppOverview/uploadFile-page.png) 
+![Home-page](AppOverview/home-page.png) 
 
 ## License
 
