@@ -118,11 +118,10 @@ To refine and enhance the AI assistant's ability to analyze and discuss scientif
 
 ### Code Testing
 
-To ensure the application's reliability and functionality, our development process will incorporate and extensive code testing, including:
+To ensure the application's reliability and functionality, our development process incorporates both integration tests and end to end tests:
 
 - **Integration Testing**: We are testing all of our backend endpoints with different scenarios to make sure they return the correct status codes. This will help in identifying early bugs in the development cycle.
-- **Manual Testing**: In addition to automated tests, manual testing is going to be conducted to ensure that the user interface and user experience meet our quality standards. This will involve realistic user scenarios to test the application's end-to-end capabilities.
-- **Continuous Integration (CI)**: As soon we have access to the deployment environment.
+- **End To End Testing**: In addition to automated tests, manual testing is going to be conducted to ensure that the user interface and user experience meet our quality standards. This will involve realistic user scenarios to test the application's end-to-end capabilities.
 
 ### Future Testing Improvements if someone wants to further develop our project
 
@@ -162,4 +161,4 @@ For frontend and backend development, we use Blazor and C#. The following YouTub
 ## Future Improvements to be made by us our someone else if they wanna further develop what we started
 
 - To be able to upload an excel file.
-- **Multi-User Account System**: We are planning to introduce a login system to support multiple users and personal user accounts.  
+- Give the user the ability to create more then one assistant.  
