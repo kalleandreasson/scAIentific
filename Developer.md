@@ -20,16 +20,18 @@ scAIentific's architecture is designed to facilitate efficient analysis of scien
 
 - `/generateByFile`: Endpoint for creating an assistant with a thread, and upload a file to it.
 - `/assistant-chat`: Endpoint for real-time communication with the AI-assistant.
+- `/auth/register`: Endpoint to register a new user.
+- `/auth/login`: Endpoint to log in.
 
 We utilize the OpenAI Assistant API for AI interactions
 
 ### databases
 
-- MongoDB (will be added in the next iteration).
+- MongoDB.
 
 ### Servers
 
-Our servers, essential for hosting and executing the application, are going to be deployed on Azure, ensuring scalable and reliable service.
+Cs cloud machine is used to deploy our app .
 
 ### Services  
 
@@ -68,7 +70,7 @@ To get the development environment up and running:
 
 ### Prerequisites
 
-- .NET core 7 an above.  
+- .NET core 8.  
 - An IDE such as Visual Studio or Visual Studio Code
 - Access to the provided AI model or equivalent
 
@@ -98,7 +100,7 @@ dotnet run
 ## Usage
 
 - Navigate to the frontend application through your web browser.
-- Follow the UI prompts to upload your scientific texts and receive the analysis.
+- Register a new user, log in, upload your file and decide the research area and then start interacting with your assistant .
 
 ## Testing Strategy  
 
