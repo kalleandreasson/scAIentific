@@ -48,6 +48,10 @@
         else
         {
             Console.WriteLine("Registration failed");
+            Console.WriteLine($"status code = {response.StatusCode}");
+            Console.WriteLine($"response.Content = {response.Content}");
+            Console.WriteLine($"response.ReasonPhrase = {response.ReasonPhrase}");
+            Console.WriteLine($"response.ReasonPhrase = {response.Headers}");
         }
     } 
 }
