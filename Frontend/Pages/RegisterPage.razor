@@ -11,6 +11,13 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorMessage
+        </div>
+    }
+
     <div>
         <label>Username:</label>
         <InputText @bind-Value="newUser.Username" />
@@ -27,31 +34,28 @@
 </EditForm>
 
 @code {
-
     private UserRegistrationModel newUser = new UserRegistrationModel();
+    private string errorMessage;
 
-    private class UserResponse
+    private async Task HandleRegister()
     {
-        public string Id { get; set; }
-    }
-
-     private async Task HandleRegister()
-    {
-         string apiBaseUrl = Configuration["APIBaseUrl"];
-         string registerEndpoint = $"{apiBaseUrl}auth/register";
+        errorMessage = string.Empty; // Reset error message
+        string apiBaseUrl = Configuration["APIBaseUrl"];
+        string registerEndpoint = $"{apiBaseUrl}auth/register";
 
         var response = await Http.PostAsJsonAsync(registerEndpoint, newUser);
         if (response.IsSuccessStatusCode)
         {
             NavigationManager.NavigateTo("/login");
         }
+        else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            // Handle conflict
+            errorMessage = "The username or email you entered is already in use. Please try another.";
+        }
         else
         {
-            Console.WriteLine("Registration failed");
-            Console.WriteLine($"status code = {response.StatusCode}");
-            Console.WriteLine($"response.Content = {response.Content}");
-            Console.WriteLine($"response.ReasonPhrase = {response.ReasonPhrase}");
-            Console.WriteLine($"response.ReasonPhrase = {response.Headers}");
+            errorMessage = "An error occurred during registration. Please try again later.";
         }
-    } 
+    }
 }
