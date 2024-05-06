@@ -120,13 +120,13 @@ To refine and enhance the AI assistant's ability to analyze and discuss scientif
 
 To ensure the application's reliability and functionality, our development process will incorporate and extensive code testing, including:
 
-- **Unit Testing**: Individual units of source code are going to be tested for correctness. This will help in identifying early bugs in the development cycle.
+- **Integration Testing**: We are testing all of our backend endpoints with different scenarios to make sure they return the correct status codes. This will help in identifying early bugs in the development cycle.
 - **Manual Testing**: In addition to automated tests, manual testing is going to be conducted to ensure that the user interface and user experience meet our quality standards. This will involve realistic user scenarios to test the application's end-to-end capabilities.
 - **Continuous Integration (CI)**: As soon we have access to the deployment environment.
 
-### Future Testing Improvements
+### Future Testing Improvements if someone wants to further develop our project
 
-For future iterations, we plan to introduce:
+For future iterations, you could introduce:
 
 - **Automated UI Testing**: Implementing automated tests for the user interface to further ensure application reliability and user satisfaction.
 - **Performance Testing**: Conducting tests to assess the application's performance under various conditions, ensuring scalability and responsiveness.
@@ -158,8 +158,8 @@ For frontend and backend development, we use Blazor and C#. The following YouTub
 ## Upcoming Features in the Next Iteration
 
 - **Personalized Email Summaries**: The ability to save discussions and send them directly to the user's personal email.
-- **Multi-User Account System**: We are planning to introduce a login system to support multiple users and personal user accounts.  
 
-## Future Improvements
+## Future Improvements to be made by us our someone else if they wanna further develop what we started
 
 - To be able to upload an excel file.
+- **Multi-User Account System**: We are planning to introduce a login system to support multiple users and personal user accounts.  
