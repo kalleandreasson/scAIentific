@@ -98,4 +98,22 @@ public class AuthController : ControllerBase
             StatusCode = StatusCodes.Status201Created
         };
     }
+
+    [HttpDelete("delete/{username}")]
+    public async Task<IActionResult> DeleteUser(string username)
+    {
+        try
+        {
+            await _mongoDBService.DeleteUserAsync(username);
+            return Ok($"User {username} has been successfully deleted.");
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the user.");
+        }
+    }
 }

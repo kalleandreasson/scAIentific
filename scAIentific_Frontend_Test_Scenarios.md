@@ -17,7 +17,7 @@ This document provides a series of manual tests for the frontend of scAIentific,
 **Steps**:
 
 1. Open a supported web browser.
-2. Navigate to the scAIentific homepage URL "<http://localhost:5103/>".
+2. Navigate to the scAIentific homepage URL "<https://cscloud7-45.lnu.se/>".
 3. Observe if the homepage loads without errors.
 
 **Expected Result**: The homepage should load with a welcome sentence, the navigation bar including login, register options, and the logo.

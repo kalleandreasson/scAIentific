@@ -41,6 +41,23 @@ public class MongoDBService
         Console.WriteLine($"Deleted assistant details for user: {username}");
     }
 
+    public async Task DeleteUserAsync(string username)
+{
+    // Build the filter to find the specific user by username
+    var filter = Builders<UserObj>.Filter.Eq(user => user.Username, username);
+
+    // Perform the delete operation on the first matching document
+    var result = await _users.DeleteOneAsync(filter);
+
+    if (result.DeletedCount == 0)
+    {
+        throw new KeyNotFoundException($"User with username '{username}' not found or already deleted.");
+    }
+
+    Console.WriteLine($"Deleted user: {username}");
+}
+
+
 
     public async Task<AssistantObj> GetAssistantByAssistantIDAsync(string assistantID)
     {
