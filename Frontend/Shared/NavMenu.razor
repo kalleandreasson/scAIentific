@@ -77,8 +77,6 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
     var token = sessionService.GetToken();
 
     bool isLoggedIn = token != null && token.Length > 0;
-    Console.WriteLine($"IsUserLoggedIn checked: isLoggedIn = {isLoggedIn}");
-    Console.WriteLine($"Usertoken: {token}");
     return isLoggedIn;
 }
 

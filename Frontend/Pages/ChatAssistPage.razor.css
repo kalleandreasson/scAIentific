@@ -1,10 +1,11 @@
 .chat-history {
-    height: 500px; /* Adjust the height as needed */
+    height: 30%; 
+    width: 100%;
     overflow-y: auto; /* Enables vertical scrolling */
-    border: 1px solid #ccc; /* Optional: adds a border around the chat history box */
     padding: 10px;
     margin-bottom: 20px; /* Space between chat history and the message input form */
-    border-radius: 5px; /* Optional: rounds the corners of the chat history box */
+    border: 1px solid #eee;
+   
 }
 
 .message {
