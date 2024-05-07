@@ -34,7 +34,7 @@ public class AssistantController : ControllerBase
         try
         {
             string userAssistant = await _assistantService.GetUserAssistantAsync(userName);
-          
+
             if (userAssistant == "No assistant is found")
             {
                 return new JsonResult(new { Message = userAssistant })
@@ -63,6 +63,14 @@ public class AssistantController : ControllerBase
         {
             return BadRequest("No file provided or file is empty.");
         }
+
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (extension != ".docx")
+        {
+            return BadRequest("Only .docx files are allowed.");
+        }
+
+
 
         var savedFilePath = await _inAppFileSaver.Save(userName, file, "files");
         var result = await _assistantService.CreateAssistantWithFileUploadAndThread(savedFilePath, researchArea, userName);
