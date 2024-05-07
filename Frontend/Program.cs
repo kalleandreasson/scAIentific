@@ -42,7 +42,6 @@ builder.Services.AddHttpClient("AuthorizedClient", client =>
 });
 
 builder.Services.AddScoped<SessionService>();
-builder.Services.AddScoped<ExcelService>();
 builder.Services.AddScoped<FileUploadingService>();
 
 var app = builder.Build();
