@@ -19,7 +19,6 @@ else
 
 {
     <div class="index-container">
-         
         <h1>Research Assistant</h1>
         <div class="chat-history" @ref="chatHistoryElement">
             @foreach (var message in chatHistory)
@@ -46,7 +45,7 @@ else
         </div>
         <EditForm Model="@chat" OnValidSubmit="HandleSubmitAsync">
             <InputText @bind-Value="@userQuery" />
-            <button class="position-right" type="submit">Send</button>
+            <button class="position-right" type="submit" disabled="@string.IsNullOrWhiteSpace(userQuery)">Send</button>
         </EditForm>
            <DeleteAssistantBtn OnDeletionSuccess="HandleDeletionSuccess" />
     </div>
