@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 
-namespace Frontend.Shared // Adjust the namespace if necessary
+namespace Frontend.Shared
 {
     public class BaseFileUploadComponent : ComponentBase
     {

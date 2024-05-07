@@ -14,7 +14,7 @@ namespace ChatGPTAPI.Services
             // Get the file extension
             var fileExtension = Path.GetExtension(file.FileName);
 
-            // Construct the new filename by appending "Shirin" to the original filename, then add the file extension
+            // Construct the new filename by appending "the userName" to the original filename, then add the file extension
             var filename = $"{userName}-{Guid.NewGuid()}{fileExtension}";
 
             // Combine the web root path with the folder name to get the route

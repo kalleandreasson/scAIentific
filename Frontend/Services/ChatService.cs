@@ -79,7 +79,7 @@ namespace Frontend.Services
             try
             {
 
-                var token = _sessionService.GetToken(); // Ensure this fetches the token correctly
+                var token = _sessionService.GetToken();
 
                 if (string.IsNullOrEmpty(token))
                 {

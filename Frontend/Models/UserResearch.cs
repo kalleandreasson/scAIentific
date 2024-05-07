@@ -8,7 +8,6 @@ namespace Frontend.Models
 {
     public class UserResearch
     {
-        // public string? userId { get; set; }
         [Required]
         public string? ResearchArea { get; set; }
         

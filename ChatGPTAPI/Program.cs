@@ -77,7 +77,6 @@ builder.Services.AddSingleton<MongoDBService>();
 builder.Services.AddScoped<EmailSenderService>();
 builder.Services.AddScoped<InAppFileSaverService>(); // This matches the class name
 builder.Services.AddScoped<ChatService>(); // This matches the class name
- // Add this line to register InAppFileSaver
 
 var app = builder.Build();
 

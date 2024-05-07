@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using ChatGPTAPI.Models;
 using ChatGPTAPI.Services;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims; // Ensure this using directive is correct for your project structure
+using System.Security.Claims;
 
 namespace ChatGPTAPI.Controllers;
 
