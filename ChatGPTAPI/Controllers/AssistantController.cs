@@ -30,7 +30,6 @@ public class AssistantController : ControllerBase
     public async Task<IActionResult> getUserAssistant()
     {
         var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
-        Console.WriteLine(userName);
         try
         {
             string userAssistant = await _assistantService.GetUserAssistantAsync(userName);
@@ -58,7 +57,6 @@ public class AssistantController : ControllerBase
     public async Task<IActionResult> CreateAssistant([FromForm] IFormFile file, [FromForm] string researchArea)
     {
         var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
-        Console.WriteLine(userName);
         if (file == null || file.Length == 0)
         {
             return BadRequest("No file provided or file is empty.");
@@ -96,7 +94,6 @@ public class AssistantController : ControllerBase
     public async Task<IActionResult> DeleteAssistant()
     {
         var userName = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
-        Console.WriteLine(userName);
         try
         {
             var deletionStatus = await _assistantService.DeleteUserAssistantAndThreadsFromApiAndDB(userName);

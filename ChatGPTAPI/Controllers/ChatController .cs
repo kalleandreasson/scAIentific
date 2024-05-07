@@ -31,21 +31,22 @@ public class ChatController : ControllerBase
     public async Task<IActionResult> ChatWithAssistant([FromBody] UserQuery request)
     {
         var username = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
-        if(username == null) {
+        if (username == null)
+        {
             return new JsonResult(new { message = "Invalid access token" })
             {
                 StatusCode = StatusCodes.Status401Unauthorized
             };
         }
 
-        if(request.UserMessage == null || request.UserMessage.Length == 0) {
-             return new JsonResult(new { message = "Message content cannot be empty" })
+        if (request.UserMessage == null || request.UserMessage.Length == 0)
+        {
+            return new JsonResult(new { message = "Message content cannot be empty" })
             {
                 StatusCode = StatusCodes.Status400BadRequest
             };
         }
 
-        Console.WriteLine(username);
         try
         {
             var assistantObj = await _mongoDBService.GetAssistantObjIfExsistAsync(username);
@@ -56,10 +57,9 @@ public class ChatController : ControllerBase
                     StatusCode = StatusCodes.Status412PreconditionFailed
                 };
             }
-            Console.Write("ChatWithAssistant() -> request.UserMessage\n");
             var messagesList = await _chatService.ProcessUserQueryAndFetchResponses(request.UserMessage, assistantObj.ThreadID, assistantObj.AssistantID);
 
-             return new JsonResult(new { Messages = messagesList })
+            return new JsonResult(new { Messages = messagesList })
             {
                 StatusCode = StatusCodes.Status200OK
             };
@@ -75,20 +75,19 @@ public class ChatController : ControllerBase
     public async Task<IActionResult> ChatWithAssistant()
     {
         var username = await TokenCheck(User.FindFirst(ClaimTypes.Name)?.Value);
-        Console.WriteLine(username);
         try
         {
             var user = await _mongoDBService.GetAssistantObjIfExsistAsync(username);
             if (user == null)
             {
                 return new JsonResult(new { message = "Assistant not found" })
-            {
-                StatusCode = StatusCodes.Status412PreconditionFailed
-            };
+                {
+                    StatusCode = StatusCodes.Status412PreconditionFailed
+                };
             }
 
             var messagesList = await _chatService.FetchMessageList(user.ThreadID);
-             return new JsonResult(new { Messages = messagesList })
+            return new JsonResult(new { Messages = messagesList })
             {
                 StatusCode = StatusCodes.Status200OK
             };
