@@ -180,7 +180,7 @@ This document provides a series of manual tests for the frontend of scAIentific,
 3. Leave the input field empty.
 4. Click on the 'Send' button.
 
-**Expected Result**: An error message should be displayed, indicating that the user cannot send an empty query.
+**Expected Result**: The user is unable to send an empty message.
 
 ##### TC7.1: Retrieve Chat History
 
