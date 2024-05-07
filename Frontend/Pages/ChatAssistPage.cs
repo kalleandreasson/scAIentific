@@ -14,6 +14,9 @@ namespace Frontend.Pages
         [Inject]
         public ChatService? ChatService { get; set; }
         [Inject]
+        public SessionService SessionService { get; set; }
+
+        [Inject]
         public NavigationManager? NavigationManager { get; set; }
         private ElementReference chatHistoryElement;
 
@@ -26,12 +29,25 @@ namespace Frontend.Pages
         protected override async Task OnInitializedAsync()
         {
 
-            var chatResponse = await ChatService.GetChatHistoryAsync();
-            if (chatResponse?.Messages != null)
+            if (!IsUserLoggedIn())
             {
-                chatHistory = chatResponse.Messages.OrderBy(m => m.CreatedAt).ToList();
+                NavigationManager.NavigateTo("/login-required");
             }
-            isChatHistoryLoaded = true; // Indicate that the chat history has been loaded
+            else
+            {
+                var chatResponse = await ChatService.GetChatHistoryAsync();
+                if (chatResponse?.Messages != null)
+                {
+                    chatHistory = chatResponse.Messages.OrderBy(m => m.CreatedAt).ToList();
+                }
+                isChatHistoryLoaded = true; // Indicate that the chat history has been loaded
+            }
+        }
+
+        private bool IsUserLoggedIn()
+        {
+            var token = SessionService.GetToken();
+            return !string.IsNullOrEmpty(token);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)

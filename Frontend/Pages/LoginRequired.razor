@@ -1,0 +1,17 @@
+@page "/login-required"
+@using Frontend.Services
+@inject NavigationManager NavigationManager
+
+<PageTitle>Login Required</PageTitle>
+
+<div class="text-center">
+    <h3>You need to be logged in to access this page.</h3>
+    <button class="btn btn-primary" @onclick="NavigateToLogin">Login</button>
+</div>
+
+@code {
+    void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}
