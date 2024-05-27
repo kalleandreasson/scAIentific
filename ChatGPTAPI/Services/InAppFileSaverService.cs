@@ -19,7 +19,6 @@ namespace ChatGPTAPI.Services
 
             // Combine the web root path with the folder name to get the route
             string route = Path.Combine(env.WebRootPath, folderName);
-
             // Create the directory if it doesn't exist
             if (!Directory.Exists(route))
             {

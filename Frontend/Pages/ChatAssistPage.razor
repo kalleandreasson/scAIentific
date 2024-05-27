@@ -43,10 +43,10 @@ else
                 }
             }
         </div>
-        <EditForm Model="@chat" OnValidSubmit="HandleSubmitAsync">
-            <InputText @bind-Value="@userQuery" />
-            <button class="position-right" type="submit" disabled="@string.IsNullOrWhiteSpace(userQuery)">Send</button>
-        </EditForm>
+<EditForm Model="@this" OnValidSubmit="HandleSubmitAsync">
+    <InputText @bind-Value="userQuery" />
+    <button class="position-right" type="submit" disabled="@(string.IsNullOrWhiteSpace(userQuery) || isSending)">Send</button>
+</EditForm>
            <DeleteAssistantBtn OnDeletionSuccess="HandleDeletionSuccess" />
     </div>
 }

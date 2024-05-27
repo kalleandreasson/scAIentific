@@ -48,7 +48,7 @@
             errorMessage = "";
 
             string apiBaseUrl = Configuration["APIBaseUrl"];
-            string apiUrl = $"{apiBaseUrl}research-front/delete-assistant?userName={Uri.EscapeDataString(userName)}";
+            string apiUrl = $"{apiBaseUrl}research-front/delete-assistant";
 
             var httpClient = HttpClientFactory.CreateClient("AuthorizedClient");
             var token = sessionService.GetToken();

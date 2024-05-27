@@ -24,11 +24,11 @@ namespace Frontend.Pages
         private List<ChatMessage> chatHistory = new List<ChatMessage>();
         private bool isChatHistoryLoaded = false;
         private object chat = new { };
+        private bool isSending = false;
 
 
         protected override async Task OnInitializedAsync()
         {
-
             if (!IsUserLoggedIn())
             {
                 NavigationManager.NavigateTo("/login-required");
@@ -62,6 +62,8 @@ namespace Frontend.Pages
 
         private async Task HandleSubmitAsync()
         {
+            isSending = true;
+
             var chatRequest = new ChatRequest { UserMessage = userQuery };
             var chatResponse = await ChatService.PostUserQueryAsync(chatRequest);
 
@@ -72,6 +74,7 @@ namespace Frontend.Pages
             }
             userQuery = "";
 
+            isSending = false;
             await InvokeAsync(StateHasChanged); // Request the component to re-render
             await Task.Delay(100); // Allow time for the UI to update
             await JsRuntime.InvokeVoidAsync("scrollToBottom", chatHistoryElement);
