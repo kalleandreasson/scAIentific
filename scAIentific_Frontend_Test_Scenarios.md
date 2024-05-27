@@ -1,5 +1,14 @@
 ### Manual Test Document for scAIentific Frontend
 
+#### Prerequisites
+
+Before starting the tests, ensure you have the following:
+
+1. **Username**: Ensure you have a username ready for the tests (e.g., User-3).
+2. **Password**: Prepare passwords associated with the test usernames.
+3. **Valid Email**: Use valid email addresses for registration and login tests (e.g., user@user-3.com).
+4. **Word File with Research Abstracts**: Prepare a Word document containing scientific article abstracts to use for file upload tests.
+
 #### Introduction
 
 This document provides a series of manual tests for the frontend of scAIentific, an AI-powered research front analyzer designed to assist researchers and students by simplifying the exploration of scientific articles.
@@ -32,7 +41,7 @@ This document provides a series of manual tests for the frontend of scAIentific,
 3. Fill out the registration form with the following details:
    - Username: User-3
    - Password: User-3-user
-   - Email: <user@user-3.com>
+   - Email: user@user-3.com
 4. Submit the form.
 
 **Expected Result**: The user should be registered successfully and redirected to a login page.
@@ -47,7 +56,7 @@ This document provides a series of manual tests for the frontend of scAIentific,
 3. Fill out the registration form with the following details:
    - Username: User-4
    - Password: User-4-user
-   - Email: <user@user-3.com>
+   - Email: user@user-3.com
 4. Submit the form.
 
 **Expected Result**: Registration should be rejected, and an error message should be displayed indicating that the email address is already in use.
@@ -62,15 +71,16 @@ This document provides a series of manual tests for the frontend of scAIentific,
 3. Fill out the registration form with the following details:
    - Username: User-3
    - Password: User-4-user
-   - Email: <user@user-4.com>
+   - Email: user@user-4.com
 4. Submit the form.
 
 **Expected Result**: Registration should be rejected, and an error message should be displayed indicating that the username is already in use.
 
-
 ### TC3.1: User Login with Valid Credentials
+
 **Objective**: Verify that a user can log in using valid credentials and is redirected appropriately.
 **Steps**:
+
 1. Navigate to the scAIentific homepage.
 2. Click on the login option in the navbar.
 3. Enter the following valid username and password:
@@ -81,8 +91,10 @@ This document provides a series of manual tests for the frontend of scAIentific,
 **Expected Result**: The user should log in successfully and be redirected to the homepage, which displays a welcome sentence and a "Start" button.
 
 ### TC3.2: User Login with Invalid Credentials
+
 **Objective**: Ensure that the login process handles invalid credentials correctly by preventing login and displaying an error message.
 **Steps**:
+
 1. Navigate to the scAIentific homepage.
 2. Click on the login option in the navbar.
 3. Enter the following credentials:
@@ -96,16 +108,19 @@ This document provides a series of manual tests for the frontend of scAIentific,
 
 **Objective**: Ensure that the logout functionality works correctly.
 **Steps**:
+
 1. Navigate to the scAIentific homepage.
 2. Complete TC3.1 to log in with valid credentials.
 3. Click on the logout option in the navbar.
 4. Confirm logout action if prompted.
 
-**Expected Result**: The user should be logged out successfully and redirected to the homepage that has a welcome sentence .
+**Expected Result**: The user should be logged out successfully and redirected to the homepage that has a welcome sentence.
 
 ### TC5.1.1: Create New Assistant with Over-sized File Upload
+
 **Objective**: Verify the system's error handling when attempting to upload a file larger than the allowed size limit.
 **Steps**:
+
 1. Complete TC3.1 to log in with valid credentials.
 2. Click on the 'Start' button on the homepage.
 3. Enter "Gender and Social Networks" in the research area input field.
@@ -115,8 +130,10 @@ This document provides a series of manual tests for the frontend of scAIentific,
 **Expected Result**: The assistant creation should be halted, and an error message should be displayed indicating that the file size exceeds the limit.
 
 ### TC5.1.2: Create New Assistant without Uploading a File
+
 **Objective**: Confirm that the file upload is mandatory for creating an assistant.
 **Steps**:
+
 1. Follow TC3.1 to log in.
 2. Click on the 'Start' button.
 3. Input "Gender and Social Networks" in the research area field.
@@ -126,8 +143,10 @@ This document provides a series of manual tests for the frontend of scAIentific,
 **Expected Result**: The assistant creation should be halted; no assistant is created, and an error message should display indicating that an article file is required.
 
 ### TC5.1.3: Create New Assistant with Unsupported File Type
+
 **Objective**: Test the system's error handling when an unsupported file type is uploaded.
 **Steps**:
+
 1. Follow TC3.1 to log in.
 2. Click on the 'Start' button.
 3. Enter "Gender and Social Networks" in the research area field.
@@ -137,8 +156,10 @@ This document provides a series of manual tests for the frontend of scAIentific,
 **Expected Result**: The assistant creation should be halted; no assistant is created, and an error message should display indicating "Unsupported file type."
 
 ### TC5.2: Create New Assistant without Specifying Research Area
+
 **Objective**: Verify that specifying a research area is mandatory for assistant creation.
 **Steps**:
+
 1. Follow TC3.1 to log in.
 2. Click on the 'Start' button.
 3. Leave the research area field empty.
@@ -148,25 +169,29 @@ This document provides a series of manual tests for the frontend of scAIentific,
 **Expected Result**: The assistant creation should be halted; the file should not upload, and an error message should display indicating that the research area is required.
 
 ### TC5.4: Create New Assistant with Complete Information
+
 **Objective**: Validate the complete assistant creation process including article upload and specifying the research area.
 **Steps**:
+
 1. Follow TC3.1 to log in.
 2. Click on the 'Start' button.
 3. Enter "Gender and Social Networks" in the research area field.
 4. Browse and select the desired article file ensuring it's within the allowed size limit.
 5. Click 'Create Assistant'.
+6. Ensure the assistant is created and you are redirected to home page.
+7. Log out from the application.
 
-**Expected Result**: The article should upload successfully, an assistant is created based on the specified research area, and the user is redirected to chat with the assistant page.
+**Expected Result**: The article should upload successfully, an assistant is created based on the specified research area, and the user is redirected to the home page.
 
 ##### TC6.1: AI-Assistant Interaction
 
-**Objective**:  Verify the functionality of interacting with the AI assistant using a valid query.
+**Objective**: Verify the functionality of interacting with the AI assistant using a valid query.
 **Steps**:
 
 1. Complete TC3.1 to log in with valid credentials.
-2. click on the start button, you will be redirected to the chat with the assistant page.
+2. Click on the start button, you will be redirected to the chat with the assistant page.
 3. Enter a query related to the uploaded file.
-4. click on the sent button  .
+4. Click on the send button.
 
 **Expected Result**: The AI assistant should provide a coherent and contextually appropriate response.
 
@@ -179,12 +204,14 @@ This document provides a series of manual tests for the frontend of scAIentific,
 2. Navigate to the AI chat interface.
 3. Leave the input field empty.
 4. Click on the 'Send' button.
+5. Ensure that your not unable to send an empty message.
+6. Log out from the application.
 
 **Expected Result**: The user is unable to send an empty message.
 
 ##### TC7.1: Retrieve Chat History
 
-**Objective**:Verify that the chat history is preserved and retrievable after logging out and back in.
+**Objective**: Verify that the chat history is preserved and retrievable after logging out and back in.
 **Steps**:
 
 1. Complete TC3.1 to log in with valid credentials.
@@ -192,19 +219,17 @@ This document provides a series of manual tests for the frontend of scAIentific,
 3. Log out of the application.
 4. Complete TC3.1 again to log back in with the same credentials.
 5. Navigate to the AI chat interface.
+6. Ensure that you get the previous chat history including the last conversation.
+7. Log out from the application.
 
-**Expected Result**:The user should see the previous chat history including the last conversation when landing on the chat with the assistant page.
+**Expected Result**: The user should see the previous chat history including the last conversation when landing on the chat with the assistant page.
 
 ##### TC8.2: Delete the assistant
 
 **Objective**: Test Deleting the assistant.
 **Steps**:
 
-1. Complete TC3.1 to log in with valid credentials
+1. Complete TC3.1 to log in with valid credentials.
 2. Click on delete assistant.
 
-**Expected Result**:  The assistant is deleted and the user is redirected to the home page.
-
-#### Conclusion
-
-This manual test document outlines the key functionalities of the scAIentific frontend that need to be rigorously tested to ensure a quality experience for its users. Each test case is designed to verify that every component of the application performs as expected under various conditions.
+**Expected Result**:The assistant is deleted, the user is redirected to the home page, and an email is sent to the user's email containing the chat history.

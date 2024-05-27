@@ -7,6 +7,7 @@ This document provides a comprehensive guide for developers working on the scAIe
 - **File Upload**: Users can upload a word file with size up to 512 MB directly into the AI assistant.
 - **Custom AI-Assistant Creation**: Allows users to create a personalized AI assistant. This specialized assistant is proficient in a research field specified by the user.
 - **Research Discussion with the AI-Assistant**: Offers the capability to converse with the assistant and discuss the file's content, assisting in the identification of the research front.
+- **The AI-Assistant chat history**: The user will get the chat history sent to their mail.
 
 ## Architecture and Design
 
@@ -18,24 +19,26 @@ scAIentific's architecture is designed to facilitate efficient analysis of scien
 
 ### APIs
 
-- `/generateByFile`: Endpoint for creating an assistant with a thread, and upload a file to it.
-- `/assistant-chat`: Endpoint for real-time communication with the AI-assistant.
+- `/create-assistant`: Endpoint for creating an assistant with a thread, and upload a file to it.
+- `/get-assistant`: Endpoint To retrieve the assistant information.
+- `/delete-assistant`: Endpoint To delete the assistant and send the chat history to the user mail.
+- `/send-message`: Endpoint for real-time communication with the AI-assistant.
+- `/chat-history`: Endpoint to retrieve all the old chat messages.
 - `/auth/register`: Endpoint to register a new user.
 - `/auth/login`: Endpoint to log in.
+- `/auth/delete/{username}`: Endpoint to delete a user, its added for testing purposes .
 
 We utilize the OpenAI Assistant API for AI interactions
 
 ### databases
 
-- MongoDB.
+- MongoDB Atlas.
 
 ### Servers
 
 Cs cloud machine is used to deploy our app .
 
 ### Services  
-
-(Are implemented but will be deployed soon)
 
 #### ChatGPT Microservice
 
@@ -104,7 +107,7 @@ dotnet run
 
 ## Testing Strategy  
 
-The future testing plan: 
+The testing plan: 
 
 Our comprehensive testing strategy is designed to ensure both the technical robustness of the scAIentific platform and the effectiveness of the AI-driven functionalities it offers. It is divided into two main components: User Feedback Testing and Code Testing.
 
@@ -130,8 +133,6 @@ For future iterations, you could introduce:
 - **Automated UI Testing**: Implementing automated tests for the user interface to further ensure application reliability and user satisfaction.
 - **Performance Testing**: Conducting tests to assess the application's performance under various conditions, ensuring scalability and responsiveness.
 
-By combining user feedback with rigorous code testing, we aim to continuously improve scAIentific, making it more effective and user-friendly with each iteration. Our goal is to provide a robust platform that meets the evolving needs of researchers and students in the scientific community.
-
 ## Learning the Project's Technologies
 
 ### OpenAI Documentation and Prompt Engineering
@@ -154,11 +155,8 @@ For frontend and backend development, we use Blazor and C#. The following YouTub
   
   [IAmTimCorey on YouTube](https://www.youtube.com/@IAmTimCorey)
 
-## Upcoming Features in the Next Iteration
-
-- **Personalized Email Summaries**: The ability to save discussions and send them directly to the user's personal email.
-
 ## Future Improvements to be made by us our someone else if they wanna further develop what we started
 
 - To be able to upload an excel file.
 - Give the user the ability to create more then one assistant.  
+- Give the user more options to tune and customize the assistant's personality, characteristics and skills.
