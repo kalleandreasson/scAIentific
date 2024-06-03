@@ -7,7 +7,6 @@
 @inject ILogger<AssistantCreationForm> Logger
 @inject NavigationManager NavigationManager
 @inject FileUploadingService FileUploadingService
-
 <div class="index-container">
     @if (!string.IsNullOrEmpty(flashMessage) && string.IsNullOrEmpty(errorMessage))
     {
@@ -15,91 +14,92 @@
             @flashMessage
         </p>
     }
-    
     @if (!string.IsNullOrEmpty(errorMessage))
     {
         <p class="text-danger">@errorMessage</p>
     }
-
-    <h2>Create Your Own Research Expert Assistant</h2>
-
-    <EditForm Model="@newResearch" OnValidSubmit="HandleValidSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <p>
-            <label for="researchArea">
-                Enter your research area:
-                <InputText id="researchArea" @bind-Value="newResearch.ResearchArea"/>
-            </label>
-        </p>
-        <p>
-            Upload file (.docx):
-            <InputFile OnChange="LoadFiles" accept=".docx"/>
-        </p>
-        
-        <button type="submit">Create your Assistant</button>
-    </EditForm>
-
-    @if (uploadedFiles.Count > 0)
+    @if (loading)
     {
-        <div class="uploaded-files-section">
-            <h2>Uploaded Files</h2>
-            <ul class="uploaded-files-list">
-                @foreach (var fileName in uploadedFiles)
-                {
-                    <li>@fileName</li>
-                }
-            </ul>
+        <div>
+        <h1>Loading...</h1>
         </div>
     }
+    else
+    {
+        <h2>Create Your Own Research Expert Assistant</h2>
+        <EditForm Model="@newResearch" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <p>
+                <label for="researchArea">
+                    Enter your research area:
+                    <InputText id="researchArea" @bind-Value="newResearch.ResearchArea"/>
+                </label>
+            </p>
+            <p>
+                Upload file (.docx):
+                <InputFile OnChange="LoadFiles" accept=".docx"/>
+            </p>
+            <button type="submit">Create your Assistant</button>
+        </EditForm>
+        @if (uploadedFiles.Count > 0)
+        {
+            <div class="uploaded-files-section">
+                <h2>Uploaded Files</h2>
+                <ul class="uploaded-files-list">
+                    @foreach (var fileName in uploadedFiles)
+                    {
+                        <li>@fileName</li>
+                    }
+                </ul>
+            </div>
+        }
+    }
 </div>
-
-
 @code
 {
     private UserResearch newResearch = new UserResearch();
     private string flashMessage = "";
-
     private string? errorMessage;
     private List<string> uploadedFiles = new();
+    private bool loading = false;
     private async Task HandleValidSubmit()
+    {
+        flashMessage = "";
+        errorMessage = "";
+        if (!filesToUpload.Any())
         {
-            flashMessage = "";
-            errorMessage = "";
-            if (!filesToUpload.Any())
+            errorMessage = "Please upload a file.";
+            return;
+        }
+        try
+        {
+            loading = true;
+            string apiBaseUrl = Configuration["APIBaseUrl"];
+            string apiUrl = apiBaseUrl + "research-front/create-assistant";
+            // Explicitly declare the tuple types instead of using var
+            (bool isSuccess, string latestErrorMessage) = await FileUploadingService.SendDataAndFileToApi(filesToUpload, apiUrl, newResearch.ResearchArea);
+            if (isSuccess)
             {
-                errorMessage = "Please upload a file.";
-                return;
+                flashMessage = $"Good! your Assistant that is expert in \"{newResearch.ResearchArea}\"  was successfully created!";
+                uploadedFiles.Clear();
+                NavigationManager.NavigateTo("/");
             }
-            try
+            else
             {
-
-                string apiBaseUrl = Configuration["APIBaseUrl"];
-                string apiUrl = apiBaseUrl + "research-front/create-assistant";
-                // Explicitly declare the tuple types instead of using var
-                (bool isSuccess, string latestErrorMessage) = await FileUploadingService.SendDataAndFileToApi(filesToUpload, apiUrl, newResearch.ResearchArea);
-
-                if (isSuccess)
-                {
-                    flashMessage = $"Good! your Assistant that is expert in \"{newResearch.ResearchArea}\"  was successfully created!";
-                    uploadedFiles.Clear();
-                    NavigationManager.NavigateTo("/");
-                }
-                else
-                {
-                    errorMessage = latestErrorMessage;
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger?.LogError(ex, "Failed to submit research assistant creation form.");
-                errorMessage = "Failed to create the assistant due to an unexpected error. Please try again later.";
-            }
-            finally
-            {
-                // Reset research model for new input
-                newResearch = new UserResearch();
+                errorMessage = latestErrorMessage;
             }
         }
+        catch (Exception ex)
+        {
+            Logger?.LogError(ex, "Failed to submit research assistant creation form.");
+            errorMessage = "Failed to create the assistant due to an unexpected error. Please try again later.";
+        }
+        finally
+        {
+            loading = false;
+            // Reset research model for new input
+            newResearch = new UserResearch();
+        }
+    }
 }

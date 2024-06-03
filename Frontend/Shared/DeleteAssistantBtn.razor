@@ -10,38 +10,30 @@
 @inject NavigationManager NavigationManager
 @inject ILogger<DeleteAssistantBtn> Logger
 
-
-
 <div class="position-left">
     @if (!string.IsNullOrEmpty(flashMessage) && string.IsNullOrEmpty(errorMessage))
-
     {
         <p class="text-success">@flashMessage</p>
     }
     @if (!string.IsNullOrEmpty(errorMessage))
-
     {
         <h3>Error</h3>
         <p class="text-danger">@errorMessage</p>
     }
-    <button @onclick="HandleSubmit">Delete Assistant</button>
+    <button @onclick="HandleSubmit" disabled="@isDeleteInProgress">Delete Assistant</button>
 </div>
-
-
 
 @code {
     [Parameter]
     public EventCallback<bool> OnDeletionSuccess { get; set; }
 
-    private string userName = "singletonUser";
-
     private string flashMessage = "";
-
     private string errorMessage = "";
+    private bool isDeleteInProgress = false;
 
     private async Task HandleSubmit()
-
     {
+        isDeleteInProgress = true;
         try
         {
             flashMessage = "";
@@ -60,13 +52,12 @@
 
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-
             var response = await httpClient.DeleteAsync(apiUrl);
 
             if (response.IsSuccessStatusCode)
             {
                 await OnDeletionSuccess.InvokeAsync(true);
-                flashMessage = $"The assistant was deleted successfully!";
+                flashMessage = "The assistant was deleted successfully!";
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
@@ -77,12 +68,14 @@
                 Logger.LogWarning($"Server returned error: {response.StatusCode}.");
             }
         }
-
         catch (Exception ex)
-
         {
             Logger?.LogError(ex, "Failed to delete the assistant");
             errorMessage = "Failed to delete the assistant due to an unexpected error. Please try again later.";
+        }
+        finally
+        {
+            isDeleteInProgress = false;
         }
     }
 }
